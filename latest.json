@@ -1,0 +1,11 @@
+{
+  "version": "0.12.0",
+  "notes": "Import des SoloQ avec l'API Riot, bouton de mise à jour.",
+  "pub_date": "2026-11-04T23:40:00Z",
+  "platforms": {
+    "windows-x86_64": {
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUU3M1c0VqSWpFM3N2WmIxQUNRYlM2NGFXMXFidGNFZnE3cndPRENVL3c2SGtlM01TN2NDNEprVyszNGY5YTNuOU9Mc3QwRXg0NmM4Rjg4Qmd0a0hNR0FyUFg4RzhqdmdrPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzODM1NjAwCWZpbGU6TklYVVNfMC4xMi4wX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjEyLjAKTnNqTVVCd29FT2did01WNk85YnFGNWtERXRLNjh3UkpjR1hlbURaL09wZ3ZIdFVpVjVWWGx5NmRzMFFEbGZZeVVieUhnbGI4NmpzQ0ErUEhRUldvQWc9PQo=",
+      "url": "https://github.com/NIKAerer/NIXUS/raw/main/releases/NIXUS_0.12.0_x64-setup.exe"
+    }
+  }
+}
