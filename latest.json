@@ -1,11 +1,11 @@
 {
-  "version": "0.13.1",
-  "notes": "Courbe de LP reconstituée depuis le 04/10 (calée sur 594 LP), journal des sessions dans Grind, rôle garanti et losanges, stats alignées, animation du panneau Amis.",
-  "pub_date": "2026-11-05T01:30:42Z",
+  "version": "0.14.0",
+  "notes": "Lancement auto de LoL et client caché, chats du salon et du draft, amis (Riot ID, demandes, groupes), honneur, Collection, Butin, personnalisation du profil et défis.",
+  "pub_date": "2026-11-05T01:41:21Z",
   "platforms": {
     "windows-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUU3M1c0VqSWpFM3ZNVjBhSzhxSGxoaGNZQzhaRDNhVENTLzlLN2U0cEd0blhWRFFrREQwazA4bTBlR1JMSmJGRzU0UTM2YTB5MURnOXV5RFV6c2NKd0xxbHM0dW1Qa3dFPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzODQyMjE4CWZpbGU6TklYVVNfMC4xMy4xX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjEzLjEKUTQ4bnpWcHQrOEpoTVFtWnVTUlVMYkxHemVudmJIN0haUXRTMEY5aHptNTZxeXl2QmdDZWV2ZE8va2MxUjVWaTdJdktkVzhvelNjZXQ5OTk5bDdiREE9PQo=",
-      "url": "https://github.com/NIKAerer/NIXUS/raw/main/releases/NIXUS_0.13.1_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUU3M1c0VqSWpFM29xOWwxSlNlb1pCZE90N1ZLRk13MWtuQ054L3p1SGFSNU9BaUtCR2JZck4ydHUyYjdVL2ZxRlVab3NrczhndU96RDBUSG1Kd2RDRUZiUmdUcjJjQUFzPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzODQyODUyCWZpbGU6TklYVVNfMC4xNC4wX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjE0LjAKa3FFL01jWVJ6RTFJbzBYc3gzMWM4QzQxVTljMUdHZzJyNVVoMUhvNUlYaVdMOTlsZWZ6RlVXc2pRK3hDYUx0aHNTMEFUR1JIYXVlenVCQ0dsYlVhQ1E9PQo=",
+      "url": "https://github.com/NIKAerer/NIXUS/raw/main/releases/NIXUS_0.14.0_x64-setup.exe"
     }
   }
 }
