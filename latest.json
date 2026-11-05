@@ -1,11 +1,11 @@
 {
-  "version": "0.12.2",
-  "notes": "Captures du salon et du draft pour le badge Rôle garanti.",
-  "pub_date": "2026-11-05T00:38:36Z",
+  "version": "0.13.0",
+  "notes": "Draft refait (grille en bas, fond animé, échanges), runes modifiables, écran Partie en cours, messagerie.",
+  "pub_date": "2026-11-05T00:48:20Z",
   "platforms": {
     "windows-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUU3M1c0VqSWpFM2h0N2JjendwekkrUDk4U0NEUS9XT3pTSytPeWRuUExaR3NzTGtQY2xkWUVwdUEwTThYbTdERm93eXF4WVUzU2IwNkYwRnlONCsxWk9OY1MwcWExdUF3PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzODM5MDYyCWZpbGU6TklYVVNfMC4xMi4yX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjEyLjIKbmZ0RmRxbFVBMkRJNGdaUGsxc0IrcjhJR1FndUIwSUVDdUZDS1A1QTBMVW9hM3FJOUlXT2dFcFdSZTRsSkZPVEtid3E4NzQ1NHJCTjJDWm5uTWlmQWc9PQo=",
-      "url": "https://github.com/NIKAerer/NIXUS/raw/main/releases/NIXUS_0.12.2_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUU3M1c0VqSWpFM3JURWRqMU1mcHJKd1NPRW9Qd29jRkVFaXBqU3F5bVdsYldjUnFLWUw1eGEzMTYvbEVveXhoVmczTThRMUlCYTBKbGlTOVordmhnTHhOSC84RlA3WVFBPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzODM5NjY2CWZpbGU6TklYVVNfMC4xMy4wX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjEzLjAKdzFqUy95K3JxOGQrOW5iMk02VmsxOStSVjVqR3hBYWYyYkQreFZEM0IvTzJlVlJuSGNIaGNsMXk3VGFvcVU4bkt0RUppZFZWd3Nqd3JMLzFOSkEzQWc9PQo=",
+      "url": "https://github.com/NIKAerer/NIXUS/raw/main/releases/NIXUS_0.13.0_x64-setup.exe"
     }
   }
 }
