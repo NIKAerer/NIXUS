@@ -1,11 +1,11 @@
 {
-  "version": "0.12.1",
-  "notes": "Corrige « clé API refusée » pour l'import Riot.",
-  "pub_date": "2026-11-04T23:51:00Z",
+  "version": "0.12.2",
+  "notes": "Captures du salon et du draft pour le badge Rôle garanti.",
+  "pub_date": "2026-11-05T00:38:36Z",
   "platforms": {
     "windows-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUU3M1c0VqSWpFM3ZzR2pNNWJNNVBQWjh4WUMrOXFCd3gycEpPTk9vdnpZUlpnTHdCVDhaeEFCTlNkSWExcFdQY0w4dENvUHlrNHFWMnZCRjhoSmY5c01KeDRIbzA3OFFzPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzODM2MjAzCWZpbGU6TklYVVNfMC4xMi4xX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjEyLjEKUm5PWERJdnd1RHk5SEd4b2ZQd3JKSW03czBNdGFsV3R5MHZGcnVJelVNM003T3RFeFI1aklOSWJQRUFXaFg3Z3k3RkxOeC9KNzZRSFZrUnBnSGRDQkE9PQo=",
-      "url": "https://github.com/NIKAerer/NIXUS/raw/main/releases/NIXUS_0.12.1_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUU3M1c0VqSWpFM2h0N2JjendwekkrUDk4U0NEUS9XT3pTSytPeWRuUExaR3NzTGtQY2xkWUVwdUEwTThYbTdERm93eXF4WVUzU2IwNkYwRnlONCsxWk9OY1MwcWExdUF3PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzODM5MDYyCWZpbGU6TklYVVNfMC4xMi4yX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjEyLjIKbmZ0RmRxbFVBMkRJNGdaUGsxc0IrcjhJR1FndUIwSUVDdUZDS1A1QTBMVW9hM3FJOUlXT2dFcFdSZTRsSkZPVEtid3E4NzQ1NHJCTjJDWm5uTWlmQWc9PQo=",
+      "url": "https://github.com/NIKAerer/NIXUS/raw/main/releases/NIXUS_0.12.2_x64-setup.exe"
     }
   }
 }
