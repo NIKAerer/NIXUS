@@ -1,11 +1,11 @@
 {
-  "version": "0.14.1",
-  "notes": "Draft : chrono qui décompte chaque seconde, bans et picks corrigés, chat replié. Demandes d'ami derrière un bouton. Badges MVP / ACE sur les parties.",
-  "pub_date": "2026-11-05T03:09:30Z",
+  "version": "0.14.2",
+  "notes": "Draft : nouveau verrouillage et bannissement, vérifiés auprès du client, avec deux méthodes de secours.",
+  "pub_date": "2026-11-05T04:08:53Z",
   "platforms": {
     "windows-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUU3M1c0VqSWpFM2dZR2hrNnUwT1Q5K1libnVtbUlZVUJpdnpXZGhZeVIwSWxFR2dMVm1oTlQrTFp5WURxMEdmL1p5MkVYUDBOc0tzYkd6djU0aFRIbitNSEJaQmFCZVFvPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzODQ4MTQwCWZpbGU6TklYVVNfMC4xNC4xX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjE0LjEKcXlXK2FUa3BxQitvUlVVUzZhRE1nMXhwbzlBM1Rxd1NxN1I2YThCdGx4TWcyb1lxQWtnc2xIdXl3RXZWWXpSUGJkcTdWaCt5MHkyOHJ5dkNvSzNEQ3c9PQo=",
-      "url": "https://github.com/NIKAerer/NIXUS/raw/main/releases/NIXUS_0.14.1_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUU3M1c0VqSWpFM3JXbC9tS08zckZzOWNoMlRXNXBtNkZqclllb1ZFQ2ROUmd0eFpmOXQrZk5VTEdXWVNodUJ4R1krZTN1ZDNaWEpjaVdMUDN0NytNR05NWTdYSnM3WFFzPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzODUxNzAzCWZpbGU6TklYVVNfMC4xNC4yX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjE0LjIKMExSL3gzdHNDaDYzNnNvalNQcWs4TkFoZFpNSUxyeUJsZHVCOXc0TDYwMEJKUWhpeGFhT1dJU2srU0wrWWVUNDVielN4R3VYM0c5dVhUZmFIdHp0RFE9PQo=",
+      "url": "https://github.com/NIKAerer/NIXUS/raw/main/releases/NIXUS_0.14.2_x64-setup.exe"
     }
   }
 }
