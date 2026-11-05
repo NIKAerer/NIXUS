@@ -1,11 +1,11 @@
 {
-  "version": "0.14.5",
-  "notes": "Parties perso : salon comme dans le client, avec côté bleu, côté rouge et spectateurs.",
-  "pub_date": "2026-11-05T18:25:29Z",
+  "version": "0.14.6",
+  "notes": "Pseudos affichés dans les salons et le chat du groupe ; changement de côté en partie perso corrigé.",
+  "pub_date": "2026-11-05T19:10:04Z",
   "platforms": {
     "windows-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUU3M1c0VqSWpFM2xnN3ViTzc1ZXlGN2kwRXJ5eVNWWDJHM1Q1U1VhOVZFT294bEZRczN5TGl3T3J4RWZ6eElZZ1lSMkZaNzRCTTJZWXBac2FFNEF1VjBWNjFEdHU3L0FVPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzOTAzMTAxCWZpbGU6TklYVVNfMC4xNC41X3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjE0LjUKbDl5RTFyYmVwOTY5TWVxakRnVW55amowcXNtemFEaU4zSnF2T1VIRnhyd0J2OFJXUmhlQTFBUVJoQUZEM2dSL3UwcGRNeVdPL0Q0NmN2bWNlajBuQmc9PQo=",
-      "url": "https://github.com/NIKAerer/NIXUS/raw/main/releases/NIXUS_0.14.5_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUU3M1c0VqSWpFM3IweHJOaGE0Z1c1NStBbkJQWHJDMitZSmV1T3orL3lBblNMYkV4WWVlM0gxSkRaZWZVZGdvbk1MWWYvbWxOb2FoZCsvRWUwTGJEUGRuY09vbEY3WUFVPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzOTA1NzcyCWZpbGU6TklYVVNfMC4xNC42X3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjE0LjYKUnlDY3JIQlBmd3U4cmVIKzNBcER0elNGL2ljOFo3N1pNTUpLalZRTG1GL1ltNm5xa0NDV3JxY2xnOUtOSTRzRzdVUUxUVnNVNUtuaFV6dnVlRk0zQ3c9PQo=",
+      "url": "https://github.com/NIKAerer/NIXUS/raw/main/releases/NIXUS_0.14.6_x64-setup.exe"
     }
   }
 }
