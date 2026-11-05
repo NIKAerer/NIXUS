@@ -1,11 +1,11 @@
 {
-  "version": "0.14.0",
-  "notes": "Lancement auto de LoL et client caché, chats du salon et du draft, amis (Riot ID, demandes, groupes), honneur, Collection, Butin, personnalisation du profil et défis.",
-  "pub_date": "2026-11-05T01:41:21Z",
+  "version": "0.14.1",
+  "notes": "Draft : chrono qui décompte chaque seconde, bans et picks corrigés, chat replié. Demandes d'ami derrière un bouton. Badges MVP / ACE sur les parties.",
+  "pub_date": "2026-11-05T03:09:30Z",
   "platforms": {
     "windows-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUU3M1c0VqSWpFM29xOWwxSlNlb1pCZE90N1ZLRk13MWtuQ054L3p1SGFSNU9BaUtCR2JZck4ydHUyYjdVL2ZxRlVab3NrczhndU96RDBUSG1Kd2RDRUZiUmdUcjJjQUFzPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzODQyODUyCWZpbGU6TklYVVNfMC4xNC4wX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjE0LjAKa3FFL01jWVJ6RTFJbzBYc3gzMWM4QzQxVTljMUdHZzJyNVVoMUhvNUlYaVdMOTlsZWZ6RlVXc2pRK3hDYUx0aHNTMEFUR1JIYXVlenVCQ0dsYlVhQ1E9PQo=",
-      "url": "https://github.com/NIKAerer/NIXUS/raw/main/releases/NIXUS_0.14.0_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUU3M1c0VqSWpFM2dZR2hrNnUwT1Q5K1libnVtbUlZVUJpdnpXZGhZeVIwSWxFR2dMVm1oTlQrTFp5WURxMEdmL1p5MkVYUDBOc0tzYkd6djU0aFRIbitNSEJaQmFCZVFvPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzODQ4MTQwCWZpbGU6TklYVVNfMC4xNC4xX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjE0LjEKcXlXK2FUa3BxQitvUlVVUzZhRE1nMXhwbzlBM1Rxd1NxN1I2YThCdGx4TWcyb1lxQWtnc2xIdXl3RXZWWXpSUGJkcTdWaCt5MHkyOHJ5dkNvSzNEQ3c9PQo=",
+      "url": "https://github.com/NIKAerer/NIXUS/raw/main/releases/NIXUS_0.14.1_x64-setup.exe"
     }
   }
 }
