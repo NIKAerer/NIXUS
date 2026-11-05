@@ -1,11 +1,11 @@
 {
-  "version": "0.14.4",
-  "notes": "Draft : les cases des champions ne sont plus écrasées quand la fenêtre est petite.",
-  "pub_date": "2026-11-05T16:42:34Z",
+  "version": "0.14.5",
+  "notes": "Parties perso : salon comme dans le client, avec côté bleu, côté rouge et spectateurs.",
+  "pub_date": "2026-11-05T18:25:29Z",
   "platforms": {
     "windows-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUU3M1c0VqSWpFM29hbFdQSU5qQzhrVmxLOEhETko2ZjhITStRTHpLZXVPK3NmYy9Cb2kwdmZDdHpmTlFoYUVoRUgxRGxqWEZsQTB4YWZ5OGk0RlU2TU9oUFVoR200TkFJPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzODk2OTIyCWZpbGU6TklYVVNfMC4xNC40X3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjE0LjQKd2NVZmVLZGlOUVBBTC9wajlOZXkyOGxobGl1aWR0dVlqWmxsTzdiT0Y4Z3BxdW05dzlUMEsrVE5vZ2NhUW5palRCb2NkalZzaWo1SVZRR1hzVm1sQ1E9PQo=",
-      "url": "https://github.com/NIKAerer/NIXUS/raw/main/releases/NIXUS_0.14.4_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUU3M1c0VqSWpFM2xnN3ViTzc1ZXlGN2kwRXJ5eVNWWDJHM1Q1U1VhOVZFT294bEZRczN5TGl3T3J4RWZ6eElZZ1lSMkZaNzRCTTJZWXBac2FFNEF1VjBWNjFEdHU3L0FVPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzOTAzMTAxCWZpbGU6TklYVVNfMC4xNC41X3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjE0LjUKbDl5RTFyYmVwOTY5TWVxakRnVW55amowcXNtemFEaU4zSnF2T1VIRnhyd0J2OFJXUmhlQTFBUVJoQUZEM2dSL3UwcGRNeVdPL0Q0NmN2bWNlajBuQmc9PQo=",
+      "url": "https://github.com/NIKAerer/NIXUS/raw/main/releases/NIXUS_0.14.5_x64-setup.exe"
     }
   }
 }
