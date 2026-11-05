@@ -1,11 +1,11 @@
 {
-  "version": "0.14.2",
-  "notes": "Draft : nouveau verrouillage et bannissement, vérifiés auprès du client, avec deux méthodes de secours.",
-  "pub_date": "2026-11-05T04:08:53Z",
+  "version": "0.14.3",
+  "notes": "Bans : les champions ne sont plus grisés pendant la phase de bans, et les doublons de la grille ont disparu.",
+  "pub_date": "2026-11-05T16:17:38Z",
   "platforms": {
     "windows-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUU3M1c0VqSWpFM3JXbC9tS08zckZzOWNoMlRXNXBtNkZqclllb1ZFQ2ROUmd0eFpmOXQrZk5VTEdXWVNodUJ4R1krZTN1ZDNaWEpjaVdMUDN0NytNR05NWTdYSnM3WFFzPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzODUxNzAzCWZpbGU6TklYVVNfMC4xNC4yX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjE0LjIKMExSL3gzdHNDaDYzNnNvalNQcWs4TkFoZFpNSUxyeUJsZHVCOXc0TDYwMEJKUWhpeGFhT1dJU2srU0wrWWVUNDVielN4R3VYM0c5dVhUZmFIdHp0RFE9PQo=",
-      "url": "https://github.com/NIKAerer/NIXUS/raw/main/releases/NIXUS_0.14.2_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUU3M1c0VqSWpFM3B0Z09TRFptRDRpSko2blk4MEZRY0V1YTJyY3pKUnJRc3IvSGJiL0c4dCtKRVpLdnRONy9KSmRRSFh5YWhZSGdHU3k4L3VyZlk2Q0RpOGswSEFGK2cwPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzODk1NDI2CWZpbGU6TklYVVNfMC4xNC4zX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjE0LjMKOUZqMk40RTg5bVJFNU14QlZ5cmE5Mm9QbW55cDJpeVp5SkxEM0lUUmFFVGtZZDBtU0VlT25vZ2VTYys1TTMrYmFjRWZoNlh5eG4yeDRCU1UwbXk2REE9PQo=",
+      "url": "https://github.com/NIKAerer/NIXUS/raw/main/releases/NIXUS_0.14.3_x64-setup.exe"
     }
   }
 }
