@@ -1,11 +1,11 @@
 {
-  "version": "0.14.7",
-  "notes": "Important : NIXUS ne ferme plus le client LoL (ça cassait l'acceptation et le draft), il réduit seulement sa fenêtre.",
-  "pub_date": "2026-11-06T00:45:07Z",
+  "version": "0.14.8",
+  "notes": "Client LoL fermé au repos pour libérer la RAM, rouvert réduit et prêt avant chaque recherche.",
+  "pub_date": "2026-11-06T01:37:58Z",
   "platforms": {
     "windows-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUU3M1c0VqSWpFM2hQRzNiTWRmM01COUI5eExBeWJhQm1mdHh4ZEVJdnpLaHVINHM4UnM1QW4yNjhrWDFVeUVrRTJySEVWOCtQVU1FRkFUMW9yajBRakZ3TXJHalZWUkFvPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzOTI1ODU3CWZpbGU6TklYVVNfMC4xNC43X3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjE0LjcKK240QlN4cVZONkZFWllmQzc4WDBKdkxqRXNUZzRNd3dkS25XaGxFd1FhZW9EQ2tlaDhyOWc5WUlRZFNLbzlVcm10WnhjL2tUR3o5RDNPWHRPbUlkRHc9PQo=",
-      "url": "https://github.com/NIKAerer/NIXUS/raw/main/releases/NIXUS_0.14.7_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUU3M1c0VqSWpFM21kdDZNdS80S2N3NFEwbm5BWGV2R1FQTFNaSFkxTU42cVQvVEVPaVlZWGs3YmpraVJXMjluc3EvYUxnNjVhb01JalQ2RVU5WlJCbXRDQXgwcUFTdGd3PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzOTI4NDQ1CWZpbGU6TklYVVNfMC4xNC44X3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjE0LjgKK2VadWJaVFNVb3ovZkdPd3dzbUxFeFJSMXU1MVp3eTczOERtWnBHdC9sSjJBYVZZRjBBZVVaMENlUldWYkMyUHh5Tmh6UkZva1dvRVVrb1lieVpRQUE9PQo=",
+      "url": "https://github.com/NIKAerer/NIXUS/raw/main/releases/NIXUS_0.14.8_x64-setup.exe"
     }
   }
 }
