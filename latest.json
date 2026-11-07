@@ -1,11 +1,11 @@
 {
-  "version": "0.14.12",
-  "notes": "Écran Jouer comme le client (JcJ, Coop vs IA, Entraînement, Créer, Rejoindre) ; outil d'entraînement réparé.",
-  "pub_date": "2026-11-07T20:22:50Z",
+  "version": "0.14.13",
+  "notes": "Historique de tes amis depuis la liste d'amis.",
+  "pub_date": "2026-11-07T20:37:58Z",
   "platforms": {
     "windows-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUU3M1c0VqSWpFM2hGWm01NkZKdGdnM1c2MzVBQ3BQUm9ISlJqOTJVcXg5VFJXUWpwcS8raTZBMDFCWFJNVnM3THF6M08wQkNqVFF2QjMyalVmTW1qdndxVnVxL0w1SmdnPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk0MDgyOTUxCWZpbGU6TklYVVNfMC4xNC4xMl94NjQtc2V0dXAuZXhlCXZlcnNpb246MC4xNC4xMgpBUGd4S1hXNmVoa0NwR3FxL2ZiNW0rb3F6OXZEVWpOMW5uL3pFWlNoSHVhV2xFamtXS3BVeC9hWFU5K0NIc2RLUFlDY1NrNTVsQUY0b3hZK3VsRFBCdz09Cg==",
-      "url": "https://github.com/NIKAerer/NIXUS/raw/main/releases/NIXUS_0.14.12_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUU3M1c0VqSWpFM2pHU0xIdTdaOE5xTElVcit5NHpqcnU5bjFuV1F6elduVlpZaWluUUV4cHZrWXgxTlMyYVVaN1dSUXBiejFyWW5YTWxjVXp4ZDl5WUxMb1Nybk9FaWdNPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk0MDgzODUxCWZpbGU6TklYVVNfMC4xNC4xM194NjQtc2V0dXAuZXhlCXZlcnNpb246MC4xNC4xMwpqTnkwTE8zRHBCcVRramp2M1hlaVk2Z3oySXNMc3A0NWFwekdFL1ZpNytGRldRQ3cyTnBackVPQ3IvWDhFbmx2VzNJL2JzaHNvQVBEQ2I0T3NQUmpBQT09Cg==",
+      "url": "https://github.com/NIKAerer/NIXUS/raw/main/releases/NIXUS_0.14.13_x64-setup.exe"
     }
   }
 }
