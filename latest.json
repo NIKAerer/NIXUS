@@ -1,11 +1,11 @@
 {
-  "version": "0.14.11",
-  "notes": "Modes de jeu : seulement ceux que ton compte peut lancer ; Outil d'entraînement dans l'écran Jouer.",
-  "pub_date": "2026-11-07T04:57:16Z",
+  "version": "0.14.12",
+  "notes": "Écran Jouer comme le client (JcJ, Coop vs IA, Entraînement, Créer, Rejoindre) ; outil d'entraînement réparé.",
+  "pub_date": "2026-11-07T20:22:50Z",
   "platforms": {
     "windows-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUU3M1c0VqSWpFM2dPdTJFTjU3WEZVRmVJUEpoc0plV1V6amVtRkpiRHU2OHJoUzU1TGl1RlBnczdXVGVOdktoOEVsWEhBdlRHSm9VM3pPWXRIbnU1ZEhmZ0dlTGhwTXd3PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk0MDI3NDEyCWZpbGU6TklYVVNfMC4xNC4xMV94NjQtc2V0dXAuZXhlCXZlcnNpb246MC4xNC4xMQpYRU9RYndxN1NtUy9kY043YWduR2c1eFpWUDd1SDRHYUwrNjZLRFFzMFpRYThUTnBINUpVS0hPRytqclNBS0FKdVB0amNTWitZbE9DejBMME9HakNEQT09Cg==",
-      "url": "https://github.com/NIKAerer/NIXUS/raw/main/releases/NIXUS_0.14.11_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUU3M1c0VqSWpFM2hGWm01NkZKdGdnM1c2MzVBQ3BQUm9ISlJqOTJVcXg5VFJXUWpwcS8raTZBMDFCWFJNVnM3THF6M08wQkNqVFF2QjMyalVmTW1qdndxVnVxL0w1SmdnPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk0MDgyOTUxCWZpbGU6TklYVVNfMC4xNC4xMl94NjQtc2V0dXAuZXhlCXZlcnNpb246MC4xNC4xMgpBUGd4S1hXNmVoa0NwR3FxL2ZiNW0rb3F6OXZEVWpOMW5uL3pFWlNoSHVhV2xFamtXS3BVeC9hWFU5K0NIc2RLUFlDY1NrNTVsQUY0b3hZK3VsRFBCdz09Cg==",
+      "url": "https://github.com/NIKAerer/NIXUS/raw/main/releases/NIXUS_0.14.12_x64-setup.exe"
     }
   }
 }
