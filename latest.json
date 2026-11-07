@@ -1,11 +1,11 @@
 {
-  "version": "0.14.10",
-  "notes": "Le client LoL se ferme au repos et pendant la partie ; chromas dans la sélection des skins.",
-  "pub_date": "2026-11-07T04:35:37Z",
+  "version": "0.14.11",
+  "notes": "Modes de jeu : seulement ceux que ton compte peut lancer ; Outil d'entraînement dans l'écran Jouer.",
+  "pub_date": "2026-11-07T04:57:16Z",
   "platforms": {
     "windows-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUU3M1c0VqSWpFM25qbGNSa0RhL1Rqckc2OVdQcWhyUFRvRXZLWVJ3UFR0TmNJUlFWTEpBUDdaLzdOd3hYRHVLSkIrR1MxTHRLdmgxTktKMlo3WWF3V1hjMXJaU0VRSXdFPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk0MDI2MTA2CWZpbGU6TklYVVNfMC4xNC4xMF94NjQtc2V0dXAuZXhlCXZlcnNpb246MC4xNC4xMAprVFBRTVVXWUJGQnZ3UTgvbHhYK1BxN0FLc1FUcDFNOWcxWlZobTJKeHJHaUFBYmc5V2ZoK3VXN2ZXZ0VOang1d2c1aXdnS3lJQzZGczB6RXB5cStBUT09Cg==",
-      "url": "https://github.com/NIKAerer/NIXUS/raw/main/releases/NIXUS_0.14.10_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUU3M1c0VqSWpFM2dPdTJFTjU3WEZVRmVJUEpoc0plV1V6amVtRkpiRHU2OHJoUzU1TGl1RlBnczdXVGVOdktoOEVsWEhBdlRHSm9VM3pPWXRIbnU1ZEhmZ0dlTGhwTXd3PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk0MDI3NDEyCWZpbGU6TklYVVNfMC4xNC4xMV94NjQtc2V0dXAuZXhlCXZlcnNpb246MC4xNC4xMQpYRU9RYndxN1NtUy9kY043YWduR2c1eFpWUDd1SDRHYUwrNjZLRFFzMFpRYThUTnBINUpVS0hPRytqclNBS0FKdVB0amNTWitZbE9DejBMME9HakNEQT09Cg==",
+      "url": "https://github.com/NIKAerer/NIXUS/raw/main/releases/NIXUS_0.14.11_x64-setup.exe"
     }
   }
 }
