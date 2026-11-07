@@ -1,11 +1,11 @@
 {
-  "version": "0.14.9",
-  "notes": "Page des runes en grand façon maquette Cinéma ; compteur de RAM du client LoL dans Paramètres.",
-  "pub_date": "2026-11-07T04:20:09Z",
+  "version": "0.14.10",
+  "notes": "Le client LoL se ferme au repos et pendant la partie ; chromas dans la sélection des skins.",
+  "pub_date": "2026-11-07T04:35:37Z",
   "platforms": {
     "windows-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUU3M1c0VqSWpFM2hHTHRmWjRrMWVvWWRyOGlEM2xrck5iaXpveFo4YU9EWXhuZ3Q1dDdWaGR1VGxPZFFyVWgvVHJEYU5kbm5GQ1BmQkZGVzZFSXhOM1E2MXdVa2tyRXdVPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk0MDI1MTc5CWZpbGU6TklYVVNfMC4xNC45X3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjE0LjkKZWtUUlVOVDZ2OTVFWnMxZGdwS1ByYjlaVTFGQWFPZ1VybFJab1lHUjU0QmRDbVRVS0FJWmt6QjlpTElnVXZwUXBhMSt0NmJxU3lkbTdBYTlNRmpnRHc9PQo=",
-      "url": "https://github.com/NIKAerer/NIXUS/raw/main/releases/NIXUS_0.14.9_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUU3M1c0VqSWpFM25qbGNSa0RhL1Rqckc2OVdQcWhyUFRvRXZLWVJ3UFR0TmNJUlFWTEpBUDdaLzdOd3hYRHVLSkIrR1MxTHRLdmgxTktKMlo3WWF3V1hjMXJaU0VRSXdFPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk0MDI2MTA2CWZpbGU6TklYVVNfMC4xNC4xMF94NjQtc2V0dXAuZXhlCXZlcnNpb246MC4xNC4xMAprVFBRTVVXWUJGQnZ3UTgvbHhYK1BxN0FLc1FUcDFNOWcxWlZobTJKeHJHaUFBYmc5V2ZoK3VXN2ZXZ0VOang1d2c1aXdnS3lJQzZGczB6RXB5cStBUT09Cg==",
+      "url": "https://github.com/NIKAerer/NIXUS/raw/main/releases/NIXUS_0.14.10_x64-setup.exe"
     }
   }
 }
