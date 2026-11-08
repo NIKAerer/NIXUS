@@ -1,11 +1,11 @@
 {
-  "version": "0.16.1",
-  "notes": "Écran de partie de nouveau visible",
-  "pub_date": "2026-11-08T00:12:36Z",
+  "version": "0.16.2",
+  "notes": "Signaler en fin de partie ; retours de signalement et messages de Riot",
+  "pub_date": "2026-11-08T00:15:53Z",
   "platforms": {
     "windows-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUU3M1c0VqSWpFM2kxQjNRWW9oT04wTFdCODdCRGRkeW92cE14R0h3VU1PNmY2MkljRFJBbUYzZi9JeFlrMVBaSG1jNGMxZFZnZm5lUGFjNFl1QkJvY1ZCZ2JyNUNaSWdJPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk0MDk2NjkzCWZpbGU6TklYVVNfMC4xNi4xX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjE2LjEKWVlkYkpLY2pIWnRwZDhIU1NtM01DQUNrSzZTZFFpWlNhS3VnYmR2dXdjSDhVd01aWGVaN2RIVUZXQUhrMVlYU01VM2NwNjFLRTRXY2lLVnVGYU1YQUE9PQo=",
-      "url": "https://github.com/NIKAerer/NIXUS/raw/main/releases/NIXUS_0.16.1_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUU3M1c0VqSWpFM3BLWlB1eDE5bSsxMkU0cnJBdXRZc0ZUQWRjWmR1TmZJYVBMNUJGQVpyQ2hoM25uTTBWUGNtbi9zSGhVMkZFUktIWjlGenV1TlN5eDAyYjF5cUlFNXdZPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk0MDk2OTI3CWZpbGU6TklYVVNfMC4xNi4yX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjE2LjIKZUQ1S29IcXFodTNCWTcxbFVPTGVRQXQvL2wyMkN1WXZoRGZGZC9rVW5wQ3V1dGFFYzBjOGFBUHNKZm9QYURPUFYrN2FxdG10Ui9YOVpJbUtLUUMvQWc9PQo=",
+      "url": "https://github.com/NIKAerer/NIXUS/raw/main/releases/NIXUS_0.16.2_x64-setup.exe"
     }
   }
 }
