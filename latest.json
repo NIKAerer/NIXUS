@@ -1,11 +1,11 @@
 {
-  "version": "0.16.3",
-  "notes": "Côté bleu/rouge en draft ; signalement en bout de ligne ; auteur des messages du chat",
-  "pub_date": "2026-11-08T02:33:42Z",
+  "version": "0.16.4",
+  "notes": "Installeur aux couleurs de NIXUS (icône, images, français). Collection : tri (A→Z par défaut, par champion, rareté, maîtrise…) et filtre par rareté. Classement Solo/Duo entre amis dans le Profil. Bouton Actualiser et nouvel essai automatique quand l'historique ne s'affiche pas.",
+  "pub_date": "2026-11-08T17:34:28Z",
   "platforms": {
     "windows-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUU3M1c0VqSWpFM3I2dWwrRVJIUVdSVlVUamhYZmVIMHBodW1tZGJEUjl1ZkRjK2xVN0EyZ3Y5YWhNQmZEaFZyTG1sWEtSR1gyZzhIbkxTRnRnY0puWGhJcEtqV1MvSncwPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk0MTA1MTkxCWZpbGU6TklYVVNfMC4xNi4zX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjE2LjMKOHpwU1dnOHR0Y2w1UEhrbVBBTkJZa0hQam85Ny9UemlOMG1XUnNDN1drbUpCMlBQSlNPTEJPYTFValpUTDI2Ymh1UG1sRHE3U3ZXb04zYmpLWGxIQ3c9PQo=",
-      "url": "https://github.com/NIKAerer/NIXUS/raw/main/releases/NIXUS_0.16.3_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUU3M1c0VqSWpFM3NmS1NDL1JFM3R0YnhHRU5oOGM4dzBUdDZxUGhxNm8rekJSMWhJZVp4VUpQdVBxU3BhSHZTOURDUmlDdVZpdlhENUMwcVRiQ091Undrc0FsS3l2a3drPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk0MTU5MjQzCWZpbGU6TklYVVNfMC4xNi40X3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjE2LjQKK1U0b0R0SEVHTVVqOHhkSEtUREJnMjVVa0laZW5hcFBtQ2lVczJmQysraHZ2K0ozUlMrN01zcVdubC9GWGpRYkt4anY5alpLVHZsK3h2S3Z1VVVaRHc9PQo=",
+      "url": "https://github.com/NIKAerer/NIXUS/raw/main/releases/NIXUS_0.16.4_x64-setup.exe"
     }
   }
 }
