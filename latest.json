@@ -1,11 +1,11 @@
 {
-  "version": "0.16.5",
-  "notes": "Bouton Actualiser à côté des paramètres. Classement entre amis sur l'Accueil. Correction : des lignes du classement passaient par-dessus la barre du haut.",
-  "pub_date": "2026-11-08T17:50:22Z",
+  "version": "0.16.6",
+  "notes": "Accueil : carte Classement entre amis au-dessus du groupe (Solo/Duo, Flex, Semaine). Chat d'équipe : recherche de l'auteur dans tous les champs du message.",
+  "pub_date": "2026-11-09T03:30:40Z",
   "platforms": {
     "windows-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUU3M1c0VqSWpFM2lLbGJaSXlWelpqZEYrZmRESURXZ09wRDE5T0ZYVzMrV0ZteGFKYmNEdzROTEZPaFNIdUhMQlEwSjFJSldXZFdUNk56cnZBZzdhQWdIVk84dXc4Znd3PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk0MTYwMTk1CWZpbGU6TklYVVNfMC4xNi41X3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjE2LjUKbFRSZDgwNVlKRzlCM0czYjJBcFNON3JyeDFmSHVlQi9tVnJBa3Y3NGxycEg5WkQ0OG1oRkYwZGtGL2pLUXB3QkQwbitCajZrZTVmTFdDdEFqbWpjRGc9PQo=",
-      "url": "https://github.com/NIKAerer/NIXUS/raw/main/releases/NIXUS_0.16.5_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUU3M1c0VqSWpFM285TjFZUkRKcnpZNE9Qb0xmNkhuOVVCV0pZM2gyQm4yQ29lTUt3UXRpcEVvYUJKR0FCTnh2cVYyRTVRQy9qOUpUN2NZYzhoTGZ6UnZnMFJ5eFNvemcwPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk0MTkzNDU1CWZpbGU6TklYVVNfMC4xNi42X3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjE2LjYKalp3TXFDeHdwN2dFWkJRNmNuRzRxNytGVU9mWDY1RjdoUDluVzNmYXJMZzFjdzBINE85cWZZM1hyT2oyQTY0VmFTTnpqdWd4S3pMUVF3dGRtc3k3QXc9PQo=",
+      "url": "https://github.com/NIKAerer/NIXUS/raw/main/releases/NIXUS_0.16.6_x64-setup.exe"
     }
   }
 }
