@@ -1,0 +1,35 @@
+# Dépendances et builds
+node_modules/
+dist/
+dist-ssr/
+src-tauri/target/
+src-tauri/gen/
+*.tsbuildinfo
+
+# Clés de signature et secrets : ne jamais publier
+.signing/
+*.key
+*.key.pub
+*.pem
+.env
+.env.*
+!.env.example
+
+# Données locales (archive des parties, captures LCU, sauvegardes)
+archive/
+debug/
+NIXUS-archive-*.json
+*.db
+*.sqlite
+
+# Paquets de travail
+*.zip
+*.tgz
+
+# Éditeurs et système
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+*.log
