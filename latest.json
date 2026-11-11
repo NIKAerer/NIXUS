@@ -1,11 +1,11 @@
 {
-  "version": "0.16.6",
-  "notes": "Accueil : carte Classement entre amis au-dessus du groupe (Solo/Duo, Flex, Semaine). Chat d'équipe : recherche de l'auteur dans tous les champs du message.",
-  "pub_date": "2026-11-09T03:30:40Z",
+  "version": "0.16.7",
+  "notes": "Amis : mode de jeu en français, champion, durée et rang ; menu (note, retirer, bloquer) ; ta disponibilité et ton statut. Salon perso : chat avec arrivées/départs, nom et mot de passe à copier, nommer chef, bots, changement de côté corrigé.",
+  "pub_date": "2026-11-11T23:30:18Z",
   "platforms": {
     "windows-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUU3M1c0VqSWpFM285TjFZUkRKcnpZNE9Qb0xmNkhuOVVCV0pZM2gyQm4yQ29lTUt3UXRpcEVvYUJKR0FCTnh2cVYyRTVRQy9qOUpUN2NZYzhoTGZ6UnZnMFJ5eFNvemcwPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk0MTkzNDU1CWZpbGU6TklYVVNfMC4xNi42X3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjE2LjYKalp3TXFDeHdwN2dFWkJRNmNuRzRxNytGVU9mWDY1RjdoUDluVzNmYXJMZzFjdzBINE85cWZZM1hyT2oyQTY0VmFTTnpqdWd4S3pMUVF3dGRtc3k3QXc9PQo=",
-      "url": "https://github.com/NIKAerer/NIXUS/raw/main/releases/NIXUS_0.16.6_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUU3M1c0VqSWpFM3ZaQnBYVk80d1hMbjQ4ZWJyMktiNTVDYWN0OWhDeUJoTzluUUZwV0tKMkVFSWZIUXl5K084VFBvMTQ4TDdyNHdIL1l3MnZVT0hGVXZieDVaTVlhUVFRPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk0NDM5Nzc3CWZpbGU6TklYVVNfMC4xNi43X3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjE2LjcKNENYUTZFdk5jWXNvdURXZXRCY2YwS1ZzMXdaMkFaRElXQlRkc0FENExtNWJLQXhlTG96TVgvdWZTZ3BEeEJLNTRHV05nSmE2blo3QU9SWCtwaHFTQWc9PQo=",
+      "url": "https://github.com/NIKAerer/NIXUS/raw/main/releases/NIXUS_0.16.7_x64-setup.exe"
     }
   }
 }
