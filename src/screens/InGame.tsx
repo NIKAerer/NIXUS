@@ -1,9 +1,9 @@
-import { Breathing } from "../components/Breathing";
 import { useEffect, useState } from "react";
-import { Art } from "../components/ui";
-import { championSplash, championSquare, clock, lcu, queueName, skinSplash } from "../lib/lcu";
+import { actions, useClient } from "../lib/client";
 import { useStatic } from "../lib/ddragon";
-import type { ChampionSummary, GameflowPhase, RunePage } from "../lib/types";
+import { championSplash, clock, lcu, queueName, skinSplash } from "../lib/lcu";
+import type { RunePage } from "../lib/types";
+import { Art, Breathing, ChampIcon, cx, readJson, writeJson } from "../ui";
 
 interface GamePlayer {
   championId: number;
@@ -31,7 +31,10 @@ const START_KEY = "nixus.gameStart";
 const ROLE: Record<string, string> = { TOP: "Top", JUNGLE: "Jungle", MIDDLE: "Mid", BOTTOM: "ADC", UTILITY: "Support" };
 
 /** Écran « Partie en cours » : ton champion et son skin, le mode, le chrono, tes sorts et tes runes. Rien n'agit sur la partie. */
-export function InGame({ phase, champions, myPuuid, onReconnect }: { phase: GameflowPhase; champions: Map<number, ChampionSummary>; myPuuid?: string; onReconnect: () => void }) {
+export function InGame() {
+  const phase = useClient((s) => s.phase);
+  const champions = useClient((s) => s.champions);
+  const myPuuid = useClient((s) => s.summoner?.puuid);
   const [session, setSession] = useState<GameflowSession | null>(null);
   const [page, setPage] = useState<RunePage | null>(null);
   const [now, setNow] = useState(Date.now());
@@ -49,13 +52,9 @@ export function InGame({ phase, champions, myPuuid, onReconnect }: { phase: Game
   const [start, setStart] = useState(Date.now());
   useEffect(() => {
     if (!gameId) return;
-    try {
-      const saved = JSON.parse(localStorage.getItem(START_KEY) ?? "null");
-      if (saved?.gameId === gameId) setStart(saved.t);
-      else localStorage.setItem(START_KEY, JSON.stringify({ gameId, t: Date.now() }));
-    } catch {
-      /* stockage indisponible */
-    }
+    const saved = readJson<{ gameId: number; t: number } | null>(START_KEY, null);
+    if (saved?.gameId === gameId) setStart(saved.t);
+    else writeJson(START_KEY, { gameId, t: Date.now() });
   }, [gameId]);
 
   const g = session?.gameData;
@@ -69,22 +68,22 @@ export function InGame({ phase, champions, myPuuid, onReconnect }: { phase: Game
   const name = (id: number) => champions.get(id)?.name ?? "Champion";
   const keystone = page?.selectedPerkIds?.[0];
   const mode = g?.queue?.id ? queueName(g.queue.id) : g?.queue?.description ?? "";
+  const reconnect = phase === "Reconnect";
 
   return (
-    <div className="ig">
-      <div className="ig-bg">{art && <Breathing full key={art} src={art} champ={championId} />}</div>
-      <div className="ig-shade" />
-      <div className="ig-content">
-        <div className="eyebrow">
-          <span className="ig-live" /> {phase === "Reconnect" ? "Déconnecté de la partie" : "Partie en cours"}
+    <div className="ingame">
+      <div className="ingame-bg">{art && <Breathing full key={art} src={art} champ={championId} />}</div>
+      <div className="ingame-main">
+        <span className="eyebrow">
+          <i className={cx("live", reconnect && "off")} /> {reconnect ? "Déconnecté de la partie" : "Partie en cours"}
           {mode ? ` · ${mode}` : ""}
-        </div>
-        <h1 className="title">{championId ? name(championId).toUpperCase() : "EN JEU"}</h1>
-        <div className="ig-meta">
-          <span className="ig-clock">{clock(Math.max(0, Math.floor((now - start) / 1000)))}</span>
-          {me?.selectedPosition && ROLE[me.selectedPosition] && <span>{ROLE[me.selectedPosition]}</span>}
+        </span>
+        <h1 className="display">{championId ? name(championId) : "En jeu"}</h1>
+        <div className="ingame-meta">
+          <b className="ingame-clock mono">{clock(Math.max(0, Math.floor((now - start) / 1000)))}</b>
+          {me?.selectedPosition && ROLE[me.selectedPosition] && <span className="chip">{ROLE[me.selectedPosition]}</span>}
           {mine?.spell1Id ? (
-            <span className="ig-spells">
+            <span className="ingame-icons">
               {[mine.spell1Id, mine.spell2Id ?? 0].map((s, i) => {
                 const a = assets?.spells.get(s);
                 return a ? <Art key={i} src={a.icon} alt={a.name} /> : null;
@@ -92,42 +91,39 @@ export function InGame({ phase, champions, myPuuid, onReconnect }: { phase: Game
             </span>
           ) : null}
           {keystone && assets?.runes.get(keystone) && (
-            <span className="ig-rune" title={page?.name}>
+            <span className="ingame-icons rune" title={page?.name}>
               <Art src={assets.runes.get(keystone)!.icon} alt={assets.runes.get(keystone)!.name} />
               {page?.name}
             </span>
           )}
         </div>
-
-        {phase === "Reconnect" && (
-          <div className="btns">
-            <button className="btn btn-red" onClick={onReconnect}>
-              Reconnecter à la partie
-            </button>
-          </div>
+        {reconnect && (
+          <button className="btn btn-red btn-l" onClick={actions.reconnect}>
+            Reconnecter à la partie
+          </button>
         )}
-
-        {(myTeam?.length || enemies?.length) && (
-          <div className="ig-teams">
-            <TeamRow label="Ton équipe" players={myTeam ?? []} me={myPuuid} name={name} />
-            <span className="ig-vs">VS</span>
-            <TeamRow label="Adversaires" players={enemies ?? []} name={name} />
-          </div>
-        )}
-        <p className="ig-note">Bonne game ! NIXUS ne fait rien pendant la partie : l'écran de fin s'ouvrira tout seul.</p>
+        <p className="dim">Bonne game ! NIXUS ne fait rien pendant la partie : l'écran de fin s'ouvrira tout seul.</p>
       </div>
+
+      {(myTeam?.length || enemies?.length) ? (
+        <div className="ingame-teams glass">
+          <TeamRow label="Ton équipe" players={myTeam ?? []} me={myPuuid} name={name} />
+          <b className="h2">VS</b>
+          <TeamRow label="Adversaires" players={enemies ?? []} name={name} enemy />
+        </div>
+      ) : null}
     </div>
   );
 }
 
-function TeamRow({ label, players, me, name }: { label: string; players: GamePlayer[]; me?: string; name: (id: number) => string }) {
+function TeamRow({ label, players, me, name, enemy }: { label: string; players: GamePlayer[]; me?: string; name: (id: number) => string; enemy?: boolean }) {
   return (
-    <div className="ig-team">
+    <div className={cx("ingame-team", enemy && "enemy")}>
       <span className="label">{label}</span>
       <div>
         {players.map((p, i) => (
-          <span key={i} className={`ig-champ ${me && p.puuid === me ? "me" : ""}`} title={p.championId ? name(p.championId) : "?"}>
-            {p.championId ? <Breathing src={championSquare(p.championId)} champ={p.championId} alt={name(p.championId)} /> : <i>?</i>}
+          <span key={i} className={cx(me && p.puuid === me && "me")} title={p.championId ? name(p.championId) : "?"}>
+            <ChampIcon id={p.championId} />
           </span>
         ))}
       </div>

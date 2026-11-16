@@ -1,21 +1,12 @@
-import { ReportDialog } from "../components/ReportDialog";
-import { Breathing } from "../components/Breathing";
 import { useEffect, useMemo, useState } from "react";
-import { ChampIcon } from "../components/ui";
-import { GameTabs, kilo, ReportFlag, toPlayers, type GamePlayer } from "../components/MatchDetail";
-import { championSplash, clock, lcu, rankLabel } from "../lib/lcu";
+import { toPlayers, type GamePlayer } from "../features/game";
+import { GameHero, GameTabs, HeroStats, ReportFlag } from "../features/MatchDetail";
+import { ReportDialog } from "../features/ReportDialog";
+import { actions, useClient } from "../lib/client";
 import { useStatic } from "../lib/ddragon";
-import type { ChampionSummary, EndOfGame as Eog, EogPlayer, GameDetail, RankedQueue, RankedStats, Timeline } from "../lib/types";
-
-interface Props {
-  eog: Eog;
-  champions: Map<number, ChampionSummary>;
-  ranked: RankedStats | null;
-  rankBefore: RankedStats | null;
-  myPuuid?: string;
-  onPlayAgain: () => void;
-  onClose: () => void;
-}
+import { clock, lcu, rankLabel } from "../lib/lcu";
+import type { EndOfGame as Eog, EogPlayer, GameDetail, RankedQueue, RankedStats, Timeline } from "../lib/types";
+import { ChampIcon, cx, int, kilo } from "../ui";
 
 const st = (p: EogPlayer, k: string) => p.stats[k] ?? 0;
 const QUEUE_KEYS: Record<string, string> = { RANKED_SOLO_5x5: "RANKED_SOLO_5x5", RANKED_FLEX_SR: "RANKED_FLEX_SR", RANKED_SOLO_DUO: "RANKED_SOLO_5x5", RANKED_FLEX: "RANKED_FLEX_SR" };
@@ -41,24 +32,32 @@ function lpChange(queueType: string | undefined, before: RankedStats | null, aft
   };
 }
 
-/** Écran de fin de partie : bannière, LP, puis le même tableau complet que les anciennes parties. */
-export function EndOfGame({ eog, champions, ranked, rankBefore, myPuuid, onPlayAgain, onClose }: Props) {
+/** Écran de fin de partie : résultat, LP, puis le même tableau complet que les anciennes parties. */
+export function EndOfGame() {
+  const eog = useClient((s) => s.endOfGame);
+  const champions = useClient((s) => s.champions);
+  const ranked = useClient((s) => s.ranked);
+  const rankBefore = useClient((s) => s.rankBefore);
+  const myPuuid = useClient((s) => s.summoner?.puuid);
   const [detail, setDetail] = useState<GameDetail | null>(null);
   const [timeline, setTimeline] = useState<Timeline | null>(null);
   const [gaveUp, setGaveUp] = useState(false);
+  const [reporting, setReporting] = useState<EogPlayer | null>(null);
   const assets = useStatic();
+  const gameId = eog?.gameId;
 
   // Le détail arrive dans l'historique quelques secondes après la partie : on réessaie un moment.
   useEffect(() => {
+    if (!gameId) return;
     let alive = true;
     let tries = 0;
     let timer = 0;
     const load = async () => {
-      const d = await lcu<GameDetail>("GET", `/lol-match-history/v1/games/${eog.gameId}`).catch(() => null);
+      const d = await lcu<GameDetail>("GET", `/lol-match-history/v1/games/${gameId}`).catch(() => null);
       if (!alive) return;
       if (d?.participants?.length) {
         setDetail(d);
-        const t = await lcu<Timeline>("GET", `/lol-match-history/v1/game-timelines/${eog.gameId}`).catch(() => null);
+        const t = await lcu<Timeline>("GET", `/lol-match-history/v1/game-timelines/${gameId}`).catch(() => null);
         if (alive && t?.frames?.length) setTimeline(t);
         return;
       }
@@ -70,120 +69,76 @@ export function EndOfGame({ eog, champions, ranked, rankBefore, myPuuid, onPlayA
       alive = false;
       clearTimeout(timer);
     };
-  }, [eog.gameId]);
+  }, [gameId]);
 
-  const me = eog.localPlayer;
-  // Signalement : ouvert depuis le drapeau en bout de ligne de chaque joueur.
-  const [reporting, setReporting] = useState<EogPlayer | null>(null);
+  const me = eog?.localPlayer;
+  const players = useMemo(() => (detail && me ? toPlayers(detail, myPuuid, me.championId, champions) : []), [detail, myPuuid, me, champions]);
+  if (!eog || !me) return null;
+
   const allEog = eog.teams.flatMap((t) => t.players);
-  const reportGame = (p: GamePlayer) =>
-    setReporting(
-      allEog.find((e) => p.puuid && e.puuid === p.puuid) ??
-        allEog.find((e) => e.championId === p.championId) ?? { championId: p.championId, puuid: p.puuid, riotIdGameName: p.name, stats: {} },
-    );
-  const players = useMemo(() => (detail ? toPlayers(detail, myPuuid, me.championId, champions) : []), [detail, myPuuid, me.championId, champions]);
+  // Signalement : ouvert depuis le drapeau en bout de ligne de chaque joueur.
+  const reportGame = (p: GamePlayer) => setReporting(allEog.find((e) => p.puuid && e.puuid === p.puuid) ?? allEog.find((e) => e.championId === p.championId) ?? { championId: p.championId, puuid: p.puuid, riotIdGameName: p.name, stats: {} });
   const mine = eog.teams.find((t) => t.isPlayerTeam);
   const won = !!mine?.isWinningTeam;
   const minutes = Math.max(eog.gameLength / 60, 1);
-  const k = st(me, "CHAMPIONS_KILLED");
-  const d = st(me, "NUM_DEATHS");
-  const a = st(me, "ASSISTS");
-  const cs = st(me, "MINIONS_KILLED") + st(me, "NEUTRAL_MINIONS_KILLED");
   const teamKills = mine?.players.reduce((s, p) => s + st(p, "CHAMPIONS_KILLED"), 0) ?? 0;
   const myTeam = players.find((p) => p.me)?.teamId ?? 100;
   const lp = lpChange(eog.queueType, rankBefore, ranked);
 
   return (
     <div className="eog">
-      <header className="gd-banner eog-banner">
-        <Breathing full src={championSplash(me.championId)} champ={me.championId} />
-        <div className="gd-shade" />
-        <div className="gd-head">
-          <div className="eyebrow">
-            Fin de partie · {clock(eog.gameLength)} · {champions.get(me.championId)?.name ?? ""}
-          </div>
-          <div className="eog-titlebar">
-            <h1 className="title" style={{ color: won ? "var(--win)" : "var(--loss)" }}>
-              {won ? "VICTOIRE" : "DÉFAITE"}
-            </h1>
-            {lp && (
-              <div className={`eog-lp ${lp.pending ? "wait" : (lp.delta ?? 0) >= 0 && !lp.demoted ? "up" : "down"}`}>
-                {lp.pending ? (
-                  <span>LP en cours de calcul…</span>
-                ) : lp.placed ? (
-                  <>
-                    <b>Classé</b>
-                    <span>{rankLabel(lp.after.tier, lp.after.division)}</span>
-                  </>
-                ) : lp.promoted || lp.demoted ? (
-                  <>
-                    <b>{lp.promoted ? "Promotion !" : "Rétrogradation"}</b>
-                    <span>
-                      {rankLabel(lp.after.tier, lp.after.division)} · {lp.after.leaguePoints} LP
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    <b>
-                      {(lp.delta ?? 0) > 0 ? "+" : ""}
-                      {lp.delta} LP
-                    </b>
-                    <span>
-                      {rankLabel(lp.after.tier, lp.after.division)} · {lp.after.leaguePoints} LP
-                    </span>
-                  </>
-                )}
-              </div>
-            )}
-          </div>
-          <div className="gd-chips">
-            <div>
-              <span className="label">KDA</span>
-              <b>
-                {k}/<em>{d}</em>/{a}
-              </b>
-              <small>{d === 0 ? "Parfait" : ((k + a) / d).toFixed(2).replace(".", ",")}</small>
+      <GameHero
+        championId={me.championId}
+        result={won ? "win" : "loss"}
+        eyebrow={`Fin de partie · ${clock(eog.gameLength)} · ${champions.get(me.championId)?.name ?? ""}`}
+        side={
+          lp && (
+            <div className={cx("lp-card", lp.pending ? "wait" : (lp.delta ?? 0) >= 0 && !lp.demoted ? "up" : "down")}>
+              {lp.pending ? (
+                <span>LP en cours de calcul…</span>
+              ) : lp.placed ? (
+                <>
+                  <b>Classé</b>
+                  <span>{rankLabel(lp.after.tier, lp.after.division)}</span>
+                </>
+              ) : (
+                <>
+                  <b>{lp.promoted ? "Promotion !" : lp.demoted ? "Rétrogradation" : `${(lp.delta ?? 0) > 0 ? "+" : ""}${lp.delta} LP`}</b>
+                  <span>
+                    {rankLabel(lp.after.tier, lp.after.division)} · {lp.after.leaguePoints} LP
+                  </span>
+                </>
+              )}
             </div>
-            <div>
-              <span className="label">Participation</span>
-              <b>{teamKills ? Math.round(((k + a) / teamKills) * 100) : 0} %</b>
-              <small>
-                {k + a}/{teamKills} kills
-              </small>
-            </div>
-            <div>
-              <span className="label">CS</span>
-              <b>{cs}</b>
-              <small>{(cs / minutes).toFixed(1).replace(".", ",")}/min</small>
-            </div>
-            <div>
-              <span className="label">Dégâts</span>
-              <b>{kilo(st(me, "TOTAL_DAMAGE_DEALT_TO_CHAMPIONS"))}</b>
-              <small>{Math.round(st(me, "TOTAL_DAMAGE_DEALT_TO_CHAMPIONS") / minutes).toLocaleString("fr-FR")}/min</small>
-            </div>
-            <div>
-              <span className="label">Vision</span>
-              <b>{st(me, "VISION_SCORE")}</b>
-              <small>{(st(me, "VISION_SCORE") / minutes).toFixed(1).replace(".", ",")}/min</small>
-            </div>
-            <div className="btns eog-btns">
-              <button className="btn btn-primary" onClick={onPlayAgain}>
-                Rejouer
-              </button>
-              <button className="btn btn-ghost" onClick={onClose}>
-                Fermer
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
+          )
+        }
+      >
+        <HeroStats
+          k={st(me, "CHAMPIONS_KILLED")}
+          d={st(me, "NUM_DEATHS")}
+          a={st(me, "ASSISTS")}
+          teamKills={teamKills}
+          cs={st(me, "MINIONS_KILLED") + st(me, "NEUTRAL_MINIONS_KILLED")}
+          damage={st(me, "TOTAL_DAMAGE_DEALT_TO_CHAMPIONS")}
+          vision={st(me, "VISION_SCORE")}
+          minutes={minutes}
+        />
+        <span className="ghero-btns">
+          <button className="btn btn-red btn-l" onClick={actions.playAgain}>
+            Rejouer
+          </button>
+          <button className="btn btn-quiet btn-l" onClick={actions.closeEndOfGame}>
+            Fermer
+          </button>
+        </span>
+      </GameHero>
 
-      {reporting && <ReportDialog eog={eog} champions={champions} target={reporting} onClose={() => setReporting(null)} />}
+      {reporting && <ReportDialog eog={eog} target={reporting} onClose={() => setReporting(null)} />}
       {detail ? (
         <GameTabs detail={detail} timeline={timeline} players={players} myTeam={myTeam} duration={eog.gameLength} assets={assets} onReport={reportGame} />
       ) : (
-        <div className="gd-body">
-          {!gaveUp && <p className="gd-wait eog-wait">Récupération du tableau complet (objets, runes, replay)…</p>}
+        <div className="game-body">
+          {!gaveUp && <p className="note">Récupération du tableau complet (objets, runes, replay)…</p>}
           <QuickBoard eog={eog} onReport={setReporting} />
         </div>
       )}
@@ -198,15 +153,13 @@ function QuickBoard({ eog, onReport }: { eog: Eog; onReport: (p: EogPlayer) => v
   return (
     <>
       {sorted.map((team, i) => (
-        <section key={i} className={`gd-team ${team.isWinningTeam ? "won" : ""}`}>
-          <div className="gd-team-head">
-            <h3>
-              {team.isPlayerTeam ? "Ton équipe" : "Équipe adverse"}
-              <span>{team.isWinningTeam ? "Victoire" : "Défaite"}</span>
-            </h3>
+        <section key={i} className={cx("board-team card", team.isWinningTeam ? "won" : "lost", team.isPlayerTeam && "ally")}>
+          <div className="board-team-head">
+            <h3 className="h2">{team.isPlayerTeam ? "Ton équipe" : "Équipe adverse"}</h3>
+            <span className={team.isWinningTeam ? "up" : "down"}>{team.isWinningTeam ? "Victoire" : "Défaite"}</span>
           </div>
-          <div className="score" role="table">
-            <div className="score-row score-head" role="row">
+          <div className="table score" style={{ "--cols": "minmax(200px, 2fr) 1fr 0.6fr 0.7fr 1.6fr 28px" } as React.CSSProperties}>
+            <div className="tr th">
               <span>Joueur</span>
               <span>K / D / A</span>
               <span>CS</span>
@@ -217,8 +170,8 @@ function QuickBoard({ eog, onReport }: { eog: Eog; onReport: (p: EogPlayer) => v
             {team.players.map((p, j) => {
               const dmg = st(p, "TOTAL_DAMAGE_DEALT_TO_CHAMPIONS");
               return (
-                <div key={j} className={`score-row ${p.isLocalPlayer ? "me-row" : ""}`} role="row">
-                  <span className="who">
+                <div key={j} className={cx("tr", p.isLocalPlayer && "me")}>
+                  <span className="cell-champ">
                     <ChampIcon id={p.championId} />
                     <b>{p.riotIdGameName ?? p.summonerName}</b>
                   </span>
@@ -227,9 +180,11 @@ function QuickBoard({ eog, onReport }: { eog: Eog; onReport: (p: EogPlayer) => v
                   </span>
                   <span>{st(p, "MINIONS_KILLED") + st(p, "NEUTRAL_MINIONS_KILLED")}</span>
                   <span>{kilo(st(p, "GOLD_EARNED"))}</span>
-                  <span className="dmg">
-                    <i style={{ width: `${(dmg / maxDmg) * 100}%` }} />
-                    {dmg.toLocaleString("fr-FR")}
+                  <span className="two">
+                    <b>{int(dmg)}</b>
+                    <i className="bar">
+                      <i style={{ width: `${(dmg / maxDmg) * 100}%` }} />
+                    </i>
                   </span>
                   {p.isLocalPlayer || p.botPlayer ? <span /> : <ReportFlag name={p.riotIdGameName ?? p.summonerName ?? "ce joueur"} onClick={() => onReport(p)} />}
                 </div>

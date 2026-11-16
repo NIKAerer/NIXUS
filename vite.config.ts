@@ -1,7 +1,7 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
-// Port fixe : Tauri charge http://localhost:1420 en mode dev.
+// Port fixe (1420, pour tourner à côté du NIXUS d'origine qui utilise 1420) : Tauri charge cette adresse en mode dev.
 export default defineConfig({
   plugins: [react()],
   clearScreen: false,

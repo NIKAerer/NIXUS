@@ -1,4 +1,4 @@
-/* NIXUS, la refonte. Style « Cinéma » : visuels plein cadre, grande typographie, rouge en accent.
+/* NIXUS. Style « Cinéma » : visuels plein cadre, grande typographie, rouge en accent.
    Ce fichier pose les jetons de design et les briques communes ; chaque écran a sa propre feuille. */
 :root {
   --bg: #08080a;
