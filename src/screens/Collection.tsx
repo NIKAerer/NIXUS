@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { actions, useClient } from "../lib/client";
 import { friendlyError } from "../lib/errors";
-import { championSquare, gameAsset, lcu, profileIcon, skinSplash } from "../lib/lcu";
+import { championSquare, gameAsset, isClassicCopy, lcu, profileIcon, skinSplash } from "../lib/lcu";
 import { Art, Breathing, Empty, Icon, Seg, Skeleton, Tabs, cx, int, readJson, writeJson } from "../ui";
 
 type Tab = "champions" | "skins" | "icons" | "emotes" | "wards";
@@ -91,7 +91,7 @@ async function loadTab(tab: Tab, sid?: number): Promise<Partial<Record<Tab, Item
       lcu<{ championId: number; championPoints: number }[]>("GET", "/lol-champion-mastery/v1/local-player/champion-mastery").catch(() => []),
     ]);
     const pts = new Map((Array.isArray(mastery) ? mastery : []).map((m) => [m.championId, m.championPoints]));
-    const valid = champs.filter((c) => c.id > 0);
+    const valid = champs.filter((c) => c.id > 0 && !isClassicCopy(c));
     return {
       champions: valid.map((c) => ({ id: c.id, name: c.name, img: championSquare(c.id), owned: !!c.ownership?.owned, roles: c.roles, points: pts.get(c.id) ?? 0, sub: c.ownership?.rental?.rented ? "Location" : undefined })),
       skins: valid.flatMap((c) =>
