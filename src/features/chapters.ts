@@ -2,7 +2,7 @@ import type { Point, Timeline } from "../lib/types";
 import { momentsOf, type GamePlayer, type Moment } from "./game";
 
 /**
- * Le « film » d'une partie : on regroupe les événements en combats, on mesure ce que chacun a rapporté en or,
+ * Le replay d'une partie : on regroupe les événements en combats, on mesure ce que chacun a rapporté en or,
  * et on garde les 4 à 6 passages qui ont compté. Tout est calculé ici, sans réseau.
  */
 
