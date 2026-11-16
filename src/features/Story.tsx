@@ -5,7 +5,7 @@ import type { Point, Timeline } from "../lib/types";
 import { ChampIcon, Empty, Icon, cx, kilo } from "../ui";
 import type { GamePlayer, Moment } from "./game";
 import { MarkerImage, Replay, Schematic } from "./Replay";
-import { buildStory, buildingName, objectiveName, type Chapter, type Story as StoryData } from "./story";
+import { buildStory, buildingName, objectiveName, type Chapter, type Story as StoryData } from "./chapters";
 
 const SIZE = 15000;
 const signed = (v: number) => `${v >= 0 ? "+" : "−"}${kilo(Math.abs(v))}`;
