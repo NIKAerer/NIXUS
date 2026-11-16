@@ -3,7 +3,7 @@ import { actions, useClient, type CustomConfig } from "../lib/client";
 import { lcu, QUEUES, skinSplash } from "../lib/lcu";
 import type { CustomGame, GameQueue } from "../lib/types";
 import { nav, useView } from "../lib/view";
-import { Breathing, CloseButton, Modal, Seg, Tabs, cx } from "../ui";
+import { Breathing, CloseButton, Icon, Modal, Seg, Tabs } from "../ui";
 
 const MAPS: Record<number, string> = { 11: "Faille de l'invocateur", 12: "Abîme hurlant", 30: "Arène des Rings", 21: "Nexus Blitz", 22: "Convergence" };
 
@@ -271,6 +271,7 @@ function JoinCustom({ onJoin }: { onJoin: (id: number, password?: string) => voi
   const [games, setGames] = useState<CustomGame[] | null>(null);
   const [joining, setJoining] = useState<number | null>(null);
   const [password, setPassword] = useState("");
+  const [query, setQuery] = useState("");
 
   const refresh = useCallback(async () => {
     setGames(null);
@@ -282,60 +283,87 @@ function JoinCustom({ onJoin }: { onJoin: (id: number, password?: string) => voi
     refresh();
   }, [refresh]);
 
+  // Recherche sur le nom du salon, son créateur et la carte, sans tenir compte des accents ni de la casse.
+  const fold = (v: string) => v.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  const locked = (games ?? []).find((g) => g.id === joining) ?? null;
+  const words = fold(query).split(/\s+/).filter(Boolean);
+  const shown = (games ?? []).filter((g) => {
+    const text = fold(`${g.lobbyName} ${g.ownerDisplayName ?? g.ownerSummonerName ?? ""} ${MAPS[g.mapId ?? 0] ?? g.gameMode ?? ""}`);
+    return words.every((w) => text.includes(w));
+  });
+
   return (
     <section className="modes-open card card-pad">
       <div className="card-head">
         Parties ouvertes
-        <span>{games ? `${games.length} trouvée${games.length > 1 ? "s" : ""}` : ""}</span>
+        <span>{games ? (words.length ? `${shown.length} sur ${games.length}` : `${games.length} trouvée${games.length > 1 ? "s" : ""}`) : ""}</span>
         <button className="link" onClick={refresh} style={{ marginLeft: "auto" }}>
           Actualiser
         </button>
       </div>
+      {games !== null && games.length > 0 && (
+        <label className="search-box modes-search">
+          <Icon name="search" size={15} />
+          <input className="input" type="search" placeholder="Chercher un salon, un créateur ou une carte" value={query} onChange={(e) => setQuery(e.target.value)} aria-label="Chercher une partie personnalisée" />
+        </label>
+      )}
       {games === null ? (
         <p className="wait">Recherche des parties…</p>
       ) : games.length === 0 ? (
         <p className="wait">Aucune partie personnalisée ouverte pour l'instant.</p>
+      ) : shown.length === 0 ? (
+        <p className="wait">Aucune partie ne correspond à « {query.trim()} ».</p>
       ) : (
         <ul>
-          {games.map((g) => (
-            <li key={g.id} className={cx(joining === g.id && "open")}>
+          {shown.map((g) => (
+            <li key={g.id}>
               <div>
                 <b>
                   {g.lobbyName}
-                  {g.hasPassword && <em className="tag">Mot de passe</em>}
+                  {g.hasPassword === true && <em className="tag">Mot de passe</em>}
                 </b>
                 <span className="dim">
-                  {MAPS[g.mapId ?? 0] ?? g.gameMode ?? "Carte"} · {g.ownerDisplayName ?? g.ownerSummonerName ?? "?"} · {g.filledPlayerSlots ?? 0}/{g.maxPlayers ?? 10}
+                  {MAPS[g.mapId ?? 0] ?? g.gameMode ?? "Carte"} · {g.ownerDisplayName ?? g.ownerSummonerName ?? "?"} · {g.filledPlayerSlots ?? 0}/{g.maxPlayerSlots ?? g.maxPlayers ?? 10}
                 </span>
               </div>
-              {joining === g.id ? (
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    onJoin(g.id, password);
-                  }}
-                >
-                  <input className="input" autoFocus placeholder="Mot de passe" value={password} onChange={(e) => setPassword(e.target.value)} />
-                  <button className="mini" type="submit">
-                    Entrer
-                  </button>
-                </form>
-              ) : (
-                <button
-                  className="mini"
-                  onClick={() => {
-                    if (g.hasPassword) {
-                      setJoining(g.id);
-                      setPassword("");
-                    } else onJoin(g.id);
-                  }}
-                >
-                  Rejoindre
-                </button>
-              )}
+              {/* Seules les parties protégées demandent un mot de passe, dans une petite fenêtre. */}
+              <button className="mini" onClick={() => (g.hasPassword === true ? (setPassword(""), setJoining(g.id)) : onJoin(g.id))}>
+                Rejoindre
+              </button>
             </li>
           ))}
         </ul>
+      )}
+      {locked && (
+        <Modal label="Mot de passe de la partie" size="s" onClose={() => setJoining(null)}>
+          <form
+            className="join-pass"
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (password) onJoin(locked.id, password);
+            }}
+          >
+            <header className="modal-head">
+              <div className="grow">
+                <h2>Mot de passe</h2>
+                <small>{locked.lobbyName}</small>
+              </div>
+              <CloseButton onClose={() => setJoining(null)} />
+            </header>
+            <div className="modal-body">
+              <input className="input" type="password" autoFocus placeholder="Mot de passe de la partie" value={password} onChange={(e) => setPassword(e.target.value)} aria-label="Mot de passe de la partie" />
+            </div>
+            <footer className="modal-foot">
+              <span className="grow" />
+              <button type="button" className="btn btn-quiet" onClick={() => setJoining(null)}>
+                Annuler
+              </button>
+              <button type="submit" className="btn btn-red" disabled={!password}>
+                Rejoindre
+              </button>
+            </footer>
+          </form>
+        </Modal>
       )}
     </section>
   );
