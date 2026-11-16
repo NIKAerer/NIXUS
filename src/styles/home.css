@@ -63,8 +63,9 @@ button.tile:hover { transform: translateY(-4px) scale(1.02); box-shadow: 0 16px 
 .tile-mode.aram { background: #2f7fe0; }
 .tile-mode.arena { background: #8e44ef; }
 .app.no-badges .tile-mode { display: none; }
+/* Badges MVP / ACE : fond et couleur du texte. MVP = or (var(--gold)), ACE = gris bleuté. */
 .badge-tag { font-style: normal; font-size: 10px; font-weight: 800; letter-spacing: 0.08em; padding: 3px 7px; border-radius: 5px; background: var(--gold); color: #000; }
-.badge-tag.ace { background: #b9c2d6; }
+.badge-tag.ace { background: #b9c2d6; color: #000; }
 .tile .badge-tag { position: absolute; top: 9px; right: 9px; }
 .tile-txt { position: absolute; left: 12px; right: 12px; bottom: 11px; display: flex; flex-direction: column; gap: 1px; }
 .tile-txt small { font-size: 10.5px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; }
