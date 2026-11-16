@@ -1,11 +1,11 @@
 {
-  "version": "1.0.1",
-  "notes": "Finalisation plus dense, thème aléatoire, intentions des alliés, 10 champions en partie, nouveau Film de la partie.",
-  "pub_date": "2026-11-16T18:39:23Z",
+  "version": "1.0.2",
+  "notes": "Film de la partie : parcours de jungle reconstitué (trajets qui suivent la carte, camps numérotés). Test de la clé Riot plus lisible, doublons de champions retirés, courbe de LP et badges MVP / ACE corrigés.",
+  "pub_date": "2026-11-16T19:07:21Z",
   "platforms": {
     "windows-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUU3M1c0VqSWpFM3Z0djArOG85Q1pkQmF5dHI1am9UVlFVKzlIUyt5MERWRHlhcWpzNWN6OWxmZzVxNjh5cGk4bVd1MkFzV29vYmFnMktydGZIeVYwbEVjSi9LTURCNGdrPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk0ODU0MzU0CWZpbGU6TklYVVNfMS4wLjFfeDY0LXNldHVwLmV4ZQl2ZXJzaW9uOjEuMC4xClVpQm52M2d3SERrbG91akFLUHEwVWx3T2JmY05hQXJRVWgzNFc5YTVXRitIT2psT1VlalMwQ3JuQU5tamx5eTJ2THJka2lKb3hqcEREVTZ5TWdpYkJnPT0K",
-      "url": "https://github.com/NIKAerer/NIXUS/raw/main/releases/NIXUS_1.0.1_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUU3M1c0VqSWpFM3JHb1k0K29sRDBxS1QxSGFkU3dxaFl6cFJENFFYb01Da0VzdEpBWU1LSWJBQ3ZnWnE5M1ZaZkxTTTRoK0pzbFN4OEF1VGtkTVg5RHpIZ0UyUEtWbEFZPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk0ODU2MDI4CWZpbGU6TklYVVNfMS4wLjJfeDY0LXNldHVwLmV4ZQl2ZXJzaW9uOjEuMC4yCld2UlM2SkJwZkIveS95R3ZlOHZOR1E5MzdXdEtyUWMxV1BROVFDV2xCdG4ySnU5elI1UmlvRDlmNml1YkYrRUI4NFp1QURJeE5QSWpKVW10Q1RUY0JnPT0K",
+      "url": "https://github.com/NIKAerer/NIXUS/raw/main/releases/NIXUS_1.0.2_x64-setup.exe"
     }
   }
 }
