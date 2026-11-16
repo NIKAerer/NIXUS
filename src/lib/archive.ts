@@ -404,11 +404,11 @@ const timelineFromRiot = (t: any): Timeline | null => (t?.info?.frames?.length ?
 const riot = <T,>(path: string, key: string, region: string) => invoke<T>("riot_get", { region, path, key });
 
 /** Message clair pour les erreurs de l'API Riot. */
-export function riotError(e: unknown): string {
+export function riotError(e: unknown, withDetail = true): string {
   const m = String((e as Error)?.message ?? e);
   if (m === "NO_KEY") return "Ajoute ta clé API Riot dans les Paramètres.";
-  const detail = m.startsWith("HTTP") ? ` (détail : ${m})` : "";
-  if (m.includes("HTTP 401")) return `Riot ne reçoit pas de clé valide. Recolle-la dans les Paramètres${detail}.`;
+  const detail = withDetail && m.startsWith("HTTP") ? ` (détail : ${m})` : "";
+  if (m.includes("HTTP 401")) return `Riot ne reconnaît pas cette clé : elle a expiré (24 h) ou a été régénérée. Copie la nouvelle depuis developer.riotgames.com${detail}.`;
   if (m.includes("HTTP 403")) return `Clé API refusée par Riot : expirée, mal copiée ou pas autorisée pour cet appel. Une clé de développement dure 24 h${detail}.`;
   if (m.includes("HTTP 404")) return `Compte introuvable dans cette région. Vérifie la région dans les Paramètres${detail}.`;
   if (m.includes("HTTP 429")) return "L'API Riot demande de ralentir. Relance dans deux minutes.";

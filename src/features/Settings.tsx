@@ -283,7 +283,7 @@ function mark(text: string, q: string): ReactNode {
 function RiotKey({ hintId }: { hintId: string }) {
   const s = useSettings();
   const [show, setShow] = useState(false);
-  const [state, setState] = useState<{ ok: boolean | null; msg: string } | null>(null);
+  const [state, setState] = useState<{ ok: boolean | null; msg: string; title?: string } | null>(null);
   const check = async () => {
     setState({ ok: null, msg: "Vérification…" });
     try {
@@ -291,9 +291,10 @@ function RiotKey({ hintId }: { hintId: string }) {
       if (!me) throw new Error("Connecte-toi au client LoL pour tester la clé.");
       if (!me.gameName || !me.tagLine) throw new Error("Le client n'a pas encore donné ton Riot ID. Réessaie dans un instant.");
       await riotAccount(me.gameName, me.tagLine, s.riotKey, s.riotRegion);
-      setState({ ok: true, msg: `Clé valide pour ${me.gameName}#${me.tagLine}.` });
+      setState({ ok: true, msg: "" });
     } catch (e) {
-      setState({ ok: false, msg: `${riotError(e)} (${s.riotKey.length} caractères, 42 attendus).` });
+      const n = s.riotKey.length;
+      setState({ ok: false, title: /HTTP 40[13]/.test(String((e as Error)?.message ?? e)) ? "Clé refusée" : "Test impossible", msg: riotError(e, false) + (n !== 42 ? ` Elle fait ${n} caractères au lieu de 42 : elle est sans doute mal copiée.` : "") });
     }
   };
   return (
@@ -318,11 +319,13 @@ function RiotKey({ hintId }: { hintId: string }) {
         </button>
       </div>
       {state && (
-        <small className="set-msg" role="status">
-          {state.ok === true && <span className="tag green">valide</span>}
-          {state.ok === false && <span className="tag red">invalide</span>}
-          {state.msg}
-        </small>
+        <p className={cx("set-msg", state.ok === true && "ok", state.ok === false && "bad")} role="status">
+          {state.ok !== null && <Icon name={state.ok ? "check" : "close"} size={14} />}
+          <span>
+            {state.ok !== null && <b>{state.ok ? "Clé valide" : state.title}</b>}
+            {state.ok === true ? null : state.msg}
+          </span>
+        </p>
       )}
     </div>
   );

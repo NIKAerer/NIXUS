@@ -137,7 +137,7 @@ input[type="range"] { accent-color: var(--accent); }
 .tabs button:hover { color: #fff; }
 .tabs button[aria-selected="true"] { color: #fff; border-color: var(--accent); }
 
-.tag { display: inline-flex; align-items: center; height: 18px; padding: 0 6px; border-radius: 4px; font-size: 10px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; background: rgba(255, 255, 255, 0.12); color: #fff; font-style: normal; }
+.tag { display: inline-flex; flex: none; white-space: nowrap; align-items: center; height: 18px; padding: 0 6px; border-radius: 4px; font-size: 10px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; background: rgba(255, 255, 255, 0.12); color: #fff; font-style: normal; }
 .tag.gold { background: var(--gold); color: #000 !important; }
 .tag.red { background: var(--danger); }
 .tag.blue { background: #2f7fe0; }
