@@ -10,11 +10,45 @@ export * from "./format";
 
 export const cx = (...parts: (string | false | null | undefined)[]) => parts.filter(Boolean).join(" ");
 
-/** Image qui apparaît en fondu une fois chargée et garde sa place si elle échoue. */
+const SKIN_ART = /\/splash-art\/centered\/skin\/\d+$/;
+const RETRIES = 2;
+
+/**
+ * Image qui apparaît en fondu une fois chargée et garde sa place si elle échoue.
+ * Un visuel qui ne charge pas n'est pas abandonné tout de suite : le splash d'un skin que le CDN ne connaît pas
+ * retombe sur le splash classique du champion, et une erreur passagère (CDN saturé) est retentée deux fois.
+ */
 export function Art({ src, alt = "", className, style, imgRef }: { src: string; alt?: string; className?: string; style?: CSSProperties; imgRef?: (el: HTMLImageElement | null) => void }) {
-  const [state, setState] = useState<"loading" | "ready" | "error">("loading");
-  if (state === "error" || !src) return <span className={cx(className, "art-missing")} aria-hidden="true" />;
-  return <img ref={imgRef} style={style} src={src} alt={alt} loading="lazy" decoding="async" draggable={false} className={cx(className, "art", state === "ready" && "ready")} onLoad={() => setState("ready")} onError={() => setState("error")} />;
+  const [state, setState] = useState<{ from: string; url: string; attempt: number; status: "loading" | "ready" | "error" }>({ from: src, url: src, attempt: 0, status: "loading" });
+  // L'adresse a changé (autre champion dans le même emplacement) : on repart de zéro, même après un échec.
+  const cur = state.from === src ? state : { from: src, url: src, attempt: 0, status: "loading" as const };
+  if (cur !== state) setState(cur);
+  const timer = useRef(0);
+  useEffect(() => () => clearTimeout(timer.current), []);
+
+  const failed = () => {
+    if (SKIN_ART.test(cur.url)) return setState({ ...cur, url: cur.url.replace(/\/skin\/\d+$/, ""), status: "loading" });
+    if (cur.attempt >= RETRIES) return setState({ ...cur, status: "error" });
+    clearTimeout(timer.current);
+    timer.current = window.setTimeout(() => setState((s) => (s.from === cur.from ? { ...s, attempt: s.attempt + 1, status: "loading" } : s)), 1500 * (cur.attempt + 1));
+  };
+
+  if (cur.status === "error" || !src) return <span className={cx(className, "art-missing")} aria-hidden="true" />;
+  return (
+    <img
+      key={cur.attempt}
+      ref={imgRef}
+      style={style}
+      src={cur.url}
+      alt={alt}
+      loading="lazy"
+      decoding="async"
+      draggable={false}
+      className={cx(className, "art", cur.status === "ready" && "ready")}
+      onLoad={() => setState((s) => (s.from === cur.from ? { ...s, status: "ready" } : s))}
+      onError={failed}
+    />
+  );
 }
 
 /**

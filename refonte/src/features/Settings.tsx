@@ -5,6 +5,7 @@ import { runningCount } from "../lib/breath";
 import { showLolWindow } from "../lib/client";
 import { isDesktop, lcu, timeAgo } from "../lib/lcu";
 import { DEFAULTS, setSettings, useSettings, type Settings } from "../lib/settings";
+import { THEMES } from "../lib/themes";
 import type { Summoner } from "../lib/types";
 import { appVersion, checkUpdate, installUpdate, useUpdate } from "../lib/updater";
 import { nav } from "../lib/view";
@@ -129,6 +130,23 @@ export function SettingsPanel() {
     { id: "focus", sec: "not", label: "Ramener NIXUS devant", hint: "La fenêtre revient au premier plan et clignote dans la barre des tâches.", control: sw("readyFocus") },
     { id: "notif", sec: "not", label: "Notification Windows", hint: "Une notification s'affiche, même quand NIXUS est réduit. Accepter reste un clic de ta part.", control: sw("readyNotify") },
 
+    {
+      id: "theme",
+      sec: "app",
+      label: "Thème",
+      hint: "Les couleurs de toute l'interface. Appliqué tout de suite.",
+      words: "couleur couleurs theme apparence " + THEMES.map((t) => t.name).join(" "),
+      control: () => (
+        <div className="themes" role="group" aria-label="Thème">
+          {THEMES.map((t) => (
+            <button key={t.id} type="button" aria-pressed={s.theme === t.id} onClick={() => setSettings({ theme: t.id })}>
+              <i style={{ ["--a" as string]: t.swatch[0], ["--b" as string]: t.swatch[1] }} />
+              {t.name}
+            </button>
+          ))}
+        </div>
+      ),
+    },
     { id: "skins", sec: "app", label: "Skins aléatoires", hint: "Chaque visuel de champion prend un skin au hasard. Désactivé : skin classique.", control: sw("randomSkins") },
     { id: "fx", sec: "app", label: "Animations du fond", hint: "Zoom lent, lumières et braises sur l'accueil.", control: sw("heroFx") },
     { id: "breath", sec: "app", label: "Respiration des champions", hint: "Les images de champions et de skins bougent légèrement, comme si elles respiraient. Coupée aussi si Windows demande moins d'animations.", control: sw("breath") },

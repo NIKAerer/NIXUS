@@ -1,0 +1,67 @@
+/* Thèmes : chaque bloc redéfinit les jetons de couleur posés dans base.css.
+   --accent-rgb doit être la même couleur que --accent, en « r, g, b » (elle sert aux lueurs et aux fonds teintés).
+   L'accent porte du texte blanc : le garder assez sombre pour rester lisible.
+   Le thème « cinema » est celui de base.css, il n'a pas besoin de bloc. */
+:root[data-theme="abysse"] {
+  --accent: #2f6bff;
+  --accent-rgb: 47, 107, 255;
+  --accent-hi: #5b8cff;
+  --ember: #7fb2ff;
+  --ember-glow: #2f6bff;
+  --glow-2: #19c3ff;
+  --bg: #060912;
+  --bg-2: #0b0f1a;
+  --panel: #0f1422;
+  --panel-2: #161c2e;
+  --panel-3: #1f2740;
+  --glass: rgba(12, 16, 28, 0.72);
+}
+:root[data-theme="neon"] {
+  --accent: #a63cf5;
+  --accent-rgb: 166, 60, 245;
+  --accent-hi: #c06bff;
+  --ember: #f29bff;
+  --ember-glow: #d43cf5;
+  --glow-2: #ff3ca0;
+  --bg: #0a0711;
+  --bg-2: #100c19;
+  --panel: #151021;
+  --panel-2: #1d172c;
+  --panel-3: #28203b;
+  --glass: rgba(18, 13, 28, 0.72);
+}
+:root[data-theme="braise"] {
+  --accent: #e8590c;
+  --accent-rgb: 232, 89, 12;
+  --accent-hi: #ff7a2e;
+  --ember: #ffc070;
+  --ember-glow: #ff7a00;
+  --glow-2: #ffb300;
+  --bg: #0b0807;
+  --bg-2: #120e0c;
+  --panel: #181311;
+  --panel-2: #211a17;
+  --panel-3: #2c2320;
+  --glass: rgba(20, 15, 13, 0.72);
+}
+:root[data-theme="jade"] {
+  --accent: #0b9d8a;
+  --accent-rgb: 11, 157, 138;
+  --accent-hi: #12bfa8;
+  --ember: #8ff0df;
+  --ember-glow: #12bfa8;
+  --glow-2: #2fd0ff;
+  --bg: #060b0b;
+  --bg-2: #0b1212;
+  --panel: #0f1818;
+  --panel-2: #152121;
+  --panel-3: #1d2d2d;
+  --glass: rgba(11, 18, 18, 0.72);
+}
+
+/* Choix du thème dans Paramètres */
+.themes { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.themes button { display: flex; align-items: center; gap: 8px; height: 34px; padding: 0 12px 0 6px; border-radius: 34px; border: 1px solid var(--line); background: rgba(255, 255, 255, 0.05); font-size: 12.5px; font-weight: 600; color: var(--dim); transition: color 0.15s, border-color 0.15s, background 0.15s; }
+.themes button:hover { color: #fff; border-color: var(--line-2); }
+.themes button[aria-pressed="true"] { color: #000; background: #fff; border-color: #fff; }
+.themes i { width: 22px; height: 22px; border-radius: 50%; background: linear-gradient(135deg, var(--a) 50%, var(--b) 50%); box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.25); }

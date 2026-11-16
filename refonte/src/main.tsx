@@ -11,6 +11,7 @@ import "./styles/match.css";
 import "./styles/pages.css";
 import "./styles/social.css";
 import "./styles/settings.css";
+import "./styles/themes.css";
 import { App } from "./App";
 import { startClient } from "./lib/client";
 

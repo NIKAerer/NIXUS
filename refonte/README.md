@@ -44,6 +44,21 @@ Le code Rust (`src-tauri`) est celui d'origine, avec un seul ajout : au premier 
 - Une feuille de style par domaine (`src/styles`) avec des jetons de design communs, au lieu d'un seul gros fichier.
 - Rangement : `screens/` (pages), `features/` (blocs réutilisés), `shell/` (barre du haut, barre de jeu, fenêtres), `lib/` (client LoL, archive, réglages).
 
+## Thèmes
+
+Paramètres, Apparence, Thème : cinq jeux de couleurs (Cinéma, Abysse, Néon, Braise, Jade), appliqués tout de suite et gardés sur ce PC.
+
+Pour en ajouter un :
+
+1. Une ligne dans `src/lib/themes.ts` (`id`, `name`, et les deux couleurs de la pastille d'aperçu).
+2. Un bloc `:root[data-theme="<id>"]` dans `src/styles/themes.css` qui redéfinit les jetons : `--accent`, `--accent-rgb` (la même couleur en « r, g, b »), `--accent-hi`, `--ember`, `--ember-glow`, `--glow-2`, puis les fonds `--bg`, `--bg-2`, `--panel`, `--panel-2`, `--panel-3`, `--glass`.
+
+Rien d'autre à toucher : toute l'interface lit ces jetons. Le rouge des bannissements et des erreurs (`--danger`), le vert des victoires et l'or ne changent pas avec le thème, pour garder leur sens.
+
+## Images de champions
+
+Une image qui ne charge pas est redemandée deux fois (après 1,5 s puis 3 s). Si le splash d'un skin n'existe pas sur le CDN, le splash classique du champion le remplace. Les illustrations sont cadrées sur le haut du splash centré, là où se trouve le visage.
+
 ## Limites connues
 
 - Les réglages ne sont pas repris de la version d'origine (les deux applications ont chacune leur stockage) : la clé API Riot est à ressaisir dans Paramètres.

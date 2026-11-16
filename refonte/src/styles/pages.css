@@ -49,10 +49,10 @@
 .lp-area line { vector-effect: non-scaling-stroke; }
 .lp-area line.div { stroke: rgba(255, 255, 255, 0.05); }
 .lp-area line.tier { stroke: rgba(255, 255, 255, 0.22); stroke-dasharray: 4 5; }
-.lp-line { fill: none; stroke: var(--accent-hi); stroke-width: 2.5; vector-effect: non-scaling-stroke; stroke-linejoin: round; stroke-linecap: round; filter: drop-shadow(0 0 8px rgba(229, 9, 20, 0.7)); }
+.lp-line { fill: none; stroke: var(--accent-hi); stroke-width: 2.5; vector-effect: non-scaling-stroke; stroke-linejoin: round; stroke-linecap: round; filter: drop-shadow(0 0 8px rgba(var(--accent-rgb), 0.7)); }
 .lp-line.est { stroke-dasharray: 5 6; stroke-width: 2; opacity: 0.75; filter: none; }
 .lp-cursor { stroke: rgba(255, 255, 255, 0.4); }
-.lp-dot { position: absolute; width: 12px; height: 12px; margin: -6px 0 0 -6px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 4px rgba(229, 9, 20, 0.5); pointer-events: none; }
+.lp-dot { position: absolute; width: 12px; height: 12px; margin: -6px 0 0 -6px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 4px rgba(var(--accent-rgb), 0.5); pointer-events: none; }
 .lp-tip { position: absolute; top: 6px; translate: 12px 0; padding: 8px 12px; border-radius: var(--r-m); background: rgba(22, 22, 27, 0.95); border: 1px solid var(--line-2); display: flex; flex-direction: column; gap: 1px; white-space: nowrap; pointer-events: none; box-shadow: var(--shadow); }
 .lp-tip.left { translate: calc(-100% - 12px) 0; }
 .lp-tip small { color: var(--dim); font-size: 11.5px; }
@@ -101,7 +101,7 @@
 .posters.six .poster { aspect-ratio: 4 / 5; }
 .poster:hover { transform: translateY(-4px); box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6); }
 .poster .cover { z-index: -1; }
-.poster .cover > img { object-position: 60% 15%; }
+.poster .cover > img { object-position: center 20%; }
 .poster .cover::after { content: ""; position: absolute; inset: 0; background: linear-gradient(0deg, rgba(6, 6, 8, 0.95) 0%, rgba(6, 6, 8, 0) 55%); }
 .poster-n { position: absolute; left: 8px; top: -6px; font: 400 96px/1 var(--display); color: transparent; -webkit-text-stroke: 2px rgba(255, 255, 255, 0.75); text-shadow: 0 6px 24px rgba(0, 0, 0, 0.6); }
 .poster-tag { position: absolute; top: 10px; left: 10px; }
@@ -188,7 +188,7 @@
 .kpi.ess-champion b { color: #58b6ff; }
 .kpi.ess-cosmetic b { color: #ff9d47; }
 .kpi.ess-mythic b { color: #c48bff; }
-.loot-art { height: 220px; background: radial-gradient(closest-side, rgba(229, 9, 20, 0.2), transparent), var(--panel); display: grid; place-items: center; flex: none; }
+.loot-art { height: 220px; background: radial-gradient(closest-side, rgba(var(--accent-rgb), 0.2), transparent), var(--panel); display: grid; place-items: center; flex: none; }
 .loot-art img, .loot-art .art-missing { max-width: 100%; height: 100%; object-fit: contain; }
 .loot-modal .modal-body { display: flex; flex-direction: column; gap: 8px; }
 .loot-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }

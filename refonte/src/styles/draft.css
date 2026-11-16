@@ -16,10 +16,10 @@
 .ban { position: relative; width: 38px; height: 38px; border-radius: 10px; overflow: hidden; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--line); }
 .ban img { width: 100%; height: 100%; }
 .ban.done img { filter: grayscale(1) brightness(0.6); }
-.ban.done::after { content: ""; position: absolute; left: -10%; right: -10%; top: 50%; height: 2px; background: var(--accent); rotate: -45deg; }
-.ban.live { border-color: var(--accent); animation: banlive 1.2s ease-in-out infinite; }
+.ban.done::after { content: ""; position: absolute; left: -10%; right: -10%; top: 50%; height: 2px; background: var(--danger); rotate: -45deg; }
+.ban.live { border-color: var(--danger); animation: banlive 1.2s ease-in-out infinite; }
 .ban.mine { box-shadow: 0 0 0 1px #fff; }
-@keyframes banlive { 50% { box-shadow: 0 0 0 3px rgba(229, 9, 20, 0.35); } }
+@keyframes banlive { 50% { box-shadow: 0 0 0 3px rgba(var(--danger-rgb), 0.35); } }
 .draft-clock { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 300px; }
 .draft-clock ol { display: flex; gap: 4px; }
 .draft-clock li { font-size: 10.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--faint); padding: 3px 9px; border-radius: 20px; }
@@ -94,7 +94,7 @@
 .pick > span:last-child { font-size: 11px; color: var(--dim); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pick:hover:not(:disabled) .pick-img { outline-color: var(--line-2); transform: translateY(-2px); }
 .pick[aria-pressed="true"] .pick-img { outline-color: #fff; box-shadow: 0 0 22px rgba(255, 255, 255, 0.25); }
-.draft.banning .pick[aria-pressed="true"] .pick-img { outline-color: var(--accent); box-shadow: 0 0 22px rgba(229, 9, 20, 0.5); }
+.draft.banning .pick[aria-pressed="true"] .pick-img { outline-color: var(--danger); box-shadow: 0 0 22px rgba(var(--danger-rgb), 0.5); }
 .pick[aria-pressed="true"] > span:last-child { color: #fff; }
 .pick:disabled .pick-img img { filter: grayscale(1) brightness(0.4); }
 .pick .tag { position: absolute; left: 3px; right: 3px; bottom: 3px; justify-content: center; font-size: 9px; height: 16px; overflow: hidden; }
