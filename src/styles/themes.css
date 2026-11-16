@@ -65,3 +65,4 @@
 .themes button:hover { color: #fff; border-color: var(--line-2); }
 .themes button[aria-pressed="true"] { color: #000; background: #fff; border-color: #fff; }
 .themes i { width: 22px; height: 22px; border-radius: 50%; background: linear-gradient(135deg, var(--a) 50%, var(--b) 50%); box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.25); }
+.themes i.rand { background: conic-gradient(#e50914, #2f6bff, #a63cf5, #e8590c, #0b9d8a, #e50914); }

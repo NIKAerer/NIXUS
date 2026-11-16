@@ -27,6 +27,26 @@ interface GameflowSession {
   };
 }
 
+const complete = (team?: GamePlayer[]) => !!team && team.length >= 5 && team.every((p) => p.championId > 0);
+
+/** Fusionne deux lectures : un champion déjà connu n'est jamais remplacé par une case vide. */
+function mergeSession(prev: GameflowSession | null, next: GameflowSession): GameflowSession {
+  const g = next.gameData;
+  const old = prev?.gameData;
+  if (!g || !old) return next;
+  const merge = (a?: GamePlayer[], b?: GamePlayer[]) => {
+    const list = [...(a ?? [])];
+    (b ?? []).forEach((p, i) => {
+      const at = list.findIndex((q) => (q.puuid && q.puuid === p.puuid) || false);
+      const j = at >= 0 ? at : i < list.length && !list[i].puuid ? i : -1;
+      if (j < 0) list.push(p);
+      else if (p.championId > 0 || !list[j].championId) list[j] = { ...list[j], ...p, championId: p.championId || list[j].championId };
+    });
+    return list;
+  };
+  return { gameData: { ...g, teamOne: merge(old.teamOne, g.teamOne), teamTwo: merge(old.teamTwo, g.teamTwo) } };
+}
+
 const START_KEY = "nixus.gameStart";
 const ROLE: Record<string, string> = { TOP: "Top", JUNGLE: "Jungle", MIDDLE: "Mid", BOTTOM: "ADC", UTILITY: "Support" };
 
@@ -41,11 +61,29 @@ export function InGame() {
   const assets = useStatic();
 
   useEffect(() => {
-    lcu<GameflowSession>("GET", "/lol-gameflow/v1/session").then(setSession, () => {});
     lcu<RunePage>("GET", "/lol-perks/v1/currentpage").then(setPage, () => {});
     const t = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(t);
   }, []);
+
+  // Le client remplit les équipes au fil du chargement : on relit la session toutes les 4 s tant qu'il manque un champion,
+  // et on garde ce qui a déjà été lu (une lecture partielle ne vide jamais une case).
+  const full = !!session && complete(session.gameData?.teamOne) && complete(session.gameData?.teamTwo);
+  useEffect(() => {
+    if (full) return;
+    let alive = true;
+    const read = () =>
+      lcu<GameflowSession>("GET", "/lol-gameflow/v1/session").then(
+        (next) => alive && setSession((prev) => mergeSession(prev, next)),
+        () => {},
+      );
+    read();
+    const t = setInterval(read, 4000);
+    return () => {
+      alive = false;
+      clearInterval(t);
+    };
+  }, [full]);
 
   // Début de partie noté une fois par partie, pour garder le chrono si NIXUS est relancé.
   const gameId = session?.gameData?.gameId ?? 0;
@@ -61,6 +99,7 @@ export function InGame() {
   const mine = g?.playerChampionSelections?.find((s) => s.puuid && s.puuid === myPuuid);
   const myTeam = g?.teamOne?.some((p) => p.puuid === myPuuid) ? g.teamOne : g?.teamTwo?.some((p) => p.puuid === myPuuid) ? g.teamTwo : g?.teamOne;
   const enemies = myTeam === g?.teamOne ? g?.teamTwo : g?.teamOne;
+  const padded = (team?: GamePlayer[]) => [...(team ?? []), ...Array.from({ length: Math.max(0, 5 - (team?.length ?? 0)) }, () => ({ championId: 0 }))];
   const me = myTeam?.find((p) => p.puuid === myPuuid);
   const championId = mine?.championId || me?.championId || 0;
   const skinId = championId && mine?.selectedSkinIndex ? championId * 1000 + mine.selectedSkinIndex : 0;
@@ -107,9 +146,9 @@ export function InGame() {
 
       {(myTeam?.length || enemies?.length) ? (
         <div className="ingame-teams glass">
-          <TeamRow label="Ton équipe" players={myTeam ?? []} me={myPuuid} name={name} />
+          <TeamRow label="Ton équipe" players={padded(myTeam)} me={myPuuid} name={name} />
           <b className="h2">VS</b>
-          <TeamRow label="Adversaires" players={enemies ?? []} name={name} enemy />
+          <TeamRow label="Adversaires" players={padded(enemies)} name={name} enemy />
         </div>
       ) : null}
     </div>
