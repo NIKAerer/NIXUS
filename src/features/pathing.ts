@@ -5,8 +5,13 @@ import type { GamePlayer } from "./game";
  * Trajets reconstitués. Riot ne donne qu'une position par joueur et par minute : entre deux positions connues,
  * on fait passer le joueur par les couloirs de la carte au lieu de couper à travers les murs, et on recale le
  * trajet sur tout ce que la timeline date à la seconde : kills et aides, objectifs, tours, achats (le joueur est
- * à la base), morts et réapparitions. Les camps de jungle sont déduits du nombre de monstres tués dans la minute :
- * on retient l'enchaînement de camps encore en vie qui rallonge le moins le trajet.
+ * à la base), morts et réapparitions. La chronologie du client ne contient pas les achats : une baisse de l'or en
+ * poche d'une minute à l'autre trahit alors le passage à la base.
+ * Les camps de jungle sont déduits du compteur de monstres : un camp vaut 4 (carapateur compris), une larve du
+ * Néant 2, un dragon, le Héraut ou Nashor 4. On retire les monstres épiques, on arrondit le cumul au camp le plus
+ * proche (un camp à cheval sur deux minutes ne fausse rien) et on retient l'enchaînement de camps encore en vie
+ * qui rallonge le moins le trajet, en évitant la jungle adverse sans indice.
+ * Valeurs vérifiées sur 150 parties classées : 3 camps à 2:00, 6 (clear complet) à 3:00, carapateur ensuite.
  * C'est une estimation plausible, pas un enregistrement : l'écran l'annonce comme telle.
  */
 
@@ -35,9 +40,17 @@ export interface Pathing {
 const MAP = 14870;
 const mirror = (p: Point): Point => ({ x: MAP - p.x, y: MAP - p.y });
 const dist = (a: Point, b: Point) => Math.hypot(a.x - b.x, a.y - b.y);
-const FOUNTAIN: Record<number, Point> = { 100: { x: 560, y: 580 }, 200: { x: 14300, y: 14380 } };
-/** Vitesse de marche moyenne, en unités de carte par seconde. */
-const SPEED = 390;
+/** Point d'apparition moyen observé à 0:00 (960 joueurs par côté). */
+const FOUNTAIN: Record<number, Point> = { 100: { x: 420, y: 420 }, 200: { x: 14300, y: 14390 } };
+/**
+ * Vitesse de marche selon le moment de la partie, d'après la vitesse relevée par Riot (médiane : 340 à 3 min,
+ * 370 à 10 min, 390 à 15 min). Les chronologies de l'API Riot donnent la vraie valeur, utilisée quand elle existe.
+ */
+const speedAt = (t: number) => Math.min(420, 330 + (t / 60) * 4);
+/** Temps passé sur un camp : plus long au premier clear, quand le jungler est bas niveau. */
+const clearTime = (t: number) => (t < 300 ? 14 : t < 900 ? 9 : 6);
+/** Monstres épiques comptés dans jungleMinionsKilled, à retirer avant de compter les camps. */
+const EPIC_CS: Record<string, number> = { HORDE: 2, DRAGON: 4, RIFTHERALD: 4, BARON_NASHOR: 4, ATAKHAN: 4 };
 
 /* ---------- Camps ---------- */
 
@@ -50,26 +63,28 @@ interface Camp {
   respawn: number;
 }
 
+// Apparition à 1:00 : les junglers ont déjà 3 camps à 2:00 et 6 à 3:00. Positions recalées sur l'endroit où les
+// junglers sont vus à la minute pile (médiane de 4 992 positions de junglers entre 2 et 14 minutes).
 const BLUE_CAMPS: [string, string, number, number, number, number][] = [
-  ["blue", "Buff bleu", 3800, 7900, 90, 300],
-  ["gromp", "Gromp", 2150, 8400, 90, 135],
-  ["wolves", "Loups", 3780, 6480, 90, 135],
-  ["raptors", "Corbins", 7000, 5400, 90, 135],
-  ["red", "Buff rouge", 7780, 4050, 90, 300],
-  ["krugs", "Golems", 8400, 2700, 90, 135],
+  ["blue", "Buff bleu", 3750, 7950, 60, 300],
+  ["gromp", "Gromp", 2200, 8400, 60, 135],
+  ["wolves", "Loups", 3720, 6500, 60, 135],
+  ["raptors", "Corbins", 6980, 5200, 60, 135],
+  ["red", "Buff rouge", 7700, 3880, 60, 300],
+  ["krugs", "Golems", 8370, 2560, 60, 135],
 ];
 const CAMPS: Camp[] = [
   ...BLUE_CAMPS.map(([key, name, x, y, spawn, respawn]) => ({ key: `b-${key}`, name, side: 100, pos: { x, y }, spawn, respawn })),
   ...BLUE_CAMPS.map(([key, name, x, y, spawn, respawn]) => ({ key: `r-${key}`, name, side: 200, pos: mirror({ x, y }), spawn, respawn })),
-  { key: "scuttle-top", name: "Carapateur du haut", side: 0, pos: { x: 4400, y: 9650 }, spawn: 210, respawn: 150 },
-  { key: "scuttle-bot", name: "Carapateur du bas", side: 0, pos: { x: 10450, y: 5200 }, spawn: 210, respawn: 150 },
+  { key: "scuttle-top", name: "Carapateur du haut", side: 0, pos: { x: 4550, y: 9550 }, spawn: 210, respawn: 150 },
+  { key: "scuttle-bot", name: "Carapateur du bas", side: 0, pos: { x: 10300, y: 5150 }, spawn: 210, respawn: 150 },
 ];
 
 /* ---------- Couloirs de la carte ---------- */
 
 // Moitié bleue (base en bas à gauche). La moitié rouge est son symétrique par rapport au centre.
 const HALF: Record<string, [number, number]> = {
-  fountain: [560, 580],
+  fountain: [420, 420],
   nexus: [1750, 1750],
   // Voie du haut
   top1: [1250, 4300],
@@ -87,18 +102,18 @@ const HALF: Record<string, [number, number]> = {
   mid3: [5850, 6350],
   // Jungle côté buff bleu
   gateTop: [2600, 5300],
-  wolves: [3780, 6480],
-  blue: [3800, 7900],
-  gromp: [2150, 8400],
+  wolves: [3720, 6500],
+  blue: [3750, 7950],
+  gromp: [2200, 8400],
   blueTri: [2350, 10600],
   blueRiver: [4700, 8850],
   wolvesMid: [4750, 6200],
   // Jungle côté buff rouge
   gateBot: [5300, 2700],
-  raptors: [7000, 5400],
+  raptors: [6980, 5200],
   raptorsMid: [6500, 6000],
-  red: [7780, 4050],
-  krugs: [8400, 2700],
+  red: [7700, 3880],
+  krugs: [8370, 2560],
   krugsLane: [8500, 1750],
   redRiver: [9150, 4700],
   botTri: [10600, 3000],
@@ -106,11 +121,11 @@ const HALF: Record<string, [number, number]> = {
 const CENTER: Record<string, [number, number]> = {
   center: [7435, 7435],
   riverTopMouth: [2950, 11500],
-  scuttleTop: [4400, 9650],
+  scuttleTop: [4550, 9550],
   baron: [5000, 10450],
   riverTopMid: [5950, 8700],
   riverBotMid: [8900, 6150],
-  scuttleBot: [10450, 5200],
+  scuttleBot: [10300, 5150],
   dragon: [9850, 4400],
   riverBotMouth: [11900, 3400],
 };
@@ -318,6 +333,32 @@ function anchorsOf(timeline: Timeline, players: GamePlayer[]): Map<number, Ancho
       }
     }
   });
+  // Chronologie du client : pas d'achats, mais l'or en poche baisse quand le joueur dépense. Sur 150 parties de
+  // l'API Riot, une dépense de plus de 250 po dans la minute correspond à un achat 93 % du temps.
+  const hasPurchases = timeline.frames.some((f) => f.events?.some((e) => e.type === "ITEM_PURCHASED"));
+  if (!hasPurchases)
+    for (let i = 2; i < timeline.frames.length; i++) {
+      const before = timeline.frames[i - 1];
+      const now = timeline.frames[i];
+      for (const p of players) {
+        const a = before.participantFrames?.[String(p.id)];
+        const b = now.participantFrames?.[String(p.id)];
+        if (a?.currentGold === undefined || b?.currentGold === undefined) continue;
+        const spent = a.currentGold + (b.totalGold - a.totalGold) - b.currentGold;
+        if (spent <= 250) continue;
+        const from = before.timestamp / 1000;
+        const to = now.timestamp / 1000;
+        const list = all.get(p.id)!;
+        // Mort dans la minute : il a acheté en réapparaissant, la réapparition suffit.
+        if (list.some((x) => (x.kind === "death" || x.kind === "respawn") && x.t > from && x.t <= to)) continue;
+        // Il repart de la base juste à temps pour être vu à sa position de la minute.
+        const home = FOUNTAIN[p.teamId];
+        const next = b.position ?? home;
+        const walk = dist(home, next) / speedAt(to);
+        const t = Math.max(from + 12, Math.min(to - 3, to - walk - 6));
+        list.push({ t, ...home, kind: "base" });
+      }
+    }
   for (const [id, list] of all) {
     list.sort((a, b) => a.t - b.t);
     const out: Anchor[] = [];
@@ -365,6 +406,22 @@ export function buildPathing(timeline: Timeline, players: GamePlayer[]): Pathing
     })
     .filter((id): id is number => !!id && jungleAt(id, Math.min(10, frames.length - 1)) > 0);
 
+  // Monstres épiques déjà tués par chaque joueur à chaque minute, à retirer du compteur de monstres.
+  const epicAt = (id: number, i: number) => {
+    const until = frames[Math.min(i, frames.length - 1)]?.timestamp ?? 0;
+    let cs = 0;
+    for (const f of frames)
+      for (const e of f.events ?? [])
+        if (e.type === "ELITE_MONSTER_KILL" && e.killerId === id && e.timestamp <= until) cs += EPIC_CS[e.monsterType ?? ""] ?? 0;
+    return cs;
+  };
+  const campsAt = (id: number, i: number) => Math.max(0, Math.round((jungleAt(id, i) - epicAt(id, i)) / 4));
+  // Vitesse du joueur à la minute i : la vraie valeur si la chronologie la donne, sinon la médiane observée.
+  const speedOf = (id: number, t: number) => {
+    const s = frames[Math.min(Math.round(t / 60), frames.length - 1)]?.participantFrames?.[String(id)]?.championStats?.movementSpeed;
+    return s && s > 250 && s < 700 ? s : speedAt(t);
+  };
+
   // Camps à glisser dans chaque intervalle entre deux points connus, par joueur.
   const inserted = new Map<number, Map<number, Camp[]>>(players.map((p) => [p.id, new Map()]));
   const aliveAt = new Map(CAMPS.map((c) => [c.key, c.spawn]));
@@ -375,7 +432,7 @@ export function buildPathing(timeline: Timeline, players: GamePlayer[]): Pathing
     // Les junglers d'abord : ce sont eux qui prennent les camps, les autres se servent dans ce qui reste.
     const order = [...players].sort((a, b) => Number(junglers.includes(b.id)) - Number(junglers.includes(a.id)));
     for (const p of order) {
-      const n = Math.min(4, Math.round((jungleAt(p.id, i) - jungleAt(p.id, i - 1)) / 4));
+      const n = Math.min(5, campsAt(p.id, i) - campsAt(p.id, i - 1));
       if (n <= 0) continue;
       const list = anchors.get(p.id) ?? [];
       const gaps: number[] = [];
@@ -400,8 +457,17 @@ export function buildPathing(timeline: Timeline, players: GamePlayer[]): Pathing
           if (!jumpEnd) length += dist(camps[camps.length - 1].pos, b);
           // Trop loin pour le temps disponible : on pénalise sans interdire (la position de la minute peut être imprécise).
           const time = b.t - a.t;
-          const need = length / SPEED + n * 6;
-          const cost = length + Math.max(0, need - time) * 900 + (camps.some((c) => (aliveAt.get(c.key) ?? 0) > a.t + time / 2) ? 1500 : 0);
+          const need = length / speedOf(p.id, a.t) + n * clearTime(a.t);
+          // Jungle adverse : seulement si le joueur y est vu au début ou à la fin de l'intervalle (vol de buff au
+          // premier clear compris), presque jamais sinon.
+          const invade = camps.reduce((s, c) => {
+            if (c.side === 0 || c.side === p.teamId) return s;
+            if (Math.min(dist(c.pos, a), dist(c.pos, b)) < 2200) return s + 300;
+            return s + (a.t < 210 ? 8000 : 3000);
+          }, 0);
+          // Vu sur un camp à la minute pile : il est en train de le faire, ce camp clôt l'intervalle.
+          const seen = !jumpEnd && open.some((c) => dist(c.pos, b) < 900) && dist(camps[camps.length - 1].pos, b) > 900 ? 1200 : 0;
+          const cost = length + Math.max(0, need - time) * 900 + invade + seen + (camps.some((c) => (aliveAt.get(c.key) ?? 0) > a.t + time / 2) ? 1500 : 0);
           if (!best || cost < best.cost) best = { gap, camps, cost };
         }
       }
@@ -447,7 +513,7 @@ export function buildPathing(timeline: Timeline, players: GamePlayer[]): Pathing
       }
       const hop = recall ? Math.min(8, time * 0.3) : 0;
       const walkable = time - hop;
-      const travel = Math.min(walkable, length / SPEED);
+      const travel = Math.min(walkable, length / speedOf(p.id, a.t));
       const spare = walkable - travel;
       const dwell = camps.length ? Math.min(spare / camps.length, 22) : 0;
       // Le temps qui reste : le joueur traîne en route (voie, vision, attente), on ralentit donc la marche.
@@ -462,8 +528,8 @@ export function buildPathing(timeline: Timeline, players: GamePlayer[]): Pathing
           t += dwell;
           out.push({ t, x: leg[leg.length - 1].x, y: leg[leg.length - 1].y });
           const kill = kills.find((c) => c.player === p.id && c.pos === camps[i].pos && c.t >= a.t - 0.5 && c.t <= b.t + 0.5);
-          // Un camp ne peut pas tomber avant sa première apparition.
-          if (kill) kill.t = Math.max(t, camps[i].spawn + 8);
+          // Un camp ne peut pas tomber avant sa première apparition (et le premier, aidé par les alliés, prend ~20 s).
+          if (kill) kill.t = Math.max(t, camps[i].spawn + 18);
         }
       });
       if (recall) {

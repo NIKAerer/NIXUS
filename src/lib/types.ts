@@ -305,9 +305,14 @@ export interface ParticipantFrame {
   participantId: number;
   position?: Point;
   totalGold: number;
+  /** Or en poche : une baisse d'une minute à l'autre trahit un achat, donc un passage à la base. */
+  currentGold?: number;
+  xp?: number;
   level: number;
   minionsKilled: number;
   jungleMinionsKilled: number;
+  /** Présent dans les chronologies de l'API Riot, absent de celles du client. */
+  championStats?: { movementSpeed?: number };
 }
 
 export interface TimelineFrame {

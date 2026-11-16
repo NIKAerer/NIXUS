@@ -71,7 +71,7 @@ export function HeroStats({ k, d, a, teamKills, cs, damage, vision, minutes }: {
   );
 }
 
-/** Fiche plein écran d'une ancienne partie : tableau et film de la partie. */
+/** Fiche plein écran d'une ancienne partie : tableau et replay. */
 export function MatchDetail({ match, myPuuid, onClose }: { match: Match; myPuuid?: string; onClose: () => void }) {
   const champions = useClient((s) => s.champions);
   const [detail, setDetail] = useState<GameDetail | null>(null);
@@ -123,12 +123,12 @@ export function MatchDetail({ match, myPuuid, onClose }: { match: Match; myPuuid
   );
 }
 
-/** Onglets Tableau et Film de la partie, partagés par la fiche de partie et l'écran de fin de partie. */
+/** Onglets Tableau et Replay, partagés par la fiche de partie et l'écran de fin de partie. */
 export function GameTabs({ detail, timeline, players, myTeam, duration, assets, onReport }: { detail: GameDetail; timeline: Timeline | null; players: GamePlayer[]; myTeam: number; duration: number; assets: StaticData | null; onReport?: (p: GamePlayer) => void }) {
   const [tab, setTab] = useState<Tab>("board");
   const minutes = Math.max(duration / 60, 1);
   const tabs: [Tab, string][] = [["board", "Tableau"]];
-  if (timeline) tabs.push(["story", "Film de la partie"]);
+  if (timeline) tabs.push(["story", "Replay"]);
   const won = detail.teams.find((t) => t.teamId === myTeam)?.win === "Win";
   return (
     <>

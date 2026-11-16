@@ -7,7 +7,7 @@ import type { GamePlayer, Moment } from "./game";
 import { Replay } from "./Replay";
 import { buildStory, buildingName, objectiveName, type Story as StoryData } from "./chapters";
 
-/** Le film de la partie : la carte rejouée avec le trajet des junglers, et le journal des événements pour s'y déplacer. */
+/** Le replay : la carte rejouée avec le trajet des junglers, et le journal des événements pour s'y déplacer. */
 export function Story({ timeline, players, myTeam, won, duration, assets }: { timeline: Timeline; players: GamePlayer[]; myTeam: number; won: boolean; duration: number; assets: StaticData | null }) {
   const story = useMemo(() => buildStory(timeline, players, myTeam, won), [timeline, players, myTeam, won]);
   // Chaque saut depuis le journal relance la carte à l'instant demandé.
