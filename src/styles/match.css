@@ -68,7 +68,7 @@
 .report label:hover { background: rgba(255, 255, 255, 0.08); }
 .report input { accent-color: var(--accent); width: 16px; height: 16px; }
 
-/* Film de la partie : courbe d'or, chapitres, carte du combat, journal */
+/* Replay : courbe d'or, chapitres, carte du combat, journal */
 .story { display: flex; flex-direction: column; gap: 16px; }
 .story-back { align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; color: var(--dim); font-weight: 600; font-size: 13px; }
 .story-back:hover { color: #fff; }
@@ -233,7 +233,7 @@
   .board-team-head ul { display: none; }
 }
 
-/* Sur le film, le bandeau se replie pour laisser la place à la carte. */
+/* Sur le replay, le bandeau se replie pour laisser la place à la carte. */
 .game .ghero { transition: min-height 0.3s var(--ease), padding 0.3s var(--ease); }
 .game:has(.story) .ghero { min-height: 0; padding: 16px 76px 14px var(--pad); flex-direction: row; align-items: center; justify-content: flex-start; flex-wrap: wrap; gap: 6px 22px; }
 .game:has(.story) .ghero .eyebrow { order: 2; flex-basis: 100%; font-size: 12px; }
