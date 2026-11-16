@@ -403,6 +403,33 @@ const timelineFromRiot = (t: any): Timeline | null => (t?.info?.frames?.length ?
 
 const riot = <T,>(path: string, key: string, region: string) => invoke<T>("riot_get", { region, path, key });
 
+export interface RiotProblem {
+  /** Ce qui ne va pas, en quelques mots. */
+  title: string;
+  /** Quoi faire. */
+  hint: string;
+  /** Réponse brute de Riot, pour le détail technique. */
+  detail?: string;
+}
+
+/** Erreur de l'API Riot découpée en titre, conseil et détail, pour l'écran de test de la clé. */
+export function riotProblem(e: unknown, key = ""): RiotProblem {
+  const m = String((e as Error)?.message ?? e);
+  const detail = m.startsWith("HTTP") ? m : undefined;
+  const shape = !key.startsWith("RGAPI-") ? " Elle doit commencer par RGAPI-." : key.length !== 42 ? ` Elle fait ${key.length} caractères au lieu de 42 : vérifie la copie.` : "";
+  if (m === "NO_KEY") return { title: "Aucune clé", hint: "Colle ta clé API Riot ci-dessus." };
+  if (m.includes("HTTP 401") || m.includes("HTTP 403"))
+    return {
+      title: "Clé refusée par Riot",
+      hint: shape || "Elle a sans doute expiré : une clé de développement ne dure que 24 h. Génère-en une nouvelle sur developer.riotgames.com et colle-la ici.",
+      detail,
+    };
+  if (m.includes("HTTP 404")) return { title: "Compte introuvable", hint: "La clé marche, mais ton compte n'est pas dans cette région. Change la région Riot.", detail };
+  if (m.includes("HTTP 429")) return { title: "Trop de requêtes", hint: "L'API Riot demande de ralentir. Réessaie dans deux minutes.", detail };
+  if (m.startsWith("NETWORK")) return { title: "Riot injoignable", hint: "Vérifie ta connexion à Internet, puis réessaie." };
+  return { title: "Test impossible", hint: m };
+}
+
 /** Message clair pour les erreurs de l'API Riot. */
 export function riotError(e: unknown, withDetail = true): string {
   const m = String((e as Error)?.message ?? e);

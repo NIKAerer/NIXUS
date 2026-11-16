@@ -43,6 +43,12 @@ export const queueName = (id: number) =>
 // Les visuels viennent de CommunityDragon (CDN public des assets du jeu).
 const CDN = "https://cdn.communitydragon.org/latest";
 export const championSquare = (id: number) => `${CDN}/champion/${id}/square`;
+
+/**
+ * Copies des champions propres au mode « Faille classique » (alias Jade_…, id 60000 et plus).
+ * Le client les renvoie avec les vrais champions : on les retire des listes pour ne pas tout voir en double.
+ */
+export const isClassicCopy = (c: { id: number; alias?: string }) => c.id >= 60000 || /^jade_/i.test(c.alias ?? "");
 const baseSplash = (id: number) => `${CDN}/champion/${id}/splash-art/centered`;
 
 // Skins tirés au hasard : un par champion et par lancement de NIXUS, pour que l'image ne change pas à chaque rendu.

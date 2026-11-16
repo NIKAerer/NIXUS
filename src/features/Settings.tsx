@@ -1,6 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { Fragment, useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
-import { loadRecords, riotAccount, riotError, snapshot } from "../lib/archive";
+import { loadRecords, riotAccount, riotProblem, snapshot, type RiotProblem } from "../lib/archive";
 import { runningCount } from "../lib/breath";
 import { showLolWindow } from "../lib/client";
 import { isDesktop, lcu, timeAgo } from "../lib/lcu";
@@ -283,18 +283,17 @@ function mark(text: string, q: string): ReactNode {
 function RiotKey({ hintId }: { hintId: string }) {
   const s = useSettings();
   const [show, setShow] = useState(false);
-  const [state, setState] = useState<{ ok: boolean | null; msg: string; title?: string } | null>(null);
+  const [state, setState] = useState<({ ok: boolean | null } & RiotProblem) | null>(null);
   const check = async () => {
-    setState({ ok: null, msg: "Vérification…" });
+    setState({ ok: null, title: "Vérification…", hint: "NIXUS demande ton compte à l'API Riot avec cette clé." });
     try {
       const me = await lcu<Summoner>("GET", "/lol-summoner/v1/current-summoner").catch(() => null);
       if (!me) throw new Error("Connecte-toi au client LoL pour tester la clé.");
       if (!me.gameName || !me.tagLine) throw new Error("Le client n'a pas encore donné ton Riot ID. Réessaie dans un instant.");
       await riotAccount(me.gameName, me.tagLine, s.riotKey, s.riotRegion);
-      setState({ ok: true, msg: "" });
+      setState({ ok: true, title: "Clé valide", hint: `Elle fonctionne pour ${me.gameName}#${me.tagLine}.` });
     } catch (e) {
-      const n = s.riotKey.length;
-      setState({ ok: false, title: /HTTP 40[13]/.test(String((e as Error)?.message ?? e)) ? "Clé refusée" : "Test impossible", msg: riotError(e, false) + (n !== 42 ? ` Elle fait ${n} caractères au lieu de 42 : elle est sans doute mal copiée.` : "") });
+      setState({ ok: false, ...riotProblem(e, s.riotKey) });
     }
   };
   return (
@@ -319,13 +318,19 @@ function RiotKey({ hintId }: { hintId: string }) {
         </button>
       </div>
       {state && (
-        <p className={cx("set-msg", state.ok === true && "ok", state.ok === false && "bad")} role="status">
-          {state.ok !== null && <Icon name={state.ok ? "check" : "close"} size={14} />}
-          <span>
-            {state.ok !== null && <b>{state.ok ? "Clé valide" : state.title}</b>}
-            {state.ok === true ? null : state.msg}
-          </span>
-        </p>
+        <div className={cx("key-status", state.ok === true && "ok", state.ok === false && "bad")} role="status">
+          <span className="key-ico">{state.ok === null ? <i className="key-spin" /> : <Icon name={state.ok ? "check" : "close"} size={14} />}</span>
+          <div className="key-txt">
+            <b>{state.title}</b>
+            <span>{state.hint}</span>
+            {state.detail && (
+              <details>
+                <summary>Détail technique</summary>
+                <code>{state.detail}</code>
+              </details>
+            )}
+          </div>
+        </div>
       )}
     </div>
   );
