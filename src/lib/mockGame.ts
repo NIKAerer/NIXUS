@@ -86,10 +86,27 @@ export function mockGameDetail(m: Summary): { detail: GameDetail; timeline: Time
 
   // Kills : ceux du joueur collent exactement à sa ligne d'historique, les autres sont tirés au hasard.
   const kills: TimelineEvent[] = [];
-  const at = () => Math.round((90 + r() * (duration - 120)) * 1000);
-  const where = (): Point => pick([...LANE.TOP, ...LANE.MIDDLE, ...LANE.BOTTOM, DRAGON, BARON, ...CAMPS]);
-  const kill = (killerId: number, victimId: number, helpers: number[]) =>
+  // Les kills tombent par combats (même endroit, quelques secondes d'écart), comme dans une vraie partie.
+  const spots = [...LANE.TOP, ...LANE.MIDDLE, ...LANE.BOTTOM, ...CAMPS];
+  const fights = [
+    { t: 5.5 * 60 - 25, pos: DRAGON },
+    { t: 14.5 * 60 - 25, pos: BARON },
+    ...(duration > 24 * 60 ? [{ t: 24 * 60 - 30, pos: BARON }] : []),
+    { t: duration - 70, pos: myWin ? mirror({ x: 3600, y: 3600 }) : { x: 3600, y: 3600 } },
+    ...Array.from({ length: 5 }, () => ({ t: 100 + r() * (duration - 240), pos: pick(spots) })),
+  ].map((f) => ({ ...f, dead: new Set<number>() }));
+  let fight = fights[0];
+  const at = () => Math.round((fight.t + r() * 22) * 1000);
+  const where = (): Point => ({ x: Math.round(fight.pos.x + (r() - 0.5) * 1500), y: Math.round(fight.pos.y + (r() - 0.5) * 1500) });
+  const kill = (killerId: number, victimId: number, helpers: number[]) => {
+    // Dans un même combat, on ne meurt qu'une fois.
+    for (let tries = 0; tries < 8; tries++) {
+      fight = pick(fights);
+      if (!fight.dead.has(victimId) && !fight.dead.has(killerId)) break;
+    }
+    fight.dead.add(victimId);
     kills.push({ type: "CHAMPION_KILL", timestamp: at(), killerId, victimId, assistingParticipantIds: helpers, position: where() });
+  };
   const others = (team: number[], not: number) => team.filter((id) => id !== not && r() < 0.35);
   for (let i = 0; i < mine.stats.kills; i++) kill(meId, pick(enemies), others(allies, meId));
   for (let i = 0; i < mine.stats.deaths; i++) {
@@ -166,11 +183,14 @@ export function mockGameDetail(m: Summary): { detail: GameDetail; timeline: Time
       else pos = LANE[p.role][Math.min(2, Math.floor(r() * 3))];
       if (p.teamId === 200) pos = mirror(pos);
       const jitter = min === 0 ? 0 : 500;
-      const killsSoFar = count((e) => e.killerId === id && e.timestamp <= ts);
+      const killsSoFar = count((e) => e.type === "CHAMPION_KILL" && e.killerId === id && e.timestamp <= ts);
+      // Tours et Nashor rapportent à toute l'équipe.
+      const sameTeam = (e: TimelineEvent) => (e.killerId ?? 0) <= 5 === id <= 5 && e.timestamp <= ts;
+      const shared = count((e) => e.type === "BUILDING_KILL" && sameTeam(e)) * 130 + count((e) => e.monsterType === "BARON_NASHOR" && sameTeam(e)) * 300;
       participantFrames[String(id)] = {
         participantId: id,
         position: { x: Math.round(pos.x + (r() - 0.5) * jitter), y: Math.round(pos.y + (r() - 0.5) * jitter) },
-        totalGold: 500 + Math.round(min * (330 + r() * 40 + (p.role === "UTILITY" ? -90 : 0)) + killsSoFar * 300),
+        totalGold: 500 + Math.round(min * (330 + r() * 40 + (p.role === "UTILITY" ? -90 : 0)) + killsSoFar * 300 + shared),
         level: Math.min(18, 1 + Math.floor(min * 0.62)),
         minionsKilled: p.role === "JUNGLE" ? Math.floor(min * 0.6) : p.role === "UTILITY" ? Math.floor(min * 1.2) : Math.floor(min * 7.1),
         jungleMinionsKilled: p.role === "JUNGLE" ? Math.floor(min * 5.6) : 0,

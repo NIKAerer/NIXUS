@@ -5,10 +5,10 @@ import { useStatic, type StaticData } from "../lib/ddragon";
 import { championSplash, clock, lcu, queueName, timeAgo } from "../lib/lcu";
 import type { GameDetail, Match, Timeline } from "../lib/types";
 import { Art, Breathing, ChampIcon, CloseButton, Icon, Modal, Tabs, cx, dec, int, kda, kilo } from "../ui";
-import { momentsOf, toPlayers, type GamePlayer, type Moment } from "./game";
-import { Replay } from "./Replay";
+import { toPlayers, type GamePlayer } from "./game";
+import { Story } from "./Story";
 
-type Tab = "board" | "replay" | "moments";
+type Tab = "board" | "story";
 const MULTI: Record<number, string> = { 2: "Double kill", 3: "Triple kill", 4: "Quadra kill", 5: "Penta kill" };
 
 /** Bandeau d'une partie : splash du champion, résultat en grand, chiffres clés. Partagé avec l'écran de fin de partie. */
@@ -71,7 +71,7 @@ export function HeroStats({ k, d, a, teamKills, cs, damage, vision, minutes }: {
   );
 }
 
-/** Fiche plein écran d'une ancienne partie : tableau, replay sur la carte, moments forts. */
+/** Fiche plein écran d'une ancienne partie : tableau et film de la partie. */
 export function MatchDetail({ match, myPuuid, onClose }: { match: Match; myPuuid?: string; onClose: () => void }) {
   const champions = useClient((s) => s.champions);
   const [detail, setDetail] = useState<GameDetail | null>(null);
@@ -123,31 +123,21 @@ export function MatchDetail({ match, myPuuid, onClose }: { match: Match; myPuuid
   );
 }
 
-/** Onglets Tableau, Replay et Moments forts, partagés par la fiche de partie et l'écran de fin de partie. */
+/** Onglets Tableau et Film de la partie, partagés par la fiche de partie et l'écran de fin de partie. */
 export function GameTabs({ detail, timeline, players, myTeam, duration, assets, onReport }: { detail: GameDetail; timeline: Timeline | null; players: GamePlayer[]; myTeam: number; duration: number; assets: StaticData | null; onReport?: (p: GamePlayer) => void }) {
   const [tab, setTab] = useState<Tab>("board");
-  const [jumpTo, setJumpTo] = useState<number | null>(null);
   const minutes = Math.max(duration / 60, 1);
   const tabs: [Tab, string][] = [["board", "Tableau"]];
-  if (timeline) tabs.push(["replay", "Replay"], ["moments", "Moments forts"]);
+  if (timeline) tabs.push(["story", "Film de la partie"]);
+  const won = detail.teams.find((t) => t.teamId === myTeam)?.win === "Win";
   return (
     <>
       {tabs.length > 1 && <Tabs value={tab} options={tabs} onChange={setTab} />}
       <div className="game-body">
         {tab === "board" || !timeline ? (
           <Scoreboard detail={detail} players={players} myTeam={myTeam} assets={assets} minutes={minutes} onReport={onReport} />
-        ) : tab === "replay" ? (
-          <Replay timeline={timeline} players={players} duration={duration} assets={assets} start={jumpTo} />
         ) : (
-          <Moments
-            timeline={timeline}
-            players={players}
-            myTeam={myTeam}
-            onJump={(t) => {
-              setJumpTo(Math.max(0, t - 8));
-              setTab("replay");
-            }}
-          />
+          <Story timeline={timeline} players={players} myTeam={myTeam} won={won} duration={duration} assets={assets} />
         )}
       </div>
     </>
@@ -309,172 +299,5 @@ function Slot({ asset, round }: { asset?: { name: string; icon: string }; round?
     <span className={cx("slot-ico", round && "round")} title={asset.name}>
       <Art src={asset.icon} alt={asset.name} />
     </span>
-  );
-}
-
-/* ---------- Moments forts ---------- */
-
-const DRAKES: Record<string, string> = {
-  FIRE_DRAGON: "Drake infernal",
-  WATER_DRAGON: "Drake des océans",
-  EARTH_DRAGON: "Drake des montagnes",
-  AIR_DRAGON: "Drake des nuages",
-  HEXTECH_DRAGON: "Drake hextech",
-  CHEMTECH_DRAGON: "Drake chemtech",
-  ELDER_DRAGON: "Drake ancestral",
-};
-const MONSTERS: Record<string, string> = { BARON_NASHOR: "Baron Nashor", RIFTHERALD: "Héraut de la Faille", HORDE: "Larve du Néant", ATAKHAN: "Atakhan" };
-const LANES: Record<string, string> = { TOP_LANE: "du haut", MID_LANE: "du milieu", BOT_LANE: "du bas" };
-
-type Filter = "all" | "me" | "kills" | "objectives";
-const FILTERS: [Filter, string][] = [
-  ["all", "Tout"],
-  ["me", "Mes actions"],
-  ["kills", "Kills"],
-  ["objectives", "Objectifs"],
-];
-const passes = (m: Moment, f: Filter) => f === "all" || (f === "me" ? m.mine : f === "kills" ? m.kind === "kill" : m.kind !== "kill");
-
-function Moments({ timeline, players, myTeam, onJump }: { timeline: Timeline; players: GamePlayer[]; myTeam: number; onJump: (t: number) => void }) {
-  const [filter, setFilter] = useState<Filter>("all");
-  const byId = useMemo(() => new Map(players.map((p) => [p.id, p])), [players]);
-  const all = useMemo(() => momentsOf(timeline, players), [timeline, players]);
-  const shown = all.filter((m) => passes(m, filter));
-
-  const label = (m: Moment) => {
-    const e = m.event;
-    if (m.kind === "kill") {
-      const killer = byId.get(e.killerId ?? 0);
-      const victim = byId.get(e.victimId ?? 0)!;
-      const helpers = (e.assistingParticipantIds ?? []).map((id) => byId.get(id)).filter(Boolean) as GamePlayer[];
-      return (
-        <>
-          <span className="moment-kill">
-            {killer ? <ChampIcon id={killer.championId} /> : <i className="slot-ico" />}
-            <Icon name="close" size={12} />
-            <ChampIcon id={victim.championId} />
-          </span>
-          <span className="two">
-            <b>
-              {killer ? (killer.me ? "Tu" : killer.champion) : "La tourelle"} {killer?.me ? "as tué" : "a tué"} {victim.me ? "toi" : victim.champion}
-            </b>
-            {helpers.length > 0 && <small>avec {helpers.map((h) => (h.me ? "toi" : h.champion)).join(", ")}</small>}
-          </span>
-        </>
-      );
-    }
-    const name =
-      m.kind === "objective"
-        ? e.monsterType === "DRAGON"
-          ? DRAKES[e.monsterSubType ?? ""] ?? "Drake"
-          : MONSTERS[e.monsterType ?? ""] ?? "Monstre épique"
-        : `${e.buildingType === "INHIBITOR_BUILDING" ? "Inhibiteur" : "Tourelle"} ${LANES[e.laneType ?? ""] ?? ""}`.trim();
-    return (
-      <>
-        <span className={cx("moment-obj", m.kind)} aria-hidden="true" />
-        <span className="two">
-          <b>{name}</b>
-          <small>
-            {m.team === myTeam ? "pour ton équipe" : "pour l'équipe adverse"}
-            {m.mine ? " · c'est toi" : ""}
-          </small>
-        </span>
-      </>
-    );
-  };
-
-  return (
-    <div className="moments">
-      <GoldChart timeline={timeline} players={players} myTeam={myTeam} />
-      <div className="chips">
-        {FILTERS.map(([value, text]) => (
-          <button key={value} className="chip" aria-pressed={filter === value} onClick={() => setFilter(value)}>
-            {text}
-            <span>{all.filter((m) => passes(m, value)).length}</span>
-          </button>
-        ))}
-      </div>
-      <ol className="feed">
-        {shown.map((m, i) => (
-          <li key={i}>
-            <button className={cx("moment", m.team === myTeam ? "ally" : "enemy", m.mine && "mine")} onClick={() => onJump(m.t)} title="Voir sur la carte">
-              <time className="mono">{clock(m.t)}</time>
-              {label(m)}
-              <span className="moment-see">Voir sur la carte</span>
-            </button>
-          </li>
-        ))}
-        {shown.length === 0 && <li className="wait">Rien à afficher pour ce filtre.</li>}
-      </ol>
-    </div>
-  );
-}
-
-/** Courbe de l'avance en or de ton équipe, minute par minute. */
-function GoldChart({ timeline, players, myTeam }: { timeline: Timeline; players: GamePlayer[]; myTeam: number }) {
-  const teamOf = new Map(players.map((p) => [p.id, p.teamId]));
-  const points = timeline.frames.map((f) => {
-    let diff = 0;
-    for (const pf of Object.values(f.participantFrames ?? {})) diff += (teamOf.get(pf.participantId) === myTeam ? 1 : -1) * (pf.totalGold ?? 0);
-    return { t: f.timestamp / 1000, diff };
-  });
-  if (points.length < 2) return null;
-  const W = 1000;
-  const H = 160;
-  const maxT = points[points.length - 1].t || 1;
-  const maxAbs = Math.max(1000, ...points.map((p) => Math.abs(p.diff)));
-  const x = (t: number) => (t / maxT) * W;
-  const y = (v: number) => H / 2 - (v / maxAbs) * (H / 2 - 8);
-  const line = points.map((p, i) => `${i ? "L" : "M"}${x(p.t).toFixed(1)} ${y(p.diff).toFixed(1)}`).join(" ");
-  const area = `${line} L${W} ${H / 2} L0 ${H / 2} Z`;
-  const best = points.reduce((m, p) => (p.diff > m.diff ? p : m), points[0]);
-  const worst = points.reduce((m, p) => (p.diff < m.diff ? p : m), points[0]);
-  const last = points[points.length - 1];
-
-  return (
-    <section className="gold card card-pad">
-      <div className="card-head">
-        Avance en or
-        <span>
-          {best.diff > 0 && (
-            <>
-              Meilleure avance <b className="up">+{kilo(best.diff)}</b> à {clock(best.t)} ·{" "}
-            </>
-          )}
-          {worst.diff < 0 && (
-            <>
-              plus gros retard <b className="down">{kilo(worst.diff)}</b> à {clock(worst.t)} ·{" "}
-            </>
-          )}
-          fin{" "}
-          <b className={last.diff >= 0 ? "up" : "down"}>
-            {last.diff >= 0 ? "+" : ""}
-            {kilo(last.diff)}
-          </b>
-        </span>
-      </div>
-      <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" role="img" aria-label="Avance en or de ton équipe au fil de la partie">
-        <defs>
-          <clipPath id="gold-up">
-            <rect width={W} height={H / 2} />
-          </clipPath>
-          <clipPath id="gold-down">
-            <rect y={H / 2} width={W} height={H / 2} />
-          </clipPath>
-        </defs>
-        {[0.25, 0.5, 0.75].map((f) => (
-          <line key={f} x1={W * f} x2={W * f} y1={0} y2={H} className="gold-grid" />
-        ))}
-        <path d={area} clipPath="url(#gold-up)" className="gold-area up" />
-        <path d={area} clipPath="url(#gold-down)" className="gold-area down" />
-        <line x1={0} x2={W} y1={H / 2} y2={H / 2} className="gold-zero" />
-        <path d={line} className="gold-line" vectorEffect="non-scaling-stroke" />
-      </svg>
-      <div className="gold-axis mono">
-        {[0, 0.25, 0.5, 0.75, 1].map((f) => (
-          <span key={f}>{clock(maxT * f)}</span>
-        ))}
-      </div>
-    </section>
   );
 }

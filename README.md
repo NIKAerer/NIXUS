@@ -40,7 +40,7 @@ The official League client is heavy and its UI has grown over a decade. NIXUS is
 
 **In game and after**
 - In-game screen, end-of-game recap, honor ballot and player reports.
-- Match detail with timeline, gold difference and a 2D replay of champion positions on the map.
+- Match detail with a "game film": the gold curve cut into 4 to 6 key chapters (fights, objectives, turning point), a map of each fight, the full event log and a 2D replay.
 
 **Grind tracker**
 - Every ranked game is archived locally with its detail and timeline.

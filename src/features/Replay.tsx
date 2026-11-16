@@ -203,7 +203,7 @@ export function Replay({ timeline, players, duration, assets, start }: { timelin
 }
 
 /** Portrait du champion sur la carte, retiré s'il ne charge pas (on garde alors la pastille de couleur). */
-function MarkerImage({ id }: { id: number }) {
+export function MarkerImage({ id }: { id: number }) {
   const [failed, setFailed] = useState(false);
   if (failed) return null;
   return <image href={championSquare(id)} x={-430} y={-430} width={860} height={860} clipPath="url(#replay-clip)" onError={() => setFailed(true)} />;
@@ -243,7 +243,7 @@ function Trail({ samples, t, stroke }: { samples: Sample[]; t: number; stroke: s
 }
 
 /** Carte simplifiée, visible même si l'image de Data Dragon ne charge pas. */
-function Schematic() {
+export function Schematic() {
   return (
     <g className="replay-schematic">
       <rect width={SIZE} height={SIZE} />
