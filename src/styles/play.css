@@ -54,3 +54,6 @@
 .skinpick-skins button:hover { transform: scale(1.02); outline-color: var(--line-2); }
 .skinpick-skins button[aria-pressed="true"] { outline-color: var(--accent); }
 .skinpick-skins b { font-size: 13px; }
+.modes-search { margin-bottom: 10px; }
+.modes-search .input { width: 100%; }
+.join-pass .input { width: 100%; }

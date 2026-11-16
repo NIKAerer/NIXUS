@@ -351,6 +351,7 @@ export interface CustomGame {
   mapId?: number;
   filledPlayerSlots?: number;
   maxPlayers?: number;
+  maxPlayerSlots?: number;
   hasPassword?: boolean;
   spectatorPolicy?: string;
 }
