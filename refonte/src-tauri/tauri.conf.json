@@ -1,0 +1,74 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "NIXUS Refonte",
+  "version": "1.0.0",
+  "identifier": "com.nika.nixus.refonte",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:1421",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "NIXUS",
+        "width": 1280,
+        "height": 760,
+        "minWidth": 1100,
+        "minHeight": 680,
+        "center": true,
+        "backgroundColor": "#09090b",
+        "decorations": false,
+        "shadow": true
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; img-src 'self' data: https://cdn.communitydragon.org https://raw.communitydragon.org https://ddragon.leagueoflegends.com; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' ipc: http://ipc.localhost https://ddragon.leagueoflegends.com"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": [
+      "nsis"
+    ],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "createUpdaterArtifacts": false,
+    "publisher": "Nika",
+    "shortDescription": "NIXUS, la refonte",
+    "longDescription": "NIXUS, un client League of Legends personnel au style Cinéma (refonte complète de l’interface).",
+    "copyright": "© 2026 Nika",
+    "category": "Game",
+    "windows": {
+      "nsis": {
+        "installerIcon": "icons/icon.ico",
+        "headerImage": "installer/header.bmp",
+        "sidebarImage": "installer/sidebar.bmp",
+        "languages": [
+          "French"
+        ],
+        "displayLanguageSelector": false,
+        "installMode": "currentUser",
+        "startMenuFolder": "NIXUS Refonte"
+      }
+    }
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IERFQzQ4ODhDMDQ5QkIzRDIKUldUU3M1c0VqSWpFM2p6TTF4V0RzbUp6Zjk1R05DWkw2U2lxOU1WZS96SytoSzJiN3ErZzJIV3AK",
+      "endpoints": [
+        "https://raw.githubusercontent.com/NIKAerer/NIXUS/main/refonte/latest.json"
+      ],
+      "windows": {
+        "installMode": "passive"
+      }
+    }
+  }
+}
