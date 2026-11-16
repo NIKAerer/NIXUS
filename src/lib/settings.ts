@@ -31,10 +31,12 @@ export interface Settings {
   calmInGame: boolean;
   /** Chercher une mise à jour au démarrage. */
   checkUpdates: boolean;
+  /** Thème de couleurs (voir lib/themes.ts). */
+  theme: string;
 }
 
 const KEY = "nexus.settings";
-export const DEFAULTS: Settings = { readySound: true, volume: 0.6, readyFocus: true, randomSkins: true, heroFx: true, queueBar: true, modeBadges: true, riotKey: "", riotRegion: "europe", importSince: "2026-10-04", lpStart: "594", autoLaunchLol: true, hideLol: true, readyNotify: true, breath: true, breathAmt: 60, calmInGame: true, checkUpdates: true };
+export const DEFAULTS: Settings = { readySound: true, volume: 0.6, readyFocus: true, randomSkins: true, heroFx: true, queueBar: true, modeBadges: true, riotKey: "", riotRegion: "europe", importSince: "2026-10-04", lpStart: "594", autoLaunchLol: true, hideLol: true, readyNotify: true, breath: true, breathAmt: 60, calmInGame: true, checkUpdates: true, theme: "cinema" };
 
 let current: Settings = (() => {
   try {
@@ -45,6 +47,12 @@ let current: Settings = (() => {
 })();
 const listeners = new Set<(s: Settings) => void>();
 
+/** Le thème est posé sur la racine du document : les fenêtres et l'écran de démarrage le suivent aussi. */
+const applyTheme = () => {
+  document.documentElement.dataset.theme = current.theme || DEFAULTS.theme;
+};
+applyTheme();
+
 export const getSettings = () => current;
 
 export function setSettings(patch: Partial<Settings>) {
@@ -54,6 +62,7 @@ export function setSettings(patch: Partial<Settings>) {
   } catch {
     /* stockage indisponible */
   }
+  if (patch.theme !== undefined) applyTheme();
   listeners.forEach((l) => l(current));
 }
 
