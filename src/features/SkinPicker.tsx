@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { championSquare, lcu, skinSplash } from "../lib/lcu";
+import { championSquare, isClassicCopy, lcu, skinSplash } from "../lib/lcu";
 import type { ChampionSummary, Skin } from "../lib/types";
 import { Breathing, CloseButton, Modal, readJson } from "../ui";
 
@@ -43,7 +43,7 @@ export function SkinPicker({ champions, current, autoChampion, onChange, onClose
 
   const list = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return [...champions.values()].filter((c) => !q || c.name.toLowerCase().includes(q)).sort((a, b) => a.name.localeCompare(b.name, "fr"));
+    return [...champions.values()].filter((c) => !isClassicCopy(c) && (!q || c.name.toLowerCase().includes(q))).sort((a, b) => a.name.localeCompare(b.name, "fr"));
   }, [champions, query]);
 
   const pick = (v: HeroSkin | null) => {

@@ -1,6 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { Fragment, useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
-import { loadRecords, riotAccount, riotError, snapshot } from "../lib/archive";
+import { loadRecords, riotAccount, riotProblem, snapshot, type RiotProblem } from "../lib/archive";
 import { runningCount } from "../lib/breath";
 import { showLolWindow } from "../lib/client";
 import { isDesktop, lcu, timeAgo } from "../lib/lcu";
@@ -283,17 +283,17 @@ function mark(text: string, q: string): ReactNode {
 function RiotKey({ hintId }: { hintId: string }) {
   const s = useSettings();
   const [show, setShow] = useState(false);
-  const [state, setState] = useState<{ ok: boolean | null; msg: string } | null>(null);
+  const [state, setState] = useState<({ ok: boolean | null } & RiotProblem) | null>(null);
   const check = async () => {
-    setState({ ok: null, msg: "Vérification…" });
+    setState({ ok: null, title: "Vérification…", hint: "NIXUS demande ton compte à l'API Riot avec cette clé." });
     try {
       const me = await lcu<Summoner>("GET", "/lol-summoner/v1/current-summoner").catch(() => null);
       if (!me) throw new Error("Connecte-toi au client LoL pour tester la clé.");
       if (!me.gameName || !me.tagLine) throw new Error("Le client n'a pas encore donné ton Riot ID. Réessaie dans un instant.");
       await riotAccount(me.gameName, me.tagLine, s.riotKey, s.riotRegion);
-      setState({ ok: true, msg: `Clé valide pour ${me.gameName}#${me.tagLine}.` });
+      setState({ ok: true, title: "Clé valide", hint: `Elle fonctionne pour ${me.gameName}#${me.tagLine}.` });
     } catch (e) {
-      setState({ ok: false, msg: `${riotError(e)} (${s.riotKey.length} caractères, 42 attendus).` });
+      setState({ ok: false, ...riotProblem(e, s.riotKey) });
     }
   };
   return (
@@ -318,11 +318,19 @@ function RiotKey({ hintId }: { hintId: string }) {
         </button>
       </div>
       {state && (
-        <small className="set-msg" role="status">
-          {state.ok === true && <span className="tag green">valide</span>}
-          {state.ok === false && <span className="tag red">invalide</span>}
-          {state.msg}
-        </small>
+        <div className={cx("key-status", state.ok === true && "ok", state.ok === false && "bad")} role="status">
+          <span className="key-ico">{state.ok === null ? <i className="key-spin" /> : <Icon name={state.ok ? "check" : "close"} size={14} />}</span>
+          <div className="key-txt">
+            <b>{state.title}</b>
+            <span>{state.hint}</span>
+            {state.detail && (
+              <details>
+                <summary>Détail technique</summary>
+                <code>{state.detail}</code>
+              </details>
+            )}
+          </div>
+        </div>
       )}
     </div>
   );
