@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { RANDOM_THEME, THEMES } from "./themes";
 
 /** Préférences de NIXUS, gardées sur ce PC. */
 export interface Settings {
@@ -47,9 +48,28 @@ let current: Settings = (() => {
 })();
 const listeners = new Set<(s: Settings) => void>();
 
+/** « random » : un thème tiré au hasard à chaque lancement, jamais le même que la fois d'avant. */
+function resolveTheme(id: string) {
+  if (id !== RANDOM_THEME) return id;
+  let last = "";
+  try {
+    last = localStorage.getItem("nixus.lastTheme") ?? "";
+  } catch {
+    /* stockage indisponible */
+  }
+  const pool = THEMES.filter((t) => t.id !== last);
+  const pick = (pool.length ? pool : THEMES)[Math.floor(Math.random() * (pool.length || THEMES.length))].id;
+  try {
+    localStorage.setItem("nixus.lastTheme", pick);
+  } catch {
+    /* stockage indisponible */
+  }
+  return pick;
+}
+
 /** Le thème est posé sur la racine du document : les fenêtres et l'écran de démarrage le suivent aussi. */
 const applyTheme = () => {
-  document.documentElement.dataset.theme = current.theme || DEFAULTS.theme;
+  document.documentElement.dataset.theme = resolveTheme(current.theme || DEFAULTS.theme);
 };
 applyTheme();
 
