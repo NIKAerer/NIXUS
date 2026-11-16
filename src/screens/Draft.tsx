@@ -75,7 +75,9 @@ export function Draft() {
           {session.myTeam.map((p) => {
             const isMe = p.cellId === d.local;
             // Ta carte montre aussi le champion que tu regardes, pour ne jamais rester vide.
-            const id = p.championId || p.championPickIntent || (isMe && !isBan ? shownId : 0);
+            // Le champion survolé par un allié : son intention (planning) ou l'action de pick en cours.
+            const pickHover = d.actions.find((a) => a.type === "pick" && a.actorCellId === p.cellId && !a.completed && a.championId > 0)?.championId ?? 0;
+            const id = p.championId || p.championPickIntent || pickHover || (isMe && !isBan ? shownId : 0);
             const banHover = d.actions.find((a) => a.type === "ban" && a.actorCellId === p.cellId && a.isInProgress && a.championId);
             const offers = SWAP_KINDS.map((kind) => ({ kind, t: d.swapsOf(kind).find((t) => t.cellId === p.cellId && (t.state === "AVAILABLE" || t.state === "SENT")) })).filter((o) => o.t);
             const art = isMe && locked && d.skinId ? skinSplash(p.championId, d.skinId) : id ? championSplash(id) : "";

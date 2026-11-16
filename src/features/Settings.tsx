@@ -5,7 +5,7 @@ import { runningCount } from "../lib/breath";
 import { showLolWindow } from "../lib/client";
 import { isDesktop, lcu, timeAgo } from "../lib/lcu";
 import { DEFAULTS, setSettings, useSettings, type Settings } from "../lib/settings";
-import { THEMES } from "../lib/themes";
+import { RANDOM_THEME, THEMES } from "../lib/themes";
 import type { Summoner } from "../lib/types";
 import { appVersion, checkUpdate, installUpdate, useUpdate } from "../lib/updater";
 import { nav } from "../lib/view";
@@ -134,7 +134,7 @@ export function SettingsPanel() {
       id: "theme",
       sec: "app",
       label: "Thème",
-      hint: "Les couleurs de toute l'interface. Appliqué tout de suite.",
+      hint: "Les couleurs de toute l'interface. « Aléatoire » change de thème à chaque lancement.",
       words: "couleur couleurs theme apparence " + THEMES.map((t) => t.name).join(" "),
       control: () => (
         <div className="themes" role="group" aria-label="Thème">
@@ -144,6 +144,10 @@ export function SettingsPanel() {
               {t.name}
             </button>
           ))}
+          <button type="button" aria-pressed={s.theme === RANDOM_THEME} onClick={() => setSettings({ theme: RANDOM_THEME })} title="Un thème différent à chaque lancement de NIXUS">
+            <i className="rand" />
+            Aléatoire
+          </button>
         </div>
       ),
     },

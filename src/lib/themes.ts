@@ -10,6 +10,9 @@ export interface Theme {
   swatch: [string, string];
 }
 
+/** Choix spécial des réglages : un thème différent à chaque lancement. */
+export const RANDOM_THEME = "random";
+
 export const THEMES: Theme[] = [
   { id: "cinema", name: "Cinéma", swatch: ["#e50914", "#08080a"] },
   { id: "abysse", name: "Abysse", swatch: ["#2f6bff", "#060912"] },
