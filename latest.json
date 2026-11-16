@@ -1,11 +1,11 @@
 {
-    "version":  "1.0.0",
-    "notes":  "Nouvelle interface : barre de jeu toujours en bas, accueil avec ton rang, ta journée et ta série, 5 thèmes de couleurs (Paramètres \u003e Apparence), pages Grind et Profil repensées, panneau des amis qui pousse la page. Tes réglages et ton archive sont gardés.",
-    "pub_date":  "2026-11-16T17:37:27Z",
-    "platforms":  {
-                      "windows-x86_64":  {
-                                             "signature":  "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUU3M1c0VqSWpFM3FYRjhVcmpGcld5T2tDZzhIdm9uUmpyeUFhSktYOCtQRS8rSmRpa0N4cjJodUtPSy9XTUZ6SWdXUmJiWGR6NmRHZlR0U2Jqd1R6eEVzWWJsRkE5Z1FVPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk0ODUwMTg0CWZpbGU6TklYVVNfMS4wLjBfeDY0LXNldHVwLmV4ZQl2ZXJzaW9uOjEuMC4wCkRGcDJGb3IwZnFvb00yT0ozdkEyOEtTTFdMMmNtTENYNlZMaW4rZUdJNVBqUTBtSEFnL3JuQVpsMXBjWDVqTDNObTF3L3hGSVQxeHVPNVFrenhUb0F3PT0K",
-                                             "url":  "https://github.com/NIKAerer/NIXUS/raw/main/releases/NIXUS_1.0.0_x64-setup.exe"
-                                         }
-                  }
+  "version": "1.0.1",
+  "notes": "Finalisation plus dense, thème aléatoire, intentions des alliés, 10 champions en partie, nouveau Film de la partie.",
+  "pub_date": "2026-11-16T18:39:23Z",
+  "platforms": {
+    "windows-x86_64": {
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUU3M1c0VqSWpFM3Z0djArOG85Q1pkQmF5dHI1am9UVlFVKzlIUyt5MERWRHlhcWpzNWN6OWxmZzVxNjh5cGk4bVd1MkFzV29vYmFnMktydGZIeVYwbEVjSi9LTURCNGdrPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk0ODU0MzU0CWZpbGU6TklYVVNfMS4wLjFfeDY0LXNldHVwLmV4ZQl2ZXJzaW9uOjEuMC4xClVpQm52M2d3SERrbG91akFLUHEwVWx3T2JmY05hQXJRVWgzNFc5YTVXRitIT2psT1VlalMwQ3JuQU5tamx5eTJ2THJka2lKb3hqcEREVTZ5TWdpYkJnPT0K",
+      "url": "https://github.com/NIKAerer/NIXUS/raw/main/releases/NIXUS_1.0.1_x64-setup.exe"
+    }
+  }
 }
