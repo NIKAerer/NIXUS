@@ -242,3 +242,24 @@
 .game:has(.story) .ghero-stats .stat { padding: 6px 12px; min-width: 0; }
 .game:has(.story) .ghero-stats .stat small { display: none; }
 .eog .scene-map { top: calc(var(--bar) + 12px); }
+
+/* Parcours de jungle (trajets reconstitués) */
+.replay-camp text { font: 700 360px var(--body); }
+.replay-route { display: flex; flex-direction: column; gap: 10px; padding: 12px 14px; border-radius: 14px; background: var(--panel); border: 1px solid var(--line); }
+.replay-route header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.replay-route header b { font: 400 17px var(--display); letter-spacing: 0.05em; }
+.replay-route-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.replay-route-col { min-width: 0; }
+.replay-route-who { display: flex; align-items: center; gap: 8px; padding-bottom: 6px; margin-bottom: 4px; border-bottom: 2px solid var(--c); }
+.replay-route-who img, .replay-route-who .art-missing { width: 24px; height: 24px; border-radius: 6px; flex: none; }
+.replay-route-who b { font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.replay-route ol { display: flex; flex-direction: column; max-height: 232px; overflow-y: auto; }
+.replay-route li button { display: flex; align-items: center; gap: 7px; width: 100%; padding: 3px 4px; border-radius: 6px; text-align: left; font-size: 11.5px; color: var(--faint); }
+.replay-route li button:hover { background: rgba(255, 255, 255, 0.07); color: #fff; }
+.replay-route li button.done { color: var(--text); }
+.replay-route li i { flex: none; width: 17px; height: 17px; border-radius: 50%; display: grid; place-items: center; font: 700 9.5px var(--body); font-style: normal; border: 1.5px solid var(--c); }
+.replay-route li button.done i { background: var(--c); color: #000; }
+.replay-route li span { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.15; }
+.replay-route li em { font-style: normal; font-size: 9.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--gold); }
+.replay-route li time { font-size: 10.5px; color: var(--dim); }
+.replay-route .note { font-size: 11px; }
