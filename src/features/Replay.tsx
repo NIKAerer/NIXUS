@@ -4,11 +4,11 @@ import { championSquare, clock } from "../lib/lcu";
 import type { Timeline } from "../lib/types";
 import { ChampIcon, Icon, Seg, cx, kilo } from "../ui";
 import { momentsOf, type GamePlayer } from "./game";
-import { buildPathing, positionAt, type CampKill, type Sample } from "./pathing";
+import { buildPathing, positionAt, type Sample } from "./pathing";
 
 /** Les coordonnées Riot vont de 0 à ~15 000, base bleue en bas à gauche. */
 const SIZE = 15000;
-const TRAILS = [180, 0] as const;
+const TRAILS = [30, 60, 0] as const;
 const SPEEDS = [8, 15, 30, 60] as const;
 const JUMPS = [3, 5, 10, 15, 20];
 
@@ -18,7 +18,7 @@ export function Replay({ timeline, players, duration, assets, start }: { timelin
   const [t, setT] = useState(start ?? 0);
   const [playing, setPlaying] = useState(start === null);
   const [speed, setSpeed] = useState<number>(15);
-  const [trail, setTrail] = useState<number>(180);
+  const [trail, setTrail] = useState<number>(30);
   const pathing = useMemo(() => buildPathing(timeline, players), [timeline, players]);
   const tracks = pathing.tracks;
   // Par défaut on suit les deux junglers : c'est leur parcours qu'on vient lire ici.
@@ -157,7 +157,7 @@ export function Replay({ timeline, players, duration, assets, start }: { timelin
             ))}
             <button onClick={() => jump(end)}>Fin</button>
           </div>
-          <Seg value={trail} onChange={setTrail} label="Longueur du trajet affiché" options={TRAILS.map((v) => [v, v ? "3 dernières min" : "Depuis le début"] as const)} />
+          <Seg value={trail} onChange={setTrail} label="Longueur du trajet affiché" options={TRAILS.map((v) => [v, v ? `${v} s` : "Tout"] as const)} />
           <Seg value={speed} onChange={setSpeed} label="Vitesse" options={SPEEDS.map((s) => [s, `×${s}`] as const)} />
         </div>
       </div>
@@ -180,24 +180,7 @@ export function Replay({ timeline, players, duration, assets, start }: { timelin
             <b>{killsBy(enemyTeam)}</b>
           </div>
         </div>
-        {pathing.junglers.length > 0 && (
-          <section className="replay-route">
-            <header>
-              <b>Parcours de jungle</b>
-              <button className={cx("chip", focus.length > 1 && "on")} aria-pressed={focus.length > 1} onClick={() => setFocus(pathing.junglers)}>
-                Suivre les junglers
-              </button>
-            </header>
-            <div className="replay-route-cols">
-              {pathing.junglers.map((id) => {
-                const p = players.find((x) => x.id === id)!;
-                return <Route key={id} player={p} camps={campsOf(id)} t={t} color={color(p.teamId)} onJump={(to) => (setFocus([id]), jump(Math.max(0, to - 12)))} />;
-              })}
-            </div>
-            <p className="note">Trajets estimés : Riot donne une position par minute, le reste est déduit des camps tués, des kills, des objectifs et des achats.</p>
-          </section>
-        )}
-        <p className="note">Clique sur un joueur pour suivre son trajet.</p>
+        <p className="note">Clique sur un joueur pour suivre son trajet. Les trajets sont estimés : Riot ne donne qu'une position par minute.</p>
         <ul className="replay-players">
           {ordered.map((p, i) => {
             const l = live.find((x) => x.p.id === p.id)!;
@@ -230,33 +213,6 @@ export function MarkerImage({ id }: { id: number }) {
   const [failed, setFailed] = useState(false);
   if (failed) return null;
   return <image href={championSquare(id)} x={-430} y={-430} width={860} height={860} clipPath="url(#replay-clip)" onError={() => setFailed(true)} />;
-}
-
-/** Ordre des camps d'un jungler, avec l'heure estimée. Un camp de la moitié adverse est un contre-jungle. */
-function Route({ player, camps, t, color, onJump }: { player: GamePlayer; camps: CampKill[]; t: number; color: string; onJump: (t: number) => void }) {
-  return (
-    <div className="replay-route-col" style={{ "--c": color } as CSSProperties}>
-      <span className="replay-route-who">
-        <ChampIcon id={player.championId} />
-        <b>{player.me ? "Toi" : player.champion}</b>
-      </span>
-      <ol>
-        {camps.map((c, i) => (
-          <li key={i}>
-            <button className={cx(c.t <= t && "done")} onClick={() => onJump(c.t)} title="Voir sur la carte">
-              <i>{i + 1}</i>
-              <span>
-                {c.camp}
-                {c.side !== 0 && c.side !== player.teamId && <em>contre-jungle</em>}
-              </span>
-              <time className="mono">{clock(c.t)}</time>
-            </button>
-          </li>
-        ))}
-        {camps.length === 0 && <li className="note">Aucun camp relevé.</li>}
-      </ol>
-    </div>
-  );
 }
 
 /** Trajet du joueur suivi : les `span` dernières secondes (0 = depuis le début), de plus en plus visible vers le présent. */
