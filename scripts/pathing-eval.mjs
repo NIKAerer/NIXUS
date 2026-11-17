@@ -44,6 +44,12 @@ for (const f of files) {
   const game = JSON.parse(fs.readFileSync(gamePath, "utf8"));
   const players = game.participants.map((p) => ({ id: p.participantId, teamId: p.teamId, championId: p.championId }));
   const hidden = structuredClone(timeline);
+  // --client : on ne garde que ce que donne la chronologie du client (pas d'achats ni de statistiques de champion).
+  if (args.includes("--client"))
+    for (const fr of hidden.frames) {
+      fr.events = (fr.events ?? []).filter((e) => ["CHAMPION_KILL", "ELITE_MONSTER_KILL", "BUILDING_KILL", "TURRET_PLATE_DESTROYED"].includes(e.type));
+      for (const pf of Object.values(fr.participantFrames ?? {})) delete pf.championStats;
+    }
   const truth = [];
   hidden.frames.forEach((fr, i) => {
     if (i % 2 === 0 || i >= hidden.frames.length - 1) return;

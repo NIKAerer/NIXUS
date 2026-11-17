@@ -154,7 +154,7 @@ function anchorsOf(timeline: Timeline, players: GamePlayer[]): Map<number, Ancho
         const b = now.participantFrames?.[String(p.id)];
         if (a?.currentGold === undefined || b?.currentGold === undefined) continue;
         const spent = a.currentGold + (b.totalGold - a.totalGold) - b.currentGold;
-        if (spent <= 250) continue;
+        if (spent <= 50) continue;
         const from = before.timestamp / 1000;
         const to = now.timestamp / 1000;
         const list = all.get(p.id)!;
