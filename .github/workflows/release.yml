@@ -1,0 +1,88 @@
+name: Publication
+
+# À chaque fusion sur main : version suivante, installeur signé, release GitHub et latest.json,
+# pour que NIXUS propose la mise à jour au prochain lancement.
+# Il faut le secret TAURI_SIGNING_PRIVATE_KEY (contenu de la clé de signature) dans les réglages du dépôt.
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - latest.json
+      - releases/**
+      - docs/**
+      - "**.md"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    # Une publication faite à la main depuis le PC (« NIXUS x.y.z ») n'en relance pas une autre.
+    if: ${{ github.event_name == 'workflow_dispatch' || !startsWith(github.event.head_commit.message, 'NIXUS ') }}
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
+    env:
+      TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+      TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check the signing key
+        run: |
+          if [ -z "$TAURI_SIGNING_PRIVATE_KEY" ]; then
+            echo "::error::Secret TAURI_SIGNING_PRIVATE_KEY manquant : ajoute le contenu de nixus.key dans Settings > Secrets and variables > Actions."
+            exit 1
+          fi
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: Next version
+        id: bump
+        run: node scripts/release.mjs bump
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Build the signed installer
+        run: npm run tauri build
+
+      - name: Write latest.json
+        run: node scripts/release.mjs manifest
+
+      - name: GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          V: ${{ steps.bump.outputs.version }}
+        run: |
+          dir=src-tauri/target/release/bundle/nsis
+          gh release create "v$V" "$dir/NIXUS_${V}_x64-setup.exe" "$dir/NIXUS_${V}_x64-setup.exe.sig" \
+            --target "$GITHUB_SHA" --title "NIXUS $V" --notes-file release-notes.txt
+
+      - name: Commit the version and latest.json
+        env:
+          V: ${{ steps.bump.outputs.version }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          git add package.json package-lock.json src-tauri/tauri.conf.json src-tauri/Cargo.toml src-tauri/Cargo.lock latest.json
+          git commit -m "NIXUS $V"
+          git pull --rebase origin main
+          git push origin HEAD:main
