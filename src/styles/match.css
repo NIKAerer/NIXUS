@@ -171,7 +171,6 @@
 .replay-schematic path.river { stroke: #16303a; stroke-width: 900; }
 .replay-schematic .blue { fill: rgba(77, 163, 255, 0.25); }
 .replay-schematic .red { fill: rgba(255, 77, 90, 0.25); }
-.replay-champ { cursor: pointer; }
 .replay-controls { display: flex; align-items: center; gap: 14px; }
 .replay-play { width: 42px; height: 42px; border-radius: 50%; background: #fff; color: #000; display: grid; place-items: center; flex: none; }
 .replay-scrub { position: relative; flex: 1; }
@@ -185,9 +184,8 @@
 .replay-score b { display: block; font: 400 30px/1 var(--display); }
 .replay-players { display: flex; flex-direction: column; gap: 2px; }
 .replay-players li.split { margin-top: 10px; }
-.replay-players button { display: flex; align-items: center; gap: 10px; width: 100%; padding: 5px 10px 5px 6px; border-radius: var(--r-m); text-align: left; border-left: 3px solid var(--c); background: rgba(255, 255, 255, 0.03); }
-.replay-players button:hover { background: rgba(255, 255, 255, 0.07); }
-.replay-players button.on { background: rgba(255, 255, 255, 0.13); }
+.replay-player { display: flex; align-items: center; gap: 10px; width: 100%; padding: 5px 10px 5px 6px; border-radius: var(--r-m); text-align: left; border-left: 3px solid var(--c); background: rgba(255, 255, 255, 0.03); }
+.replay-player.on { background: rgba(255, 255, 255, 0.13); }
 .replay-players img, .replay-players .art-missing { width: 32px; height: 32px; border-radius: 8px; flex: none; }
 .replay-players span { display: flex; flex-direction: column; min-width: 0; line-height: 1.2; flex: 1; }
 .replay-players span.right { text-align: right; flex: none; }
@@ -243,4 +241,3 @@
 .game:has(.story) .ghero-stats .stat small { display: none; }
 .eog .scene-map { top: calc(var(--bar) + 12px); }
 
-.replay-camp text { font: 700 360px var(--body); }

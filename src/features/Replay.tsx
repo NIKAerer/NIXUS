@@ -8,22 +8,21 @@ import { buildPathing, positionAt, type Sample } from "./pathing";
 
 /** Les coordonnées Riot vont de 0 à ~15 000, base bleue en bas à gauche. */
 const SIZE = 15000;
-const TRAILS = [30, 60, 0] as const;
+/** Le trajet s'efface tout seul : un point disparaît 1 min 30 de jeu après le passage du jungler. */
+const TRAIL = 90;
 const SPEEDS = [8, 15, 30, 60] as const;
 const JUMPS = [3, 5, 10, 15, 20];
 
-/** Rejoue la partie sur la carte : trajets reconstitués des dix joueurs, camps de jungle, kills et objectifs. */
+/** Rejoue la partie sur la carte : les dix joueurs, le trajet estimé des deux junglers et leurs combats. */
 export function Replay({ timeline, players, duration, assets, start }: { timeline: Timeline; players: GamePlayer[]; duration: number; assets: StaticData | null; start: number | null }) {
   const me = players.find((p) => p.me);
   const [t, setT] = useState(start ?? 0);
   const [playing, setPlaying] = useState(start === null);
   const [speed, setSpeed] = useState<number>(15);
-  const [trail, setTrail] = useState<number>(30);
   const pathing = useMemo(() => buildPathing(timeline, players), [timeline, players]);
   const tracks = pathing.tracks;
-  // Par défaut on suit les deux junglers : c'est leur parcours qu'on vient lire ici.
-  const [focus, setFocus] = useState<number[]>(() => (pathing.junglers.length ? pathing.junglers : me ? [me.id] : []));
-  const toggle = (id: number) => setFocus((f) => (f.length === 1 && f[0] === id ? [] : [id]));
+  // Seuls les junglers ont un trajet affiché : c'est leur parcours qu'on vient lire ici.
+  const focus = pathing.junglers;
   const [mapFailed, setMapFailed] = useState(false);
   const end = Math.max(duration, timeline.frames[timeline.frames.length - 1]?.timestamp / 1000 || 0);
 
@@ -65,12 +64,24 @@ export function Replay({ timeline, players, duration, assets, start }: { timelin
   const goldOf = (team: number) => live.filter((l) => l.p.teamId === team).reduce((s, l) => s + l.gold, 0);
   const diff = goldOf(allyTeam) - goldOf(enemyTeam);
 
-  const recent = moments.filter((m) => m.t <= t && t - m.t < 25 && m.event.position);
+  // Arrêts marqués sur le trajet : uniquement les combats où un jungler a tué, est mort ou a aidé.
+  const fights = useMemo(
+    () =>
+      timeline.frames
+        .flatMap((f) => f.events ?? [])
+        .filter((e) => e.type === "CHAMPION_KILL" && e.position)
+        .flatMap((e) =>
+          focus
+            .filter((id) => e.killerId === id || e.victimId === id || e.assistingParticipantIds?.includes(id))
+            .map((id) => ({ id, t: e.timestamp / 1000, pos: e.position!, died: e.victimId === id })),
+        ),
+    [timeline, focus],
+  );
+  const shown = fights.filter((f) => f.t <= t && t - f.t < TRAIL);
   const ordered = [...players].sort((a, b) => Number(a.teamId !== allyTeam) - Number(b.teamId !== allyTeam));
   // Le joueur suivi est dessiné en dernier, au-dessus des autres.
   const drawOrder = [...players].sort((a, b) => Number(focus.includes(a.id)) - Number(focus.includes(b.id)));
   const teamOf = (id: number) => players.find((p) => p.id === id)?.teamId ?? 100;
-  const campsOf = (id: number) => pathing.camps.filter((c) => c.player === id);
   const jump = (to: number) => {
     setPlaying(false);
     setT(to);
@@ -88,34 +99,20 @@ export function Replay({ timeline, players, duration, assets, start }: { timelin
           <Schematic />
           {assets && !mapFailed && <image href={mapImage(assets.version)} width={SIZE} height={SIZE} opacity={0.62} onError={() => setMapFailed(true)} />}
           {focus.map((id) => (
-            <Trail key={id} samples={tracks.get(id) ?? []} t={t} span={trail} stroke={color(teamOf(id))} />
+            <Trail key={id} samples={tracks.get(id) ?? []} t={t} stroke={color(teamOf(id))} />
           ))}
-          {focus.map((id) =>
-            campsOf(id).map((c, i) =>
-              c.t <= t && (trail === 0 || t - c.t <= trail) ? (
-                <g key={`${id}-${i}`} transform={`translate(${c.pos.x} ${SIZE - c.pos.y})`} className="replay-camp" pointerEvents="none">
-                  <circle r={330} fill="#0b0b0e" stroke={color(teamOf(id))} strokeWidth={70} />
-                  <text textAnchor="middle" dy={130} fontSize={360} fill="#fff">
-                    {i + 1}
-                  </text>
-                </g>
-              ) : null,
-            ),
-          )}
-          {recent.map((m, i) => {
-            const pos = m.event.position!;
-            return (
-              <g key={i} transform={`translate(${pos.x} ${SIZE - pos.y})`} opacity={1 - (t - m.t) / 25}>
-                {m.kind === "kill" ? <path d="M-260 -260L260 260M260 -260L-260 260" stroke={color(m.team)} strokeWidth={140} strokeLinecap="round" /> : <circle r={300} fill="none" stroke={color(m.team)} strokeWidth={110} />}
-              </g>
-            );
-          })}
+          {shown.map((f, i) => (
+            <g key={i} transform={`translate(${f.pos.x} ${SIZE - f.pos.y})`} opacity={1 - (t - f.t) / TRAIL} pointerEvents="none">
+              <circle r={330} fill="#0b0b0e" stroke={color(teamOf(f.id))} strokeWidth={70} />
+              <path d="M-140 -140L140 140M140 -140L-140 140" stroke={f.died ? "var(--enemy)" : "#fff"} strokeWidth={70} strokeLinecap="round" />
+            </g>
+          ))}
           {drawOrder.map((p) => {
             const pos = positionAt(tracks.get(p.id) ?? [], t);
             if (!pos) return null;
             const focused = focus.includes(p.id);
             return (
-              <g key={p.id} transform={`translate(${pos.x} ${SIZE - pos.y}) scale(${focused ? 1.25 : 1})`} className="replay-champ" onClick={() => toggle(p.id)}>
+              <g key={p.id} transform={`translate(${pos.x} ${SIZE - pos.y}) scale(${focused ? 1.25 : 1})`} >
                 <circle r={500} fill={color(p.teamId)} />
                 <MarkerImage id={p.championId} />
                 {p.me && <circle r={600} fill="none" stroke="#fff" strokeWidth={70} />}
@@ -157,7 +154,6 @@ export function Replay({ timeline, players, duration, assets, start }: { timelin
             ))}
             <button onClick={() => jump(end)}>Fin</button>
           </div>
-          <Seg value={trail} onChange={setTrail} label="Longueur du trajet affiché" options={TRAILS.map((v) => [v, v ? `${v} s` : "Tout"] as const)} />
           <Seg value={speed} onChange={setSpeed} label="Vitesse" options={SPEEDS.map((s) => [s, `×${s}`] as const)} />
         </div>
       </div>
@@ -180,13 +176,13 @@ export function Replay({ timeline, players, duration, assets, start }: { timelin
             <b>{killsBy(enemyTeam)}</b>
           </div>
         </div>
-        <p className="note">Clique sur un joueur pour suivre son trajet. Les trajets sont estimés : Riot ne donne qu'une position par minute.</p>
+        <p className="note">Trajet des deux junglers, estimé (Riot ne donne qu'une position par minute) : il s'efface au bout d'1 min 30 de jeu, les croix marquent leurs combats.</p>
         <ul className="replay-players">
           {ordered.map((p, i) => {
             const l = live.find((x) => x.p.id === p.id)!;
             return (
               <li key={p.id} className={i === 5 ? "split" : undefined}>
-                <button className={cx(focus.includes(p.id) && "on", p.me && "me")} onClick={() => toggle(p.id)} style={{ "--c": color(p.teamId) } as CSSProperties}>
+                <div className={cx("replay-player", focus.includes(p.id) && "on", p.me && "me")} style={{ "--c": color(p.teamId) } as CSSProperties}>
                   <ChampIcon id={p.championId} />
                   <span>
                     <b>{p.me ? "Toi" : p.champion}</b>
@@ -198,7 +194,7 @@ export function Replay({ timeline, players, duration, assets, start }: { timelin
                       {kilo(l.gold)} · {l.cs} cs
                     </small>
                   </span>
-                </button>
+                </div>
               </li>
             );
           })}
@@ -215,20 +211,21 @@ export function MarkerImage({ id }: { id: number }) {
   return <image href={championSquare(id)} x={-430} y={-430} width={860} height={860} clipPath="url(#replay-clip)" onError={() => setFailed(true)} />;
 }
 
-/** Trajet du joueur suivi : les `span` dernières secondes (0 = depuis le début), de plus en plus visible vers le présent. */
-function Trail({ samples, t, span, stroke }: { samples: Sample[]; t: number; span: number; stroke: string }) {
-  const from = span ? t - span : 0;
-  const pts = samples.filter((s) => s.t <= t && s.t >= from);
+/** Trajet d'un jungler sur les `TRAIL` dernières secondes de jeu, qui s'estompe jusqu'à disparaître. */
+function Trail({ samples, t, stroke }: { samples: Sample[]; t: number; stroke: string }) {
+  const from = t - TRAIL;
+  const start = positionAt(samples, from);
+  const pts: Sample[] = start && from > 0 ? [{ ...start, t: from }] : [];
+  pts.push(...samples.filter((s) => s.t <= t && s.t > from));
   const now = positionAt(samples, t);
   if (now) pts.push({ ...now, t });
   if (pts.length < 2) return null;
-  const window = span || Math.max(t, 1);
   return (
     <g pointerEvents="none">
       {pts.slice(1).map((b, i) => {
         const a = pts[i];
         if (b.jump) return null;
-        return <line key={i} x1={a.x} y1={SIZE - a.y} x2={b.x} y2={SIZE - b.y} stroke={stroke} strokeWidth={130} strokeLinecap="round" opacity={0.3 + 0.7 * (1 - (t - b.t) / window)} />;
+        return <line key={i} x1={a.x} y1={SIZE - a.y} x2={b.x} y2={SIZE - b.y} stroke={stroke} strokeWidth={130} strokeLinecap="round" opacity={Math.max(0, 1 - (t - b.t) / TRAIL)} />;
       })}
     </g>
   );
