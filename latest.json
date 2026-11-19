@@ -1,11 +1,11 @@
 {
-  "version": "1.0.4",
-  "notes": "Replay : seulement les deux junglers, trajets plus précis (murs de la carte, vitesse réelle, premier clear), ralenti pendant leurs combats, trait qui s'efface après 1:30. Classement Semaine : les amis sans partie Solo/Duo de la semaine sont retirés.",
-  "pub_date": "2026-11-19T23:21:14Z",
+  "version": "1.0.5",
+  "notes": "Publication : accepter les fins de ligne Windows dans Cargo.toml et Cargo.lock · Publication automatique des versions à chaque fusion sur main · Replay : les dix champions sur la carte, trajet et ralenti centrés sur le joueur connecté",
+  "pub_date": "2026-11-19T23:41:04Z",
   "platforms": {
     "windows-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUU3M1c0VqSWpFM2xuTHpobXhzSllLSG9KeXA2MzRhU3U5WUMxeTFNdW9Cb3VXR2ovcVB3WjRMM1dnTlJhVmNiaGhvRUljOTJZbzJEa3pLWlBxWkFIZ2wyNDBZdmphREFRPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk1MTMwNDY4CWZpbGU6TklYVVNfMS4wLjRfeDY0LXNldHVwLmV4ZQl2ZXJzaW9uOjEuMC40CnRqbHNXbzlVTFhuRXRiYlkzK0VuMFliRlNXYzFIbUFXNWROZEVLQlgvV0luZ1J1cEEzT1lBSmtrbFpHWXJrR0dja2VLQUN4elJDQUxoaVdQRmJ0dkRnPT0K",
-      "url": "https://raw.githubusercontent.com/NIKAerer/NIXUS/main/releases/NIXUS_1.0.4_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUU3M1c0VqSWpFM3A1STBwbmpDc3BTb3pXdmxDdzZUdGNlb21QcG5hTS9YK2ZIZzN6VTgzeE9GVStFd3IxdE9KbVVISkFTYWpEN2h2UVQ2akJ6ZStCSFBTVU05UWtiWGdjPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk1MTMxNjY0CWZpbGU6TklYVVNfMS4wLjVfeDY0LXNldHVwLmV4ZQl2ZXJzaW9uOjEuMC41Cjg2U2UwdC8rM1lPK2poS3NqOWR3WDBlUG4xSGZ2allOWUwzS3FoV3VjMDYrVmpINGhzVnpxak9UdzJCSWpQcXFtOUk0K2NuYlc5U2t3bk9NUEVaMEN3PT0K",
+      "url": "https://github.com/NIKAerer/NIXUS/releases/download/v1.0.5/NIXUS_1.0.5_x64-setup.exe"
     }
   }
 }
