@@ -1,11 +1,11 @@
 {
-  "version": "1.0.5",
-  "notes": "Publication : accepter les fins de ligne Windows dans Cargo.toml et Cargo.lock · Publication automatique des versions à chaque fusion sur main · Replay : les dix champions sur la carte, trajet et ralenti centrés sur le joueur connecté",
-  "pub_date": "2026-11-19T23:41:04Z",
+  "version": "1.0.6",
+  "notes": "Replay : les dix joueurs à droite avec leur KDA, sans ralenti ni arrêts, carte plus grande",
+  "pub_date": "2026-11-19T23:54:37Z",
   "platforms": {
     "windows-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUU3M1c0VqSWpFM3A1STBwbmpDc3BTb3pXdmxDdzZUdGNlb21QcG5hTS9YK2ZIZzN6VTgzeE9GVStFd3IxdE9KbVVISkFTYWpEN2h2UVQ2akJ6ZStCSFBTVU05UWtiWGdjPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk1MTMxNjY0CWZpbGU6TklYVVNfMS4wLjVfeDY0LXNldHVwLmV4ZQl2ZXJzaW9uOjEuMC41Cjg2U2UwdC8rM1lPK2poS3NqOWR3WDBlUG4xSGZ2allOWUwzS3FoV3VjMDYrVmpINGhzVnpxak9UdzJCSWpQcXFtOUk0K2NuYlc5U2t3bk9NUEVaMEN3PT0K",
-      "url": "https://github.com/NIKAerer/NIXUS/releases/download/v1.0.5/NIXUS_1.0.5_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUU3M1c0VqSWpFM3ArMit6QzBiN1hTRE5QcVQzbHFoaS83cnJWdkM3bjdURzRja2dNa1EvbVBoNTdLYUpaTXhxaVdWRnJ4N2RjWG1lWmRpY1JSTVBicXpSdkFpcHFTemdvPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk1MTMyNDc3CWZpbGU6TklYVVNfMS4wLjZfeDY0LXNldHVwLmV4ZQl2ZXJzaW9uOjEuMC42Clhxbk5XM2EyVmdQOVRKdk1oODBhUlF5T3A3d0JkeWNuTG9NRWV0SDk3WUZaYit6ekV6MS90dnVFRXBSQU5yVWZzWWF0eEljN1MyRGlOSmZLVUg0SEFRPT0K",
+      "url": "https://github.com/NIKAerer/NIXUS/releases/download/v1.0.6/NIXUS_1.0.6_x64-setup.exe"
     }
   }
 }
