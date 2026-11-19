@@ -1,5 +1,6 @@
 import type { Point, Timeline, TimelineEvent } from "../lib/types";
 import type { GamePlayer } from "./game";
+import { findPath } from "./navgrid";
 
 /**
  * Trajets reconstitués. Riot ne donne qu'une position par joueur et par minute : entre deux positions connues,
@@ -48,9 +49,12 @@ const FOUNTAIN: Record<number, Point> = { 100: { x: 420, y: 420 }, 200: { x: 143
  */
 const speedAt = (t: number) => Math.min(420, 330 + (t / 60) * 4);
 /** Temps passé sur un camp : plus long au premier clear, quand le jungler est bas niveau. */
-const clearTime = (t: number) => (t < 300 ? 14 : t < 900 ? 9 : 6);
+const clearTime = (t: number) => (t < 300 ? TUNE.clearEarly : t < 900 ? TUNE.clearMid : TUNE.clearLate);
 /** Monstres épiques comptés dans jungleMinionsKilled, à retirer avant de compter les camps. */
 const EPIC_CS: Record<string, number> = { HORDE: 2, DRAGON: 4, RIFTHERALD: 4, BARON_NASHOR: 4, ATAKHAN: 4 };
+
+/** Réglages étalonnés sur l'archive (scripts/pathing-eval.mjs). */
+export const TUNE = { baseRadius: 3500, outing: 40, firstPrior: 1000, firstWindow: 270, firstExtra: 6, countWeight: 1500, waitStart: 0, detour: 1.15, late: 900, seen: 1200, clearEarly: 14, clearMid: 9, clearLate: 6 };
 
 /* ---------- Camps ---------- */
 
@@ -80,205 +84,10 @@ const CAMPS: Camp[] = [
   { key: "scuttle-bot", name: "Carapateur du bas", side: 0, pos: { x: 10300, y: 5150 }, spawn: 210, respawn: 150 },
 ];
 
-/* ---------- Couloirs de la carte ---------- */
+/* ---------- Chemins ---------- */
 
-// Moitié bleue (base en bas à gauche). La moitié rouge est son symétrique par rapport au centre.
-const HALF: Record<string, [number, number]> = {
-  fountain: [420, 420],
-  nexus: [1750, 1750],
-  // Voie du haut
-  top1: [1250, 4300],
-  top2: [1350, 6700],
-  top3: [1100, 10300],
-  topCorner: [2000, 12850],
-  // Voie du bas
-  bot1: [4300, 1250],
-  bot2: [6900, 1450],
-  bot3: [10400, 1100],
-  botCorner: [12850, 2000],
-  // Voie du milieu
-  mid1: [3600, 3700],
-  mid2: [4900, 4900],
-  mid3: [5850, 6350],
-  // Jungle côté buff bleu
-  gateTop: [2600, 5300],
-  wolves: [3720, 6500],
-  blue: [3750, 7950],
-  gromp: [2200, 8400],
-  blueTri: [2350, 10600],
-  blueRiver: [4700, 8850],
-  wolvesMid: [4750, 6200],
-  // Jungle côté buff rouge
-  gateBot: [5300, 2700],
-  raptors: [6980, 5200],
-  raptorsMid: [6500, 6000],
-  red: [7700, 3880],
-  krugs: [8370, 2560],
-  krugsLane: [8500, 1750],
-  redRiver: [9150, 4700],
-  botTri: [10600, 3000],
-};
-const CENTER: Record<string, [number, number]> = {
-  center: [7435, 7435],
-  riverTopMouth: [2950, 11500],
-  scuttleTop: [4550, 9550],
-  baron: [5000, 10450],
-  riverTopMid: [5950, 8700],
-  riverBotMid: [8900, 6150],
-  scuttleBot: [10300, 5150],
-  dragon: [9850, 4400],
-  riverBotMouth: [11900, 3400],
-};
-const HALF_EDGES: [string, string][] = [
-  ["fountain", "nexus"],
-  ["nexus", "top1"],
-  ["nexus", "bot1"],
-  ["nexus", "mid1"],
-  ["top1", "top2"],
-  ["top2", "top3"],
-  ["top3", "topCorner"],
-  ["bot1", "bot2"],
-  ["bot2", "bot3"],
-  ["bot3", "botCorner"],
-  ["mid1", "mid2"],
-  ["mid2", "mid3"],
-  ["top1", "gateTop"],
-  ["mid1", "gateTop"],
-  ["gateTop", "wolves"],
-  ["wolves", "blue"],
-  ["wolves", "wolvesMid"],
-  ["wolvesMid", "mid2"],
-  ["wolvesMid", "mid3"],
-  ["blue", "gromp"],
-  ["gromp", "top2"],
-  ["gromp", "blueTri"],
-  ["blueTri", "top3"],
-  ["blue", "blueRiver"],
-  ["mid1", "gateBot"],
-  ["bot1", "gateBot"],
-  ["gateBot", "red"],
-  ["gateBot", "krugs"],
-  ["red", "krugs"],
-  ["red", "raptors"],
-  ["raptors", "raptorsMid"],
-  ["raptorsMid", "mid3"],
-  ["raptorsMid", "mid2"],
-  ["krugs", "krugsLane"],
-  ["krugsLane", "bot2"],
-  ["krugsLane", "bot3"],
-  ["red", "redRiver"],
-  ["krugs", "botTri"],
-  ["botTri", "bot3"],
-];
-// Liens entre une moitié et la rivière. « b: » = moitié bleue, « r: » = moitié rouge.
-const CROSS_EDGES: [string, string][] = [
-  ["b:mid3", "center"],
-  ["r:mid3", "center"],
-  ["center", "riverTopMid"],
-  ["center", "riverBotMid"],
-  ["riverTopMid", "scuttleTop"],
-  ["scuttleTop", "baron"],
-  ["scuttleTop", "riverTopMouth"],
-  ["baron", "riverTopMouth"],
-  ["riverBotMid", "scuttleBot"],
-  ["scuttleBot", "dragon"],
-  ["scuttleBot", "riverBotMouth"],
-  ["dragon", "riverBotMouth"],
-  // Moitié bleue vers la rivière
-  ["b:blueRiver", "scuttleTop"],
-  ["b:blueRiver", "riverTopMid"],
-  ["b:blueTri", "riverTopMouth"],
-  ["b:top3", "riverTopMouth"],
-  ["b:redRiver", "scuttleBot"],
-  ["b:redRiver", "dragon"],
-  ["b:redRiver", "riverBotMid"],
-  ["b:botTri", "riverBotMouth"],
-  ["b:botCorner", "riverBotMouth"],
-  ["b:raptorsMid", "riverBotMid"],
-  // Moitié rouge vers la rivière (symétrique : son buff bleu donne sur la rivière du bas)
-  ["r:blueRiver", "scuttleBot"],
-  ["r:blueRiver", "riverBotMid"],
-  ["r:blueTri", "riverBotMouth"],
-  ["r:top3", "riverBotMouth"],
-  ["r:redRiver", "scuttleTop"],
-  ["r:redRiver", "baron"],
-  ["r:redRiver", "riverTopMid"],
-  ["r:botTri", "riverTopMouth"],
-  ["r:botCorner", "riverTopMouth"],
-  ["r:raptorsMid", "riverTopMid"],
-  // Les voies se rejoignent dans les coins
-  ["b:topCorner", "r:botCorner"],
-  ["b:botCorner", "r:topCorner"],
-  ["b:topCorner", "riverTopMouth"],
-];
-
-const NODES: Point[] = [];
-const INDEX = new Map<string, number>();
-const LINKS: [number, number][][] = [];
-const addNode = (name: string, p: Point) => {
-  INDEX.set(name, NODES.length);
-  NODES.push(p);
-  LINKS.push([]);
-};
-const link = (a: string, b: string) => {
-  const i = INDEX.get(a);
-  const j = INDEX.get(b);
-  if (i === undefined || j === undefined) return;
-  const d = dist(NODES[i], NODES[j]);
-  LINKS[i].push([j, d]);
-  LINKS[j].push([i, d]);
-};
-for (const [name, [x, y]] of Object.entries(HALF)) {
-  addNode(`b:${name}`, { x, y });
-  addNode(`r:${name}`, mirror({ x, y }));
-}
-for (const [name, [x, y]] of Object.entries(CENTER)) addNode(name, { x, y });
-for (const [a, b] of HALF_EDGES) {
-  link(`b:${a}`, `b:${b}`);
-  link(`r:${a}`, `r:${b}`);
-}
-for (const [a, b] of CROSS_EDGES) link(a, b);
-
-const nearestNode = (p: Point) => {
-  let best = 0;
-  for (let i = 1; i < NODES.length; i++) if (dist(NODES[i], p) < dist(NODES[best], p)) best = i;
-  return best;
-};
-
-/** Plus court chemin entre deux nœuds (Dijkstra, le graphe fait une centaine de nœuds). */
-function nodePath(from: number, to: number): number[] {
-  const cost = NODES.map(() => Infinity);
-  const prev = NODES.map(() => -1);
-  const done = NODES.map(() => false);
-  cost[from] = 0;
-  for (;;) {
-    let u = -1;
-    for (let i = 0; i < NODES.length; i++) if (!done[i] && (u < 0 || cost[i] < cost[u])) u = i;
-    if (u < 0 || cost[u] === Infinity || u === to) break;
-    done[u] = true;
-    for (const [v, d] of LINKS[u])
-      if (cost[u] + d < cost[v]) {
-        cost[v] = cost[u] + d;
-        prev[v] = u;
-      }
-  }
-  const path: number[] = [];
-  for (let u = to; u >= 0; u = prev[u]) path.unshift(u);
-  return path[0] === from ? path : [from, to];
-}
-
-/** Chemin de a à b en suivant les couloirs. Deux points proches sont reliés en ligne droite. */
-export function route(a: Point, b: Point): Point[] {
-  const direct = dist(a, b);
-  if (direct < 2300) return [a, b];
-  const pts = [a, ...nodePath(nearestNode(a), nearestNode(b)).map((i) => NODES[i]), b];
-  // On retire les allers-retours aux extrémités : inutile de reculer jusqu'à un nœud pour repartir dans l'autre sens.
-  while (pts.length > 2 && dist(pts[0], pts[2]) < dist(pts[0], pts[1]) + dist(pts[1], pts[2]) * 0.55) pts.splice(1, 1);
-  while (pts.length > 2 && dist(pts[pts.length - 1], pts[pts.length - 3]) < dist(pts[pts.length - 1], pts[pts.length - 2]) + dist(pts[pts.length - 2], pts[pts.length - 3]) * 0.55) pts.splice(pts.length - 2, 1);
-  const length = pts.slice(1).reduce((s, p, i) => s + dist(pts[i], p), 0);
-  // Un détour énorme veut dire que le graphe ne connaît pas ce passage : on préfère la ligne droite.
-  return length > direct * 2.2 + 1500 ? [a, b] : pts;
-}
+/** Chemin de a à b qui contourne les murs (grille de navigation tirée de la minimap, voir navgrid.ts). */
+export const route = (a: Point, b: Point): Point[] => findPath(a, b);
 
 /* ---------- Points connus ---------- */
 
@@ -318,7 +127,7 @@ function anchorsOf(timeline: Timeline, players: GamePlayer[]): Map<number, Ancho
           const home = FOUNTAIN[team.get(e.victimId) ?? 100];
           const minutes = et / 60;
           // Le délai de réapparition s'allonge avec le niveau, puis avec la durée de la partie.
-          const timer = DEATH_TIMER[Math.min(17, Math.max(0, levelAt(e.victimId, e.timestamp) - 1))] * (1 + Math.max(0, Math.min(0.5, (minutes - 15) * 0.02)));
+          const timer = DEATH_TIMER[Math.min(17, Math.max(0, levelAt(e.victimId, e.timestamp) - 1))] * (1 + Math.max(0, Math.min(0.5, (minutes - 15) * 0.01)));
           push(e.victimId, { t: et, ...e.position, kind: "death" });
           push(e.victimId, { t: et + timer, ...home, kind: "respawn" });
         }
@@ -345,7 +154,7 @@ function anchorsOf(timeline: Timeline, players: GamePlayer[]): Map<number, Ancho
         const b = now.participantFrames?.[String(p.id)];
         if (a?.currentGold === undefined || b?.currentGold === undefined) continue;
         const spent = a.currentGold + (b.totalGold - a.totalGold) - b.currentGold;
-        if (spent <= 250) continue;
+        if (spent <= 50) continue;
         const from = before.timestamp / 1000;
         const to = now.timestamp / 1000;
         const list = all.get(p.id)!;
@@ -392,6 +201,79 @@ function permutations<T>(items: T[], n: number): T[][] {
   return out;
 }
 
+/* ---------- Premier clear ---------- */
+
+/** Valeur d'une suite par minute (indice = frame) interpolée à l'instant t. */
+function atTime(frames: Timeline["frames"], values: number[], t: number) {
+  let i = 1;
+  while (i < frames.length - 1 && frames[i].timestamp / 1000 < t) i++;
+  const t0 = frames[i - 1].timestamp / 1000;
+  const t1 = frames[i].timestamp / 1000;
+  const f = Math.max(0, Math.min(1, (t - t0) / (t1 - t0 || 1)));
+  return values[i - 1] + (values[i] - values[i - 1]) * f;
+}
+
+/**
+ * Premier camp des junglers, compté sur 97 parties classées (camp le plus proche de leur position à 1:00). Les deux
+ * côtés partent surtout du haut de la carte : buff bleu côté bleu, buff rouge côté rouge, ou corbins.
+ */
+const FIRST_CAMP: Record<number, Record<string, number>> = {
+  100: { blue: 51, raptors: 23, red: 9, krugs: 1 },
+  200: { red: 39, raptors: 36, blue: 9, wolves: 1 },
+};
+
+/**
+ * Premier clear d'un jungler, de la fontaine jusqu'au premier retour (ou à la fin de la fenêtre) : tous les
+ * enchaînements de camps de son côté sont simulés (marche, apparition à 1:00, combat), et on garde celui dont les
+ * positions et le compteur de camps collent le mieux à ce que la chronologie montre.
+ */
+function firstClear(teamId: number, list: Anchor[], frames: Timeline["frames"], camps: number[], speed: (t: number) => number) {
+  const stop = list.find((a) => a.t > 5 && (a.kind === "base" || a.kind === "death" || a.kind === "respawn"))?.t ?? Infinity;
+  const limit = Math.min(stop - 0.01, TUNE.firstWindow);
+  let until = 0;
+  for (const a of list) if (a.t > 0 && a.t <= limit) until = a.t;
+  if (until < 90) return null;
+  const n = Math.min(6, Math.round(atTime(frames, camps, until)));
+  if (n <= 0) return null;
+  const own = CAMPS.filter((c) => c.side === teamId);
+  const home = FOUNTAIN[teamId];
+  const checks = list.filter((a) => a.t > 0 && a.t <= until);
+  const minutes = frames.map((f, i) => ({ t: f.timestamp / 1000, n: camps[i] })).filter((m) => m.t > 30 && m.t <= until + 0.5);
+  let best: { camps: Camp[]; times: number[]; until: number; cost: number } | null = null;
+  for (const order of permutations(own, n)) {
+    // Arrêts successifs : arrivée sur le camp, puis fin du camp (le joueur ne bouge pas entre les deux).
+    const stops: { t: number; p: Point }[] = [{ t: 0, p: home }];
+    const times: number[] = [];
+    let t = 0;
+    let at = home;
+    order.forEach((c, i) => {
+      t += (dist(at, c.pos) * TUNE.detour) / speed(t);
+      stops.push({ t, p: c.pos });
+      t = Math.max(t, c.spawn) + clearTime(t) + (i === 0 ? TUNE.firstExtra : 0);
+      stops.push({ t, p: c.pos });
+      times.push(t);
+      at = c.pos;
+    });
+    const posAt = (x: number): Point => {
+      for (let k = 1; k < stops.length; k++)
+        if (x <= stops[k].t) {
+          const a = stops[k - 1];
+          const b = stops[k];
+          const f = (x - a.t) / (b.t - a.t || 1);
+          return { x: a.p.x + (b.p.x - a.p.x) * f, y: a.p.y + (b.p.y - a.p.y) * f };
+        }
+      return at;
+    };
+    const counts = FIRST_CAMP[teamId] ?? {};
+    const total = Object.values(counts).reduce((x, y) => x + y, 0) + own.length;
+    let cost = -Math.log(((counts[order[0].key.slice(2)] ?? 0) + 1) / total) * TUNE.firstPrior;
+    for (const a of checks) cost += dist(posAt(a.t), a);
+    for (const m of minutes) cost += Math.abs(times.filter((x) => x <= m.t).length - m.n) * TUNE.countWeight;
+    if (!best || cost < best.cost) best = { camps: order, times: times.map((x) => Math.min(x, until)), until, cost };
+  }
+  return best;
+}
+
 /* ---------- Assemblage ---------- */
 
 export function buildPathing(timeline: Timeline, players: GamePlayer[]): Pathing {
@@ -415,72 +297,104 @@ export function buildPathing(timeline: Timeline, players: GamePlayer[]): Pathing
         if (e.type === "ELITE_MONSTER_KILL" && e.killerId === id && e.timestamp <= until) cs += EPIC_CS[e.monsterType ?? ""] ?? 0;
     return cs;
   };
-  const campsAt = (id: number, i: number) => Math.max(0, Math.round((jungleAt(id, i) - epicAt(id, i)) / 4));
   // Vitesse du joueur à la minute i : la vraie valeur si la chronologie la donne, sinon la médiane observée.
   const speedOf = (id: number, t: number) => {
     const s = frames[Math.min(Math.round(t / 60), frames.length - 1)]?.participantFrames?.[String(id)]?.championStats?.movementSpeed;
     return s && s > 250 && s < 700 ? s : speedAt(t);
   };
 
-  // Camps à glisser dans chaque intervalle entre deux points connus, par joueur.
+  // Cumul de camps (non arrondi) à chaque minute, puis interpolé entre deux minutes.
+  const raw = new Map(players.map((p) => [p.id, frames.map((_, i) => Math.max(0, (jungleAt(p.id, i) - epicAt(p.id, i)) / 4))]));
+  const campsCum = (id: number, t: number) => atTime(frames, raw.get(id)!, t);
+
+  // Durée d'un passage par des camps : marche (ligne droite rallongée des détours), attente de l'apparition, combat.
+  const simulate = (id: number, a: Anchor, camps: Camp[], b: Point | null, alive: (c: Camp) => number) => {
+    let t = a.t;
+    let at: Point = a;
+    const times: number[] = [];
+    for (const c of camps) {
+      t += (dist(at, c.pos) * TUNE.detour) / speedOf(id, t);
+      t = Math.max(t, alive(c)) + clearTime(t);
+      times.push(t);
+      at = c.pos;
+    }
+    if (b) t += (dist(at, b) * TUNE.detour) / speedOf(id, t);
+    return { end: t, times };
+  };
+
+  // Camps à glisser dans chaque intervalle entre deux points connus, par joueur, dans l'ordre chronologique.
   const inserted = new Map<number, Map<number, Camp[]>>(players.map((p) => [p.id, new Map()]));
   const aliveAt = new Map(CAMPS.map((c) => [c.key, c.spawn]));
   const kills: CampKill[] = [];
-  for (let i = 1; i < frames.length; i++) {
-    const from = frames[i - 1].timestamp / 1000;
-    const to = frames[i].timestamp / 1000;
-    // Les junglers d'abord : ce sont eux qui prennent les camps, les autres se servent dans ce qui reste.
-    const order = [...players].sort((a, b) => Number(junglers.includes(b.id)) - Number(junglers.includes(a.id)));
-    for (const p of order) {
-      const n = Math.min(5, campsAt(p.id, i) - campsAt(p.id, i - 1));
-      if (n <= 0) continue;
-      const list = anchors.get(p.id) ?? [];
-      const gaps: number[] = [];
-      list.forEach((a, k) => {
-        const b = list[k + 1];
-        if (b && a.t >= from - 0.5 && b.t <= to + 0.5 && a.kind !== "death") gaps.push(k);
-      });
-      if (!gaps.length) continue;
-      const open = CAMPS.filter((c) => (aliveAt.get(c.key) ?? 0) <= to - 5);
-      if (open.length < n) continue;
-      let best: { gap: number; camps: Camp[]; cost: number } | null = null;
-      for (const gap of gaps) {
-        const a = list[gap];
-        const b = list[gap + 1];
-        // Un rappel ou une réapparition : on ne revient pas à pied, seul l'aller compte.
-        const jumpEnd = b.kind === "base" || b.kind === "respawn";
-        const near = open.filter((c) => dist(c.pos, a) < 9000).sort((x, y) => dist(x.pos, a) + (jumpEnd ? 0 : dist(x.pos, b)) - dist(y.pos, a) - (jumpEnd ? 0 : dist(y.pos, b))).slice(0, 7);
-        if (near.length < n) continue;
-        for (const camps of permutations(near, n)) {
-          let length = dist(a, camps[0].pos);
-          for (let k = 1; k < camps.length; k++) length += dist(camps[k - 1].pos, camps[k].pos);
-          if (!jumpEnd) length += dist(camps[camps.length - 1].pos, b);
-          // Trop loin pour le temps disponible : on pénalise sans interdire (la position de la minute peut être imprécise).
-          const time = b.t - a.t;
-          const need = length / speedOf(p.id, a.t) + n * clearTime(a.t);
-          // Jungle adverse : seulement si le joueur y est vu au début ou à la fin de l'intervalle (vol de buff au
-          // premier clear compris), presque jamais sinon.
-          const invade = camps.reduce((s, c) => {
-            if (c.side === 0 || c.side === p.teamId) return s;
-            if (Math.min(dist(c.pos, a), dist(c.pos, b)) < 2200) return s + 300;
-            return s + (a.t < 210 ? 8000 : 3000);
-          }, 0);
-          // Vu sur un camp à la minute pile : il est en train de le faire, ce camp clôt l'intervalle.
-          const seen = !jumpEnd && open.some((c) => dist(c.pos, b) < 900) && dist(camps[camps.length - 1].pos, b) > 900 ? 1200 : 0;
-          const cost = length + Math.max(0, need - time) * 900 + invade + seen + (camps.some((c) => (aliveAt.get(c.key) ?? 0) > a.t + time / 2) ? 1500 : 0);
-          if (!best || cost < best.cost) best = { gap, camps, cost };
-        }
-      }
-      if (!best) continue;
-      inserted.get(p.id)!.set(best.gap, [...(inserted.get(p.id)!.get(best.gap) ?? []), ...best.camps]);
-      const a = list[best.gap];
-      const b = list[best.gap + 1];
-      best.camps.forEach((c, k) => {
-        const t = a.t + ((b.t - a.t) * (k + 1)) / (n + 1);
-        aliveAt.set(c.key, t + c.respawn);
-        kills.push({ t, player: p.id, camp: c.name, side: c.side, pos: c.pos });
-      });
+  // Premier clear des junglers : on essaie tous les enchaînements de camps de son côté et on garde celui qui colle le
+  // mieux aux positions connues et au compteur de camps de chaque minute (voir firstClear).
+  const firstDone = new Map<number, number>();
+  for (const id of junglers) {
+    const p = players.find((x) => x.id === id);
+    const list = anchors.get(id) ?? [];
+    if (!p || list.length < 2) continue;
+    const pick = firstClear(p.teamId, list, frames, raw.get(id)!, (t) => speedOf(id, t));
+    if (!pick) continue;
+    firstDone.set(id, pick.until);
+    pick.camps.forEach((c, i) => {
+      const t = pick.times[i];
+      const gap = list.findIndex((_, j) => j + 1 < list.length && t <= list[j + 1].t + 0.01);
+      const at = gap >= 0 ? gap : 0;
+      inserted.get(id)!.set(at, [...(inserted.get(id)!.get(at) ?? []), c]);
+      aliveAt.set(c.key, t + c.respawn);
+      kills.push({ t, player: id, camp: c.name, side: c.side, pos: c.pos });
+    });
+  }
+  const work: { p: GamePlayer; k: number; n: number }[] = [];
+  for (const p of players) {
+    const list = anchors.get(p.id) ?? [];
+    for (let k = 0; k + 1 < list.length; k++) {
+      if (list[k].kind === "death" || list[k + 1].t <= (firstDone.get(p.id) ?? -1) + 0.01) continue;
+      const n = Math.min(5, Math.round(campsCum(p.id, list[k + 1].t)) - Math.round(campsCum(p.id, list[k].t)));
+      if (n > 0) work.push({ p, k, n });
     }
+  }
+  const startOf = (w: { p: GamePlayer; k: number }) => anchors.get(w.p.id)![w.k].t;
+  // Les junglers d'abord à instant égal : ce sont eux qui prennent les camps, les autres se servent dans ce qui reste.
+  work.sort((x, y) => startOf(x) - startOf(y) || Number(junglers.includes(y.p.id)) - Number(junglers.includes(x.p.id)));
+  for (const { p, k, n } of work) {
+    const list = anchors.get(p.id)!;
+    const a = list[k];
+    const b = list[k + 1];
+    const open = CAMPS.filter((c) => (aliveAt.get(c.key) ?? 0) <= b.t - 5);
+    if (open.length < n) continue;
+    // Un rappel ou une réapparition : on ne revient pas à pied, seul l'aller compte.
+    const jumpEnd = b.kind === "base" || b.kind === "respawn";
+    const near = open.sort((x, y) => dist(x.pos, a) + (jumpEnd ? 0 : dist(x.pos, b)) - dist(y.pos, a) - (jumpEnd ? 0 : dist(y.pos, b))).slice(0, 7);
+    if (near.length < n) continue;
+    const alive = (c: Camp) => aliveAt.get(c.key) ?? 0;
+    let best: { camps: Camp[]; cost: number; times: number[] } | null = null;
+    for (const camps of permutations(near, n)) {
+      let length = dist(a, camps[0].pos);
+      for (let i = 1; i < camps.length; i++) length += dist(camps[i - 1].pos, camps[i].pos);
+      if (!jumpEnd) length += dist(camps[camps.length - 1].pos, b);
+      const { end, times } = simulate(p.id, a, camps, jumpEnd ? null : b, alive);
+      // Trop long pour le temps disponible : on pénalise sans interdire (la position de la minute peut être imprécise).
+      const late = Math.max(0, end - b.t);
+      // Jungle adverse : seulement si le joueur y est vu au début ou à la fin de l'intervalle, presque jamais sinon.
+      const invade = camps.reduce((s, c) => {
+        if (c.side === 0 || c.side === p.teamId) return s;
+        if (Math.min(dist(c.pos, a), dist(c.pos, b)) < 2200) return s + 300;
+        return s + (a.t < 210 ? 8000 : 3000);
+      }, 0);
+      // Vu sur un camp à la minute pile : il est en train de le faire, ce camp clôt l'intervalle.
+      const seen = !jumpEnd && open.some((c) => dist(c.pos, b) < 900) && dist(camps[camps.length - 1].pos, b) > 900 ? TUNE.seen : 0;
+      const cost = length + late * TUNE.late + invade + seen;
+      if (!best || cost < best.cost) best = { camps, cost, times };
+    }
+    if (!best) continue;
+    inserted.get(p.id)!.set(k, best.camps);
+    const chosen = best;
+    chosen.camps.forEach((c, i) => {
+      const t = Math.min(chosen.times[i], b.t);
+      aliveAt.set(c.key, t + c.respawn);
+      kills.push({ t, player: p.id, camp: c.name, side: c.side, pos: c.pos });
+    });
   }
 
   const tracks = new Map<number, Sample[]>();
@@ -501,8 +415,20 @@ export function buildPathing(timeline: Timeline, players: GamePlayer[]): Pathing
       }
       const stops = [a as Point, ...camps.map((c) => c.pos)];
       let recall = (b.kind === "base" && dist(a, home) > 3200) || b.kind === "respawn";
+      // Deux passages à la base espacés (achat, réapparition, position de la minute) : entre les deux, le joueur est
+      // reparti jouer puis a fait un rappel. On l'envoie vers sa position connue la plus proche dans le temps.
+      const inBase = (q: Point) => dist(q, home) < TUNE.baseRadius;
+      if (!camps.length && !recall && inBase(a) && inBase(b) && time > TUNE.outing) {
+        const before = [...list.slice(0, k)].reverse().find((x) => !inBase(x) && x.kind !== "death");
+        const after = list.slice(k + 2).find((x) => !inBase(x) && x.kind !== "death");
+        const spot = !before ? after : !after ? before : a.t - before.t <= after.t - b.t ? before : after;
+        if (spot) {
+          stops.push(spot);
+          recall = true;
+        }
+      }
       if (!recall) stops.push(b);
-      // Marche d'arrêt en arrêt, en suivant les couloirs.
+      // Marche d'arrêt en arrêt, en contournant les murs.
       const legs: Point[][] = stops.slice(1).map((s, i) => route(stops[i], s));
       let length = legs.reduce((s, leg) => s + leg.slice(1).reduce((x, q, i) => x + dist(leg[i], q), 0), 0);
       // Distance impossible à pied dans le temps imparti : c'est un rappel ou une téléportation.
@@ -512,26 +438,36 @@ export function buildPathing(timeline: Timeline, players: GamePlayer[]): Pathing
         length = 0;
       }
       const hop = recall ? Math.min(8, time * 0.3) : 0;
-      const walkable = time - hop;
-      const travel = Math.min(walkable, length / speedOf(p.id, a.t));
-      const spare = walkable - travel;
-      const dwell = camps.length ? Math.min(spare / camps.length, 22) : 0;
-      // Le temps qui reste : le joueur traîne en route (voie, vision, attente), on ralentit donc la marche.
-      const moving = walkable - dwell * camps.length;
+      const end = b.t - hop;
+      const mine = camps.map((c) => kills.find((x) => x.player === p.id && x.pos === c.pos && x.t >= a.t - 0.5 && x.t <= b.t + 0.5));
+      // Horaire naturel : marche à la vitesse du joueur, attente de l'apparition des camps, combat.
+      const plan: { t: number; p: Point; kill?: CampKill }[] = [];
       let t = a.t;
       legs.forEach((leg, i) => {
         for (let j = 1; j < leg.length; j++) {
-          t += length > 0 ? (dist(leg[j - 1], leg[j]) / length) * moving : 0;
-          out.push({ t, x: leg[j].x, y: leg[j].y });
+          t += dist(leg[j - 1], leg[j]) / speedOf(p.id, t);
+          plan.push({ t, p: leg[j] });
         }
         if (i < camps.length) {
-          t += dwell;
-          out.push({ t, x: leg[leg.length - 1].x, y: leg[leg.length - 1].y });
-          const kill = kills.find((c) => c.player === p.id && c.pos === camps[i].pos && c.t >= a.t - 0.5 && c.t <= b.t + 0.5);
-          // Un camp ne peut pas tomber avant sa première apparition (et le premier, aidé par les alliés, prend ~20 s).
-          if (kill) kill.t = Math.max(t, camps[i].spawn + 18);
+          const fight = clearTime(t);
+          const kill = mine[i];
+          // Le camp n'est pas forcément là à l'arrivée (première apparition, réapparition) : on l'attend.
+          const ready = kill ? Math.min(kill.t, end) - fight : t;
+          t = Math.max(t, ready) + fight;
+          plan.push({ t, p: leg[leg.length - 1], kill });
         }
       });
+      // Trop long : on accélère tout l'horaire. Trop court : le joueur attend (voie, vision), surtout à l'arrivée.
+      const used = t - a.t;
+      const room = end - a.t;
+      const squeeze = used > room && used > 0 ? room / used : 1;
+      const shift = Math.max(0, room - used) * TUNE.waitStart;
+      if (shift > 0.5) out.push({ t: a.t + shift, x: a.x, y: a.y });
+      for (const s of plan) {
+        const at = a.t + shift + (s.t - a.t) * squeeze;
+        out.push({ t: at, x: s.p.x, y: s.p.y });
+        if (s.kill) s.kill.t = at;
+      }
       if (recall) {
         const lastPoint = out[out.length - 1];
         out.push({ t: b.t - 0.05, x: lastPoint.x, y: lastPoint.y }, { t: b.t, x: b.x, y: b.y, jump: true });
