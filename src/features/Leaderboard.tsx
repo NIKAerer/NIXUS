@@ -74,10 +74,10 @@ async function recordFriends(data: Record<string, Ranks | null>) {
   let changed = false;
   for (const [id, r] of Object.entries(data)) {
     if (!r) continue;
-    const p: FriendLpPoint = { t: now, ...(r.solo ? { solo: score(r.solo) } : {}), ...(r.flex ? { flex: score(r.flex) } : {}) };
+    const p: FriendLpPoint = { t: now, ...(r.solo ? { solo: score(r.solo), games: r.solo.wins + r.solo.losses } : {}), ...(r.flex ? { flex: score(r.flex) } : {}) };
     const list = (all[id] ?? []).filter((x) => now - x.t < 30 * DAY);
     const last = list[list.length - 1];
-    if (!last || last.solo !== p.solo || last.flex !== p.flex || now - last.t > 6 * 3600_000) {
+    if (!last || last.solo !== p.solo || last.flex !== p.flex || (p.games != null && last.games !== p.games) || now - last.t > 6 * 3600_000) {
       list.push(p);
       changed = true;
     }
@@ -94,6 +94,15 @@ function baseline<T extends { t: number }>(points: T[]) {
   const before = list.filter((p) => p.t <= now - WEEK);
   const b = before.length ? before[before.length - 1] : list[0];
   return !b || now - b.t < DAY ? null : b;
+}
+/**
+ * Ami sans partie Solo/Duo depuis le relevé de départ : même nombre de parties jouées, ou, pour les relevés
+ * d'avant ce comptage, aucun changement de LP sur toute la période.
+ */
+function inactive(points: FriendLpPoint[], base: FriendLpPoint, now: RankedQueue) {
+  const games = now.wins + now.losses;
+  if (base.games != null) return base.games === games;
+  return points.filter((p) => p.t >= base.t && p.solo != null).every((p) => p.solo === score(now));
 }
 const since = (t: number) => {
   const d = Math.floor((Date.now() - t) / DAY);
@@ -207,13 +216,17 @@ export function Leaderboard({ className }: { className?: string }) {
     for (const f of friends) {
       const now = ranks?.[f.puuid]?.solo;
       if (!now) continue;
-      const b = baseline((history[f.puuid] ?? []).filter((p) => p.solo != null));
+      const points = (history[f.puuid] ?? []).filter((p) => p.solo != null);
+      const b = baseline(points);
+      // Amis qui n'ont pas joué en Solo/Duo cette semaine : retirés du classement de la semaine.
+      if (b && inactive(points, b, now)) continue;
       list.push({ id: f.puuid, name: f.gameName, icon: f.icon, friend: f, q: now, delta: b ? score(now) - b.solo! : null, note: b ? since(b.t) : "pas encore de recul" });
     }
     return list.sort((a, b) => (b.delta ?? -1e9) - (a.delta ?? -1e9) || score(b.q) - score(a.q));
   }, [mode, friends, ranks, mine, summoner, history, myLp]);
 
   const others = rows.filter((r) => !r.me).length;
+  const hidden = mode === "week" ? friends.filter((f) => ranks?.[f.puuid]?.solo).length - others : 0;
   const withData = rows.filter((r) => mode !== "week" || r.delta != null);
   const myPos = rows.findIndex((r) => r.me);
   const showPos = myPos >= 0 && (mode !== "week" || rows[myPos].delta != null);
@@ -241,11 +254,13 @@ export function Leaderboard({ className }: { className?: string }) {
         <p className="note board-empty">Lecture des rangs de tes amis…</p>
       ) : others === 0 ? (
         <div className="board-empty">
-          <b>{ids.length === 0 ? "Pas encore d'amis" : "Aucun ami classé"}</b>
+          <b>{ids.length === 0 ? "Pas encore d'amis" : hidden > 0 ? "Personne n'a joué" : "Aucun ami classé"}</b>
           <p className="note">
             {ids.length === 0
               ? "Ajoute des amis pour comparer vos rangs ici."
-              : `Aucun de tes amis n'a de rang en ${mode === "flex" ? "Flex" : "Solo/Duo"} cette saison. Dès qu'un ami termine ses placements, il apparaît ici.`}
+              : hidden > 0
+                ? "Aucun de tes amis n'a joué en Solo/Duo cette semaine."
+                : `Aucun de tes amis n'a de rang en ${mode === "flex" ? "Flex" : "Solo/Duo"} cette saison. Dès qu'un ami termine ses placements, il apparaît ici.`}
           </p>
         </div>
       ) : (
@@ -270,6 +285,11 @@ export function Leaderboard({ className }: { className?: string }) {
             );
           })}
         </ol>
+      )}
+      {hidden > 0 && others > 0 && (
+        <p className="note">
+          {hidden === 1 ? "1 ami sans partie Solo/Duo cette semaine n'est pas affiché." : `${hidden} amis sans partie Solo/Duo cette semaine ne sont pas affichés.`}
+        </p>
       )}
       {mode === "week" && others > 0 && withData.length < rows.length && (
         <p className="note">Riot ne donne pas l'historique de LP d'un autre joueur. NIXUS note le rang de tes amis à chaque ouverture : « — » veut dire pas encore un jour de recul.</p>
