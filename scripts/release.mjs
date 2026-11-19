@@ -32,8 +32,8 @@ function bump() {
   const conf = JSON.parse(read("src-tauri/tauri.conf.json"));
   conf.version = to;
   write("src-tauri/tauri.conf.json", JSON.stringify(conf, null, 2) + "\n");
-  replaceOnce("src-tauri/Cargo.toml", /(\[package\][^[]*?\nversion = ")[^"]+(")/, to);
-  replaceOnce("src-tauri/Cargo.lock", /(name = "nexus-client"\nversion = ")[^"]+(")/, to);
+  replaceOnce("src-tauri/Cargo.toml", /(\[package\][^[]*?\r?\nversion = ")[^"]+(")/, to);
+  replaceOnce("src-tauri/Cargo.lock", /(name = "nexus-client"\r?\nversion = ")[^"]+(")/, to);
 
   // Notes : les commits depuis la dernière publication (« NIXUS x.y.z »), sans les fusions.
   const log = (args) => execSync(`git log ${args}`, { encoding: "utf8" }).trim();
