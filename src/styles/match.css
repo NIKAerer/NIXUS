@@ -163,8 +163,9 @@
 .moment:hover .moment-see { opacity: 1; }
 
 /* Replay */
-.replay { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 20px; align-items: start; }
-.replay-stage { display: flex; flex-direction: column; gap: 12px; max-width: 640px; width: 100%; margin: 0 auto; }
+/* La carte prend toute la hauteur disponible, la liste des joueurs occupe le reste de la largeur. */
+.replay { display: grid; grid-template-columns: auto minmax(300px, 1fr); gap: 18px; align-items: start; }
+.replay-stage { display: flex; flex-direction: column; gap: 10px; width: clamp(470px, calc(100vh - 370px), 760px); }
 .replay-map { width: 100%; aspect-ratio: 1; border-radius: var(--r-l); background: #0b1210; border: 1px solid var(--line); }
 .replay-schematic rect { fill: #0e1714; }
 .replay-schematic path { fill: none; stroke: #23362e; stroke-width: 700; stroke-linecap: round; stroke-linejoin: round; }
@@ -184,11 +185,14 @@
 .replay-score { display: grid; grid-template-columns: 1fr auto 1fr; gap: 10px; padding: 12px 14px; border-radius: 14px; background: var(--panel); border: 1px solid var(--line); text-align: center; }
 .replay-score b { display: block; font: 400 30px/1 var(--display); }
 .replay-players { display: flex; flex-direction: column; gap: 2px; }
+.replay-side { min-width: 0; }
 .replay-players li.split { margin-top: 10px; }
 .replay-players button { display: flex; align-items: center; gap: 10px; width: 100%; padding: 5px 10px 5px 6px; border-radius: var(--r-m); text-align: left; border-left: 3px solid var(--c); background: rgba(255, 255, 255, 0.03); }
 .replay-players button:hover { background: rgba(255, 255, 255, 0.07); }
 .replay-players button.on { background: rgba(255, 255, 255, 0.13); }
-.replay-jungler { display: flex; align-items: center; gap: 10px; padding: 8px 10px 8px 8px; border-radius: var(--r-m); border-left: 3px solid var(--c); background: rgba(255, 255, 255, 0.05); }
+.replay-jungler { display: flex; align-items: center; gap: 10px; padding: 5px 10px 5px 6px; border-radius: var(--r-m); border-left: 3px solid var(--c); background: rgba(255, 255, 255, 0.05); }
+.replay-jungler.on { background: rgba(255, 255, 255, 0.14); }
+.replay-jungler .right + .right { min-width: 52px; }
 .replay-fight { padding: 12px 14px; border-radius: 14px; background: var(--panel); border: 1px solid var(--line); display: flex; flex-direction: column; gap: 6px; }
 .replay-fight ul { display: flex; flex-direction: column; gap: 4px; font-size: 13px; }
 .replay-fight small { color: var(--dim); font-size: 12px; }
@@ -232,7 +236,6 @@
 .honor-row small { font-size: 11.5px; color: var(--dim); }
 
 @media (max-width: 1240px) {
-  .replay { grid-template-columns: minmax(0, 1fr) 280px; }
   .scene { grid-template-columns: minmax(0, 320px) minmax(0, 1fr); }
   .board-team-head ul { display: none; }
 }
