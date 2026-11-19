@@ -14,6 +14,10 @@ const SPEEDS = [8, 15, 30, 60] as const;
 const JUMPS = [3, 5, 10, 15, 20];
 /** Deux kills à moins de 20 s l'un de l'autre font partie du même combat. */
 const FIGHT_GAP = 20;
+/** Pendant un combat, la lecture passe à 25 % de la vitesse choisie, de 5 s avant à 5 s après. */
+const SLOW_FACTOR = 0.25;
+const SLOW_BEFORE = 5;
+const SLOW_AFTER = 5;
 
 interface Fight {
   t: number;
@@ -36,7 +40,7 @@ function fightsOf(moments: Moment[], junglers: number[]): Fight[] {
   return out;
 }
 
-/** Rejoue le parcours des deux junglers sur la carte ; la lecture s'arrête à chacun de leurs combats. */
+/** Rejoue le parcours des deux junglers sur la carte ; la lecture ralentit pendant leurs combats. */
 export function Replay({ timeline, players, duration, assets, start }: { timeline: Timeline; players: GamePlayer[]; duration: number; assets: StaticData | null; start: number | null }) {
   const me = players.find((p) => p.me);
   const [t, setT] = useState(start ?? 0);
@@ -50,12 +54,13 @@ export function Replay({ timeline, players, duration, assets, start }: { timelin
 
   const moments = useMemo(() => momentsOf(timeline, players), [timeline, players]);
   const fights = useMemo(() => fightsOf(moments, shown), [moments, shown.join()]);
-  const fightTimes = useRef<number[]>([]);
+  // Fenêtres de ralenti : de quelques secondes avant le premier kill à quelques secondes après le dernier.
+  const slowZones = useRef<[number, number][]>([]);
+  slowZones.current = fights.map((f) => [f.t - SLOW_BEFORE, f.kills[f.kills.length - 1].t + SLOW_AFTER]);
   const tRef = useRef(t);
   tRef.current = t;
-  fightTimes.current = fights.map((f) => f.t);
 
-  // Lecture : l'horloge de la partie avance de `speed` secondes par seconde réelle et s'arrête sur chaque combat.
+  // Lecture : l'horloge de la partie avance de `speed` secondes par seconde réelle, en ralenti pendant les combats.
   useEffect(() => {
     if (!playing) return;
     let raf = 0;
@@ -64,12 +69,11 @@ export function Replay({ timeline, players, duration, assets, start }: { timelin
       const dt = (now - last) / 1000;
       last = now;
       const v = tRef.current;
-      const next = v + dt * speed;
-      const fight = fightTimes.current.find((f) => f > v && f <= next);
-      const to = fight ?? Math.min(next, end);
+      const slow = slowZones.current.some(([a, b]) => v >= a && v <= b);
+      const to = Math.min(v + dt * speed * (slow ? SLOW_FACTOR : 1), end);
       tRef.current = to;
       setT(to);
-      if (fight !== undefined || to >= end) setPlaying(false);
+      if (to >= end) setPlaying(false);
       else raf = requestAnimationFrame(step);
     };
     raf = requestAnimationFrame(step);
@@ -91,7 +95,7 @@ export function Replay({ timeline, players, duration, assets, start }: { timelin
   const killsBy = (team: number) => moments.filter((m) => m.kind === "kill" && m.t <= t && m.team === team).length;
   const junglersSorted = shown.map((id) => byId.get(id)).filter((p): p is GamePlayer => !!p).sort((a, b) => Number(a.teamId !== allyTeam) - Number(b.teamId !== allyTeam));
 
-  // Combat en cours d'affichage : celui sur lequel la lecture vient de s'arrêter, ou qui a eu lieu il y a peu.
+  // Combat en cours d'affichage : en cours ou terminé il y a peu.
   const current = [...fights].reverse().find((f) => f.t <= t && t - (f.kills[f.kills.length - 1].t) < 12);
   const fightMarks = fights.flatMap((f) => f.kills).filter((m) => m.t <= t && t - m.t < 20 && m.event.position);
   const objectives = moments.filter((m) => m.kind === "objective" && m.t <= t && t - m.t < 20 && m.event.position);
@@ -226,10 +230,9 @@ export function Replay({ timeline, players, duration, assets, start }: { timelin
                 </li>
               ))}
             </ul>
-            {!playing && t < end && <small>Appuie sur lecture pour continuer.</small>}
           </div>
         ) : (
-          <p className="note">La lecture s'arrête à chaque combat des junglers. Les trajets sont estimés : Riot ne donne qu'une position par minute.</p>
+          <p className="note">La lecture ralentit pendant les combats des junglers. Les trajets sont estimés : Riot ne donne qu'une position par minute.</p>
         )}
       </aside>
     </div>
