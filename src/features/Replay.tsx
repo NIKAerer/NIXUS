@@ -1,33 +1,61 @@
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { mapImage, type StaticData } from "../lib/ddragon";
 import { championSquare, clock } from "../lib/lcu";
 import type { Timeline } from "../lib/types";
-import { ChampIcon, Icon, Seg, cx, kilo } from "../ui";
-import { momentsOf, type GamePlayer } from "./game";
+import { ChampIcon, Icon, Seg, kilo } from "../ui";
+import { momentsOf, type GamePlayer, type Moment } from "./game";
 import { buildPathing, positionAt, type Sample } from "./pathing";
 
 /** Les coordonnées Riot vont de 0 à ~15 000, base bleue en bas à gauche. */
 const SIZE = 15000;
-const TRAILS = [30, 60, 0] as const;
+/** Durée (en temps de jeu) au bout de laquelle un bout de trajet a complètement disparu. */
+const TRAIL = 90;
 const SPEEDS = [8, 15, 30, 60] as const;
 const JUMPS = [3, 5, 10, 15, 20];
+/** Deux kills à moins de 20 s l'un de l'autre font partie du même combat. */
+const FIGHT_GAP = 20;
 
-/** Rejoue la partie sur la carte : trajets reconstitués des dix joueurs, camps de jungle, kills et objectifs. */
+interface Fight {
+  t: number;
+  kills: Moment[];
+}
+
+/** Combats où au moins un jungler est tueur, victime ou passeur, regroupés quand les kills s'enchaînent. */
+function fightsOf(moments: Moment[], junglers: number[]): Fight[] {
+  const out: Fight[] = [];
+  for (const m of moments) {
+    if (m.kind !== "kill") continue;
+    const e = m.event;
+    const ids = [e.killerId, e.victimId, ...(e.assistingParticipantIds ?? [])];
+    if (!ids.some((id) => id !== undefined && junglers.includes(id))) continue;
+    const last = out[out.length - 1];
+    const prev = last?.kills[last.kills.length - 1];
+    if (last && prev && m.t - prev.t <= FIGHT_GAP) last.kills.push(m);
+    else out.push({ t: m.t, kills: [m] });
+  }
+  return out;
+}
+
+/** Rejoue le parcours des deux junglers sur la carte ; la lecture s'arrête à chacun de leurs combats. */
 export function Replay({ timeline, players, duration, assets, start }: { timeline: Timeline; players: GamePlayer[]; duration: number; assets: StaticData | null; start: number | null }) {
   const me = players.find((p) => p.me);
   const [t, setT] = useState(start ?? 0);
   const [playing, setPlaying] = useState(start === null);
   const [speed, setSpeed] = useState<number>(15);
-  const [trail, setTrail] = useState<number>(30);
   const pathing = useMemo(() => buildPathing(timeline, players), [timeline, players]);
   const tracks = pathing.tracks;
-  // Par défaut on suit les deux junglers : c'est leur parcours qu'on vient lire ici.
-  const [focus, setFocus] = useState<number[]>(() => (pathing.junglers.length ? pathing.junglers : me ? [me.id] : []));
-  const toggle = (id: number) => setFocus((f) => (f.length === 1 && f[0] === id ? [] : [id]));
+  const shown = pathing.junglers.length ? pathing.junglers : me ? [me.id] : [];
   const [mapFailed, setMapFailed] = useState(false);
   const end = Math.max(duration, timeline.frames[timeline.frames.length - 1]?.timestamp / 1000 || 0);
 
-  // Lecture : l'horloge de la partie avance de `speed` secondes par seconde réelle.
+  const moments = useMemo(() => momentsOf(timeline, players), [timeline, players]);
+  const fights = useMemo(() => fightsOf(moments, shown), [moments, shown.join()]);
+  const fightTimes = useRef<number[]>([]);
+  const tRef = useRef(t);
+  tRef.current = t;
+  fightTimes.current = fights.map((f) => f.t);
+
+  // Lecture : l'horloge de la partie avance de `speed` secondes par seconde réelle et s'arrête sur chaque combat.
   useEffect(() => {
     if (!playing) return;
     let raf = 0;
@@ -35,42 +63,42 @@ export function Replay({ timeline, players, duration, assets, start }: { timelin
     const step = (now: number) => {
       const dt = (now - last) / 1000;
       last = now;
-      setT((v) => {
-        const next = v + dt * speed;
-        if (next >= end) {
-          setPlaying(false);
-          return end;
-        }
-        return next;
-      });
-      raf = requestAnimationFrame(step);
+      const v = tRef.current;
+      const next = v + dt * speed;
+      const fight = fightTimes.current.find((f) => f > v && f <= next);
+      const to = fight ?? Math.min(next, end);
+      tRef.current = to;
+      setT(to);
+      if (fight !== undefined || to >= end) setPlaying(false);
+      else raf = requestAnimationFrame(step);
     };
     raf = requestAnimationFrame(step);
     return () => cancelAnimationFrame(raf);
   }, [playing, speed, end]);
 
-  const moments = useMemo(() => momentsOf(timeline, players), [timeline, players]);
   const allyTeam = me?.teamId ?? 100;
   const enemyTeam = allyTeam === 100 ? 200 : 100;
   const color = (teamId: number) => (teamId === allyTeam ? "var(--ally)" : "var(--enemy)");
+  const byId = new Map(players.map((p) => [p.id, p]));
 
-  // État de chaque joueur à l'instant t (dernière image passée).
+  // État de chaque jungler à l'instant t (dernière image passée).
   const frameIndex = Math.max(0, timeline.frames.findIndex((f) => f.timestamp / 1000 > t) - 1);
   const frame = timeline.frames[t >= end ? timeline.frames.length - 1 : frameIndex];
-  const live = players.map((p) => {
-    const pf = frame?.participantFrames?.[String(p.id)];
-    return { p, gold: pf?.totalGold ?? 0, level: pf?.level ?? 1, cs: (pf?.minionsKilled ?? 0) + (pf?.jungleMinionsKilled ?? 0) };
-  });
+  const statsOf = (id: number) => {
+    const pf = frame?.participantFrames?.[String(id)];
+    return { gold: pf?.totalGold ?? 0, level: pf?.level ?? 1, cs: (pf?.minionsKilled ?? 0) + (pf?.jungleMinionsKilled ?? 0) };
+  };
   const killsBy = (team: number) => moments.filter((m) => m.kind === "kill" && m.t <= t && m.team === team).length;
-  const goldOf = (team: number) => live.filter((l) => l.p.teamId === team).reduce((s, l) => s + l.gold, 0);
-  const diff = goldOf(allyTeam) - goldOf(enemyTeam);
+  const junglersSorted = shown.map((id) => byId.get(id)).filter((p): p is GamePlayer => !!p).sort((a, b) => Number(a.teamId !== allyTeam) - Number(b.teamId !== allyTeam));
 
-  const recent = moments.filter((m) => m.t <= t && t - m.t < 25 && m.event.position);
-  const ordered = [...players].sort((a, b) => Number(a.teamId !== allyTeam) - Number(b.teamId !== allyTeam));
-  // Le joueur suivi est dessiné en dernier, au-dessus des autres.
-  const drawOrder = [...players].sort((a, b) => Number(focus.includes(a.id)) - Number(focus.includes(b.id)));
-  const teamOf = (id: number) => players.find((p) => p.id === id)?.teamId ?? 100;
-  const campsOf = (id: number) => pathing.camps.filter((c) => c.player === id);
+  // Combat en cours d'affichage : celui sur lequel la lecture vient de s'arrêter, ou qui a eu lieu il y a peu.
+  const current = [...fights].reverse().find((f) => f.t <= t && t - (f.kills[f.kills.length - 1].t) < 12);
+  const fightMarks = fights.flatMap((f) => f.kills).filter((m) => m.t <= t && t - m.t < 20 && m.event.position);
+  const objectives = moments.filter((m) => m.kind === "objective" && m.t <= t && t - m.t < 20 && m.event.position);
+  const name = (id?: number) => {
+    const p = id ? byId.get(id) : undefined;
+    return p ? (p.me ? "Toi" : p.champion) : "Sbires / tour";
+  };
   const jump = (to: number) => {
     setPlaying(false);
     setT(to);
@@ -79,7 +107,7 @@ export function Replay({ timeline, players, duration, assets, start }: { timelin
   return (
     <div className="replay">
       <div className="replay-stage">
-        <svg className="replay-map" viewBox={`0 0 ${SIZE} ${SIZE}`} role="img" aria-label={`Position des joueurs à ${clock(t)}`}>
+        <svg className="replay-map" viewBox={`0 0 ${SIZE} ${SIZE}`} role="img" aria-label={`Position des junglers à ${clock(t)}`}>
           <defs>
             <clipPath id="replay-clip">
               <circle r={430} />
@@ -87,35 +115,27 @@ export function Replay({ timeline, players, duration, assets, start }: { timelin
           </defs>
           <Schematic />
           {assets && !mapFailed && <image href={mapImage(assets.version)} width={SIZE} height={SIZE} opacity={0.62} onError={() => setMapFailed(true)} />}
-          {focus.map((id) => (
-            <Trail key={id} samples={tracks.get(id) ?? []} t={t} span={trail} stroke={color(teamOf(id))} />
+          {shown.map((id) => (
+            <Trail key={id} samples={tracks.get(id) ?? []} t={t} stroke={color(byId.get(id)?.teamId ?? 100)} />
           ))}
-          {focus.map((id) =>
-            campsOf(id).map((c, i) =>
-              c.t <= t && (trail === 0 || t - c.t <= trail) ? (
-                <g key={`${id}-${i}`} transform={`translate(${c.pos.x} ${SIZE - c.pos.y})`} className="replay-camp" pointerEvents="none">
-                  <circle r={330} fill="#0b0b0e" stroke={color(teamOf(id))} strokeWidth={70} />
-                  <text textAnchor="middle" dy={130} fontSize={360} fill="#fff">
-                    {i + 1}
-                  </text>
-                </g>
-              ) : null,
-            ),
-          )}
-          {recent.map((m, i) => {
+          {objectives.map((m, i) => {
+            const pos = m.event.position!;
+            return <circle key={`o${i}`} cx={pos.x} cy={SIZE - pos.y} r={300} fill="none" stroke={color(m.team)} strokeWidth={110} opacity={1 - (t - m.t) / 20} />;
+          })}
+          {fightMarks.map((m, i) => {
             const pos = m.event.position!;
             return (
-              <g key={i} transform={`translate(${pos.x} ${SIZE - pos.y})`} opacity={1 - (t - m.t) / 25}>
-                {m.kind === "kill" ? <path d="M-260 -260L260 260M260 -260L-260 260" stroke={color(m.team)} strokeWidth={140} strokeLinecap="round" /> : <circle r={300} fill="none" stroke={color(m.team)} strokeWidth={110} />}
+              <g key={`f${i}`} transform={`translate(${pos.x} ${SIZE - pos.y})`} opacity={1 - (t - m.t) / 20} pointerEvents="none">
+                <path d="M-260 -260L260 260M260 -260L-260 260" stroke={color(m.team)} strokeWidth={140} strokeLinecap="round" />
               </g>
             );
           })}
-          {drawOrder.map((p) => {
-            const pos = positionAt(tracks.get(p.id) ?? [], t);
-            if (!pos) return null;
-            const focused = focus.includes(p.id);
+          {shown.map((id) => {
+            const p = byId.get(id);
+            const pos = positionAt(tracks.get(id) ?? [], t);
+            if (!p || !pos) return null;
             return (
-              <g key={p.id} transform={`translate(${pos.x} ${SIZE - pos.y}) scale(${focused ? 1.25 : 1})`} className="replay-champ" onClick={() => toggle(p.id)}>
+              <g key={id} transform={`translate(${pos.x} ${SIZE - pos.y}) scale(1.25)`}>
                 <circle r={500} fill={color(p.teamId)} />
                 <MarkerImage id={p.championId} />
                 {p.me && <circle r={600} fill="none" stroke="#fff" strokeWidth={70} />}
@@ -137,11 +157,9 @@ export function Replay({ timeline, players, duration, assets, start }: { timelin
           <div className="replay-scrub">
             <input type="range" min={0} max={Math.round(end)} step={1} value={Math.round(t)} onChange={(e) => jump(Number(e.target.value))} aria-label="Moment de la partie" />
             <div aria-hidden="true">
-              {moments
-                .filter((m) => m.kind !== "building")
-                .map((m, i) => (
-                  <i key={i} className={m.kind} style={{ left: `${(m.t / end) * 100}%`, background: color(m.team) }} />
-                ))}
+              {fights.map((f, i) => (
+                <i key={i} style={{ left: `${(f.t / end) * 100}%`, background: "#fff" }} />
+              ))}
             </div>
           </div>
           <span className="mono">
@@ -157,7 +175,6 @@ export function Replay({ timeline, players, duration, assets, start }: { timelin
             ))}
             <button onClick={() => jump(end)}>Fin</button>
           </div>
-          <Seg value={trail} onChange={setTrail} label="Longueur du trajet affiché" options={TRAILS.map((v) => [v, v ? `${v} s` : "Tout"] as const)} />
           <Seg value={speed} onChange={setSpeed} label="Vitesse" options={SPEEDS.map((s) => [s, `×${s}`] as const)} />
         </div>
       </div>
@@ -169,24 +186,20 @@ export function Replay({ timeline, players, duration, assets, start }: { timelin
             <b>{killsBy(allyTeam)}</b>
           </div>
           <div>
-            <span className="label">Or à {clock(t)}</span>
-            <b className={diff >= 0 ? "up" : "down"}>
-              {diff >= 0 ? "+" : ""}
-              {kilo(diff)}
-            </b>
+            <span className="label">Kills</span>
+            <b className="mono">{clock(t)}</b>
           </div>
           <div style={{ color: "var(--enemy)" }}>
             <span className="label">Adversaires</span>
             <b>{killsBy(enemyTeam)}</b>
           </div>
         </div>
-        <p className="note">Clique sur un joueur pour suivre son trajet. Les trajets sont estimés : Riot ne donne qu'une position par minute.</p>
         <ul className="replay-players">
-          {ordered.map((p, i) => {
-            const l = live.find((x) => x.p.id === p.id)!;
+          {junglersSorted.map((p) => {
+            const l = statsOf(p.id);
             return (
-              <li key={p.id} className={i === 5 ? "split" : undefined}>
-                <button className={cx(focus.includes(p.id) && "on", p.me && "me")} onClick={() => toggle(p.id)} style={{ "--c": color(p.teamId) } as CSSProperties}>
+              <li key={p.id}>
+                <div className="replay-jungler" style={{ "--c": color(p.teamId) } as CSSProperties}>
                   <ChampIcon id={p.championId} />
                   <span>
                     <b>{p.me ? "Toi" : p.champion}</b>
@@ -198,11 +211,26 @@ export function Replay({ timeline, players, duration, assets, start }: { timelin
                       {kilo(l.gold)} · {l.cs} cs
                     </small>
                   </span>
-                </button>
+                </div>
               </li>
             );
           })}
         </ul>
+        {current ? (
+          <div className="replay-fight">
+            <span className="label">Combat à {clock(current.t)}</span>
+            <ul>
+              {current.kills.filter((k) => k.t <= t).map((k, i) => (
+                <li key={i}>
+                  <span className="mono">{clock(k.t)}</span> <b style={{ color: color(k.team) }}>{name(k.event.killerId)}</b> tue <b style={{ color: color(k.team === 100 ? 200 : 100) }}>{name(k.event.victimId)}</b>
+                </li>
+              ))}
+            </ul>
+            {!playing && t < end && <small>Appuie sur lecture pour continuer.</small>}
+          </div>
+        ) : (
+          <p className="note">La lecture s'arrête à chaque combat des junglers. Les trajets sont estimés : Riot ne donne qu'une position par minute.</p>
+        )}
       </aside>
     </div>
   );
@@ -215,20 +243,22 @@ export function MarkerImage({ id }: { id: number }) {
   return <image href={championSquare(id)} x={-430} y={-430} width={860} height={860} clipPath="url(#replay-clip)" onError={() => setFailed(true)} />;
 }
 
-/** Trajet du joueur suivi : les `span` dernières secondes (0 = depuis le début), de plus en plus visible vers le présent. */
-function Trail({ samples, t, span, stroke }: { samples: Sample[]; t: number; span: number; stroke: string }) {
-  const from = span ? t - span : 0;
-  const pts = samples.filter((s) => s.t <= t && s.t >= from);
+/** Trajet d'un jungler : chaque bout s'efface tout seul et disparaît après `TRAIL` secondes de jeu. */
+function Trail({ samples, t, stroke }: { samples: Sample[]; t: number; stroke: string }) {
+  const pts = samples.filter((s) => s.t <= t && s.t >= t - TRAIL);
+  // Point de départ interpolé pile à la limite, pour que la ligne ne saute pas d'une minute à l'autre.
+  const tail = positionAt(samples, t - TRAIL);
+  if (tail && t > TRAIL) pts.unshift({ ...tail, t: t - TRAIL });
   const now = positionAt(samples, t);
   if (now) pts.push({ ...now, t });
   if (pts.length < 2) return null;
-  const window = span || Math.max(t, 1);
   return (
     <g pointerEvents="none">
       {pts.slice(1).map((b, i) => {
         const a = pts[i];
         if (b.jump) return null;
-        return <line key={i} x1={a.x} y1={SIZE - a.y} x2={b.x} y2={SIZE - b.y} stroke={stroke} strokeWidth={130} strokeLinecap="round" opacity={0.3 + 0.7 * (1 - (t - b.t) / window)} />;
+        const age = (t - (a.t + b.t) / 2) / TRAIL;
+        return <line key={i} x1={a.x} y1={SIZE - a.y} x2={b.x} y2={SIZE - b.y} stroke={stroke} strokeWidth={130} strokeLinecap="round" opacity={Math.max(0, 1 - age)} />;
       })}
     </g>
   );
