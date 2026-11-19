@@ -98,7 +98,8 @@ const unique = <T extends { gameId: number }>(list: T[]) => [...new Map(list.map
 export const loadRecords = () => get<RankedRecord[]>("index", "ranked").then((r) => unique(r ?? []));
 export const loadLp = () => get<LpPoint[]>("index", "lp").then((r) => r ?? []);
 /** Rangs des amis relevés par NIXUS (Riot ne donne pas l'historique de LP d'un ami) : puuid → points {t, solo, flex}. */
-export type FriendLpPoint = { t: number; solo?: number; flex?: number };
+/** `games` : parties Solo/Duo jouées dans la saison (victoires + défaites), pour savoir si un ami a joué cette semaine. */
+export type FriendLpPoint = { t: number; solo?: number; flex?: number; games?: number };
 export const loadFriendLp = () => get<Record<string, FriendLpPoint[]>>("index", "friends-lp").then((r) => r ?? {});
 export const saveFriendLp = (data: Record<string, FriendLpPoint[]>) => put("index", "friends-lp", data).catch(() => {});
 /** Démo navigateur : des relevés d'il y a 8 jours, calés sur les rangs actuels, pour voir l'onglet Semaine rempli (rien dans l'appli). */
