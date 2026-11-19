@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react"
 import { mapImage, type StaticData } from "../lib/ddragon";
 import { championSquare, clock } from "../lib/lcu";
 import type { Timeline } from "../lib/types";
-import { ChampIcon, Icon, Seg, kilo } from "../ui";
+import { ChampIcon, Icon, Seg, cx, kilo } from "../ui";
 import { momentsOf, type GamePlayer, type Moment } from "./game";
 import { buildPathing, positionAt, type Sample } from "./pathing";
 
@@ -14,10 +14,6 @@ const SPEEDS = [8, 15, 30, 60] as const;
 const JUMPS = [3, 5, 10, 15, 20];
 /** Deux kills à moins de 20 s l'un de l'autre font partie du même combat. */
 const FIGHT_GAP = 20;
-/** Pendant un combat, la lecture passe à 25 % de la vitesse choisie, de 5 s avant à 5 s après. */
-const SLOW_FACTOR = 0.25;
-const SLOW_BEFORE = 5;
-const SLOW_AFTER = 5;
 
 interface Fight {
   t: number;
@@ -40,7 +36,7 @@ function fightsOf(moments: Moment[], focus: number[]): Fight[] {
   return out;
 }
 
-/** Rejoue la partie : les dix champions sur la carte, le trajet du joueur connecté, et un ralenti pendant ses combats. */
+/** Rejoue la partie : les dix champions sur la carte, le trajet du joueur connecté, et ses combats. */
 export function Replay({ timeline, players, duration, assets, start }: { timeline: Timeline; players: GamePlayer[]; duration: number; assets: StaticData | null; start: number | null }) {
   const me = players.find((p) => p.me);
   const [t, setT] = useState(start ?? 0);
@@ -55,13 +51,10 @@ export function Replay({ timeline, players, duration, assets, start }: { timelin
 
   const moments = useMemo(() => momentsOf(timeline, players), [timeline, players]);
   const fights = useMemo(() => fightsOf(moments, shown), [moments, shown.join()]);
-  // Fenêtres de ralenti : de quelques secondes avant le premier kill à quelques secondes après le dernier.
-  const slowZones = useRef<[number, number][]>([]);
-  slowZones.current = fights.map((f) => [f.t - SLOW_BEFORE, f.kills[f.kills.length - 1].t + SLOW_AFTER]);
   const tRef = useRef(t);
   tRef.current = t;
 
-  // Lecture : l'horloge de la partie avance de `speed` secondes par seconde réelle, en ralenti pendant les combats.
+  // Lecture : l'horloge de la partie avance de `speed` secondes par seconde réelle.
   useEffect(() => {
     if (!playing) return;
     let raf = 0;
@@ -70,8 +63,7 @@ export function Replay({ timeline, players, duration, assets, start }: { timelin
       const dt = (now - last) / 1000;
       last = now;
       const v = tRef.current;
-      const slow = slowZones.current.some(([a, b]) => v >= a && v <= b);
-      const to = Math.min(v + dt * speed * (slow ? SLOW_FACTOR : 1), end);
+      const to = Math.min(v + dt * speed, end);
       tRef.current = to;
       setT(to);
       if (to >= end) setPlaying(false);
@@ -94,7 +86,20 @@ export function Replay({ timeline, players, duration, assets, start }: { timelin
     return { gold: pf?.totalGold ?? 0, level: pf?.level ?? 1, cs: (pf?.minionsKilled ?? 0) + (pf?.jungleMinionsKilled ?? 0) };
   };
   const killsBy = (team: number) => moments.filter((m) => m.kind === "kill" && m.t <= t && m.team === team).length;
-  const junglersSorted = shown.map((id) => byId.get(id)).filter((p): p is GamePlayer => !!p).sort((a, b) => Number(a.teamId !== allyTeam) - Number(b.teamId !== allyTeam));
+  const ordered = [...players].sort((a, b) => Number(a.teamId !== allyTeam) - Number(b.teamId !== allyTeam));
+  // KDA de chaque joueur à l'instant t, compté sur les kills déjà passés.
+  const kdaOf = (id: number) => {
+    let k = 0,
+      d = 0,
+      a = 0;
+    for (const m of moments) {
+      if (m.kind !== "kill" || m.t > t) continue;
+      if (m.event.killerId === id) k++;
+      if (m.event.victimId === id) d++;
+      if (m.event.assistingParticipantIds?.includes(id)) a++;
+    }
+    return `${k}/${d}/${a}`;
+  };
 
   // Combat en cours d'affichage : en cours ou terminé il y a peu.
   const current = [...fights].reverse().find((f) => f.t <= t && t - (f.kills[f.kills.length - 1].t) < 12);
@@ -200,21 +205,23 @@ export function Replay({ timeline, players, duration, assets, start }: { timelin
           </div>
         </div>
         <ul className="replay-players">
-          {junglersSorted.map((p) => {
+          {ordered.map((p, i) => {
             const l = statsOf(p.id);
             return (
-              <li key={p.id}>
-                <div className="replay-jungler" style={{ "--c": color(p.teamId) } as CSSProperties}>
+              <li key={p.id} className={i === 5 ? "split" : undefined}>
+                <div className={cx("replay-jungler", shown.includes(p.id) && "on")} style={{ "--c": color(p.teamId) } as CSSProperties}>
                   <ChampIcon id={p.championId} />
                   <span>
                     <b>{p.me ? "Toi" : p.champion}</b>
                     <small>{p.name}</small>
                   </span>
                   <span className="right">
-                    <b>Niv. {l.level}</b>
-                    <small>
-                      {kilo(l.gold)} · {l.cs} cs
-                    </small>
+                    <b className="mono">{kdaOf(p.id)}</b>
+                    <small>Niv. {l.level}</small>
+                  </span>
+                  <span className="right">
+                    <b>{kilo(l.gold)}</b>
+                    <small>{l.cs} cs</small>
                   </span>
                 </div>
               </li>
@@ -233,7 +240,7 @@ export function Replay({ timeline, players, duration, assets, start }: { timelin
             </ul>
           </div>
         ) : (
-          <p className="note">La lecture ralentit pendant tes combats. Les trajets sont estimés : Riot ne donne qu'une position par minute.</p>
+          <p className="note">Les trajets sont estimés : Riot ne donne qu'une position par minute.</p>
         )}
       </aside>
     </div>

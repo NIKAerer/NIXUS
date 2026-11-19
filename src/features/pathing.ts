@@ -54,7 +54,7 @@ const clearTime = (t: number) => (t < 300 ? TUNE.clearEarly : t < 900 ? TUNE.cle
 const EPIC_CS: Record<string, number> = { HORDE: 2, DRAGON: 4, RIFTHERALD: 4, BARON_NASHOR: 4, ATAKHAN: 4 };
 
 /** Réglages étalonnés sur l'archive (scripts/pathing-eval.mjs). */
-export const TUNE = { baseRadius: 3500, outing: 40, firstPrior: 1000, firstWindow: 270, firstExtra: 6, countWeight: 1500, waitStart: 0, detour: 1.15, late: 900, seen: 1200, clearEarly: 14, clearMid: 9, clearLate: 6 };
+export const TUNE = { baseRadius: 3500, outing: 40, firstPrior: 1000, firstWindow: 270, firstExtra: 6, countWeight: 1500, waitStart: 0, detour: 1.15, late: 900, seen: 1200, clearEarly: 14, clearMid: 9, clearLate: 6, continuous: true };
 
 /* ---------- Camps ---------- */
 
@@ -448,7 +448,8 @@ export function buildPathing(timeline: Timeline, players: GamePlayer[]): Pathing
           t += dist(leg[j - 1], leg[j]) / speedOf(p.id, t);
           plan.push({ t, p: leg[j] });
         }
-        if (i < camps.length) {
+        if (i < camps.length && TUNE.continuous) plan.push({ t, p: leg[leg.length - 1], kill: mine[i] });
+        else if (i < camps.length) {
           const fight = clearTime(t);
           const kill = mine[i];
           // Le camp n'est pas forcément là à l'arrivée (première apparition, réapparition) : on l'attend.
@@ -460,8 +461,9 @@ export function buildPathing(timeline: Timeline, players: GamePlayer[]): Pathing
       // Trop long : on accélère tout l'horaire. Trop court : le joueur attend (voie, vision), surtout à l'arrivée.
       const used = t - a.t;
       const room = end - a.t;
-      const squeeze = used > room && used > 0 ? room / used : 1;
-      const shift = Math.max(0, room - used) * TUNE.waitStart;
+      // Mouvement continu : l'horaire est étiré ou compressé pour remplir tout l'intervalle, sans arrêt.
+      const squeeze = used > 0 && (TUNE.continuous || used > room) ? room / used : 1;
+      const shift = TUNE.continuous ? 0 : Math.max(0, room - used) * TUNE.waitStart;
       if (shift > 0.5) out.push({ t: a.t + shift, x: a.x, y: a.y });
       for (const s of plan) {
         const at = a.t + shift + (s.t - a.t) * squeeze;
