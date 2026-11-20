@@ -74,3 +74,48 @@ button.tile:hover { transform: translateY(-4px) scale(1.02); box-shadow: 0 16px 
 @media (max-width: 1240px) {
   .hero { grid-template-columns: minmax(0, 1fr) 300px; }
 }
+
+/* Gros bouton Jouer de l'accueil : blanc, il se remplit de la couleur du thème au survol. À côté, l'enjeu de la prochaine partie. */
+.hero-main:has(.heroplay) { max-width: 820px; }
+.heroplay { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; margin-top: 6px; }
+.heroplay-btn { position: relative; isolation: isolate; overflow: hidden; display: flex; align-items: center; gap: 22px; height: 118px; min-width: min(470px, 100%); padding: 0 34px 0 30px; border-radius: 22px; background: #fff; color: #0a0a0c; text-align: left; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55); transition: transform 0.25s var(--ease), color 0.25s, background 0.25s; animation: heroplay-ping 2.6s ease-out infinite; }
+.heroplay-btn::after { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--accent); clip-path: circle(0% at 12% 50%); transition: clip-path 0.5s var(--ease); }
+.heroplay-btn svg { flex: none; transition: transform 0.25s var(--ease); }
+.heroplay-word { font: 400 96px/0.8 var(--display); letter-spacing: 0.03em; text-transform: uppercase; padding-top: 12px; font-variant-numeric: tabular-nums; }
+.heroplay-meta { margin-left: auto; display: flex; flex-direction: column; gap: 4px; font-weight: 700; font-size: 13px; text-align: right; max-width: 180px; }
+.heroplay-meta span { font-weight: 600; color: #55555f; transition: color 0.25s; }
+.heroplay-btn:not(:disabled):hover { color: #fff; transform: translateY(-3px); }
+.heroplay-btn:not(:disabled):hover::after { clip-path: circle(150% at 12% 50%); }
+.heroplay-btn:not(:disabled):hover .heroplay-meta span { color: rgba(255, 255, 255, 0.8); }
+.heroplay-btn:not(:disabled):hover svg { transform: scale(1.15); }
+.heroplay-btn:not(:disabled):active { transform: translateY(1px) scale(0.99); }
+.heroplay-btn:disabled { animation: none; cursor: default; }
+.heroplay:not(.searching) .heroplay-btn:disabled { background: rgba(255, 255, 255, 0.55); }
+.heroplay.searching .heroplay-btn { background: rgba(12, 12, 15, 0.75); color: #fff; backdrop-filter: blur(14px); box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55), inset 0 0 0 1px rgba(var(--accent-rgb), 0.6), 0 0 50px rgba(var(--accent-rgb), 0.2); }
+.heroplay.searching .heroplay-meta { color: var(--accent-hi); }
+.heroplay.searching .heroplay-meta span { color: var(--dim); }
+.heroplay-progress { position: absolute; left: 24px; right: 24px; bottom: 0; height: 3px; background: rgba(255, 255, 255, 0.08); }
+.heroplay-progress i { display: block; height: 100%; background: var(--accent); transition: width 1s linear; }
+@keyframes heroplay-ping { 0% { box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55), 0 0 0 0 rgba(255, 255, 255, 0.45); } 70%, 100% { box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55), 0 0 0 22px rgba(255, 255, 255, 0); } }
+.app.no-fx .heroplay-btn { animation: none; }
+
+.heroplay-stake { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.heroplay-streak { display: inline-flex; gap: 4px; }
+.heroplay-streak i { width: 10px; height: 10px; border-radius: 3px; background: var(--loss); }
+.heroplay-streak i.w { background: var(--win); }
+.heroplay-stake b { font: 400 22px/1 var(--display); letter-spacing: 0.04em; text-transform: uppercase; }
+.heroplay-bar { width: 220px; height: 8px; border-radius: 8px; background: rgba(255, 255, 255, 0.12); overflow: hidden; }
+.heroplay-bar i { display: block; height: 100%; background: var(--win); border-radius: 8px; }
+.heroplay-stake small { color: var(--dim); font-size: 12.5px; }
+.heroplay-cancel { align-self: flex-start; }
+
+/* Sur l'accueil, la barre du bas ne garde que la file et le groupe : plus étroite. */
+.dock-wrap:has(.dock-hero) { width: min(980px, calc(100% - 48px)); }
+
+@media (max-width: 1240px) {
+  .heroplay-btn { height: 100px; min-width: 0; gap: 16px; padding: 0 24px; }
+  .heroplay-word { font-size: 78px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .heroplay-btn { animation: none; }
+}
