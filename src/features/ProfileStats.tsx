@@ -195,7 +195,7 @@ export function ProfileStats() {
             <Kpi label="Vision / min" value={metric(sum.vision, 2)} />
           </div>
 
-          <div className="duo">
+          <div className="duo fit">
             <section className="card card-pad">
               <h3>Par champion</h3>
               <div className="table" role="table" style={{ ["--cols" as string]: "minmax(0, 1.6fr) 0.6fr 1.1fr 0.7fr 0.7fr" }}>
@@ -250,7 +250,7 @@ export function ProfileStats() {
                   </div>
                 </section>
               )}
-              <section className="card card-pad">
+              <section className="card card-pad fill">
                 <h3>Par mode</h3>
                 <ul className="rows">
                   {byMode.map(([q, list]) => {

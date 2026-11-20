@@ -6,7 +6,7 @@ import { positionLabel } from "../lib/labels";
 import { championSplash, championSquare, gameAsset, skinSplash, timeAgo } from "../lib/lcu";
 import { versus, withChamp, type Tally } from "../lib/matchups";
 import type { ChampSelectAction } from "../lib/types";
-import { Art, Breathing, Icon, cx, int, plural } from "../ui";
+import { Art, Breathing, Icon, cx, int, plural, Select } from "../ui";
 
 const CLASSES: [string, string][] = [
   ["all", "Tous"],
@@ -386,13 +386,7 @@ function Loadout({ d, onEditRunes }: { d: DraftState; onEditRunes: () => void })
             <span className="label">Runes</span>
             <div className="rune-pick">
               {page?.selectedPerkIds?.[0] && d.assets?.runes.get(page.selectedPerkIds[0]) && <Art src={d.assets.runes.get(page.selectedPerkIds[0])!.icon} />}
-              <select className="input" value={d.currentPage ?? ""} onChange={(e) => d.choosePage(Number(e.target.value))} aria-label="Page de runes">
-                {d.pages.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name}
-                  </option>
-                ))}
-              </select>
+              <Select<number | string> value={d.currentPage ?? ""} options={d.pages.map((p) => [p.id, p.name] as const)} onChange={(v) => d.choosePage(Number(v))} label="Page de runes" />
               {d.assets?.styles.length ? (
                 <button className="btn btn-quiet btn-s" onClick={onEditRunes} title="Modifier cette page de runes">
                   <Icon name="pen" size={13} /> Modifier

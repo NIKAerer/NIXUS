@@ -3,7 +3,7 @@ import { actions, useClient } from "../lib/client";
 import { friendlyError } from "../lib/errors";
 import { humanize } from "../lib/labels";
 import { championSquare, gameAsset, isClassicCopy, lcu, profileIcon, skinSplash } from "../lib/lcu";
-import { Art, Breathing, Empty, Icon, Seg, Skeleton, Tabs, cx, int, readJson, writeJson } from "../ui";
+import { Art, Breathing, Empty, Icon, Seg, Skeleton, Tabs, cx, int, readJson, writeJson, Select } from "../ui";
 
 type Tab = "champions" | "skins" | "icons" | "emotes" | "wards";
 const TABS = [
@@ -232,13 +232,7 @@ export function Collection() {
         )}
         <label className="sort">
           <span className="label">Trier</span>
-          <select className="input" value={sort} onChange={(e) => pickSort(e.target.value as Sort)} aria-label="Trier">
-            {SORTS[tab].map(([v, l]) => (
-              <option key={v} value={v}>
-                {l}
-              </option>
-            ))}
-          </select>
+          <Select value={sort} options={SORTS[tab]} onChange={pickSort} label="Trier" />
         </label>
       </div>
       {rarities.length > 1 && (

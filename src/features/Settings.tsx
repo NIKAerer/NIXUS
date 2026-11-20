@@ -10,7 +10,7 @@ import type { Summoner } from "../lib/types";
 import { appVersion, checkUpdate, installUpdate, useUpdate } from "../lib/updater";
 import { nav } from "../lib/view";
 import { playChime } from "../lib/window";
-import { CloseButton, Icon, Modal, cx, int, plural, type IconName } from "../ui";
+import { CloseButton, Icon, Modal, cx, int, plural, type IconName, Select } from "../ui";
 
 /**
  * Paramètres : cinq sections à gauche, une seule affichée, une recherche qui filtre tout,
@@ -72,13 +72,7 @@ export function SettingsPanel() {
       label: "Région de ton compte",
       hint: "Où l'API Riot cherche tes parties.",
       control: ({ id, hintId }) => (
-        <select id={id} className="input" value={s.riotRegion} aria-describedby={hintId} onChange={(e) => setSettings({ riotRegion: e.target.value })}>
-          {REGIONS.map(([v, l]) => (
-            <option key={v} value={v}>
-              {l}
-            </option>
-          ))}
-        </select>
+        <Select id={id} value={s.riotRegion} describedBy={hintId} options={REGIONS} onChange={(v) => setSettings({ riotRegion: v })} />
       ),
     },
     {

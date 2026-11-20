@@ -7,7 +7,7 @@ import { gameStatusLabel, queueTypeLabel } from "../lib/labels";
 import { championSquare, lcu, profileIcon, queueName, rankLabel, timeAgo } from "../lib/lcu";
 import type { Friend, Match, MatchHistory, RankedStats } from "../lib/types";
 import { nav } from "../lib/view";
-import { Art, Breathing, CloseButton, Empty, Icon, Modal, Skeleton, cx, hhmm, kda, pct, plural, readJson, useEscape, writeJson } from "../ui";
+import { Art, Breathing, CloseButton, Empty, Icon, Modal, Skeleton, cx, hhmm, kda, pct, plural, readJson, useEscape, writeJson, Select } from "../ui";
 
 const ORDER: Record<string, number> = { chat: 0, dnd: 1, away: 2, mobile: 3, offline: 4 };
 const COLLAPSED_KEY = "nexus.collapsedGroups";
@@ -269,24 +269,18 @@ export function FriendsPanel() {
                         {f.id &&
                           groups.length > 0 &&
                           (moving === f.puuid ? (
-                            <select
-                              className="input friend-move"
+                            <Select<string>
+                              className="friend-move"
                               autoFocus
-                              value={f.groupId ?? defaultGroup?.id ?? ""}
-                              onBlur={() => setMoving(null)}
-                              onChange={(e) => {
+                              value={String(f.groupId ?? defaultGroup?.id ?? "")}
+                              onClose={() => setMoving(null)}
+                              onChange={(v) => {
                                 setMoving(null);
-                                act(() => moveFriend(f.id!, Number(e.target.value)));
+                                act(() => moveFriend(f.id!, Number(v)));
                               }}
-                              aria-label={`Groupe de ${f.gameName}`}
-                            >
-                              {defaultGroup && <option value={defaultGroup.id}>Général</option>}
-                              {realGroups.map((g) => (
-                                <option key={g.id} value={g.id}>
-                                  {g.name}
-                                </option>
-                              ))}
-                            </select>
+                              label={`Groupe de ${f.gameName}`}
+                              options={[...(defaultGroup ? [[String(defaultGroup.id), "Général"] as const] : []), ...realGroups.map((g) => [String(g.id), g.name] as const)]}
+                            />
                           ) : (
                             <button className="mini ghost" title="Changer de groupe" aria-label={`Changer ${f.gameName} de groupe`} onClick={() => setMoving(f.puuid)}>
                               <Icon name="dots" size={14} />
