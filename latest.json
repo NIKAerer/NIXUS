@@ -1,11 +1,11 @@
 {
-  "version": "1.0.12",
-  "notes": "Corrections et améliorations.",
-  "pub_date": "2026-11-20T01:49:14Z",
+  "version": "1.0.13",
+  "notes": "Graphiques : menu des stats sombre au style de l'app, graphique sur toute la hauteur",
+  "pub_date": "2026-11-20T02:23:34Z",
   "platforms": {
     "windows-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUU3M1c0VqSWpFM3Y1anBPMTFRMURldXRpaWd5Z2phQjNXMWhBK0hyMDlQWXQwdE1QTUhobmh1Nk52YUM4SHVPamhwM1RIczdLWm10RE5mYjhxQUlEQWdwSUFLUklUMGdZPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk1MTM5MzU0CWZpbGU6TklYVVNfMS4wLjEyX3g2NC1zZXR1cC5leGUJdmVyc2lvbjoxLjAuMTIKVktuQzFmSWM5R0xhSzFueHdKREQ2eHFTQWVRUWNpS3R5RERkczBTbWE1ODIwNVI1MFNwSlg4ZFd0STZBY0FBSXpEdmgwODVlQ1lMZit5VkJtTlNMQVE9PQo=",
-      "url": "https://github.com/NIKAerer/NIXUS/releases/download/v1.0.12/NIXUS_1.0.12_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUU3M1c0VqSWpFM3R4R0MrTXVFSDFjdGZrNFgxeUxKamhwcWRFb3NmSEZVWjZVK1oxSS8yMGlJT3BPc1puNThJU01mYUtvYmpSaEVIRlZHdXdvL3pnbHpnR1BoMjhMUmdRPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk1MTQxNDE0CWZpbGU6TklYVVNfMS4wLjEzX3g2NC1zZXR1cC5leGUJdmVyc2lvbjoxLjAuMTMKMUlIekcwL3lZQ1ZISGJxSTdLbkNFVGZtNUdNVzRqbklTWTgrR0NINHpqWm5lakxNRGt1NUpiN2l6c25HZWRXVi83YWRZMlNaUThiL3ZRN1h5RjhVRHc9PQo=",
+      "url": "https://github.com/NIKAerer/NIXUS/releases/download/v1.0.13/NIXUS_1.0.13_x64-setup.exe"
     }
   }
 }
