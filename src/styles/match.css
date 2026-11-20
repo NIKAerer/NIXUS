@@ -164,7 +164,7 @@
 
 /* Replay */
 /* La carte prend toute la hauteur disponible, la liste des joueurs occupe le reste de la largeur. */
-.replay { display: grid; grid-template-columns: auto minmax(300px, 1fr); gap: 18px; align-items: start; }
+.replay { display: grid; grid-template-columns: auto minmax(300px, 1fr); gap: 18px; align-items: stretch; }
 .replay-stage { display: flex; flex-direction: column; gap: 10px; width: clamp(470px, calc(100vh - 370px), 760px); }
 .replay-map { width: 100%; aspect-ratio: 1; border-radius: var(--r-l); background: #0b1210; border: 1px solid var(--line); }
 .replay-schematic rect { fill: #0e1714; }
@@ -184,7 +184,14 @@
 .replay-side { display: flex; flex-direction: column; gap: 10px; }
 .replay-score { display: grid; grid-template-columns: 1fr auto 1fr; gap: 10px; padding: 12px 14px; border-radius: 14px; background: var(--panel); border: 1px solid var(--line); text-align: center; }
 .replay-score b { display: block; font: 400 30px/1 var(--display); }
-.replay-players { display: flex; flex-direction: column; gap: 2px; }
+.replay-players { display: flex; flex-direction: column; gap: 3px; flex: 1; }
+/* Les lignes s'étirent pour finir à la hauteur de la carte, sans vide en dessous. */
+.replay-players li { flex: 1 1 0; display: flex; min-height: 40px; max-height: 64px; }
+.replay-players li .replay-jungler { flex: 1; }
+.replay-players span:first-of-type { flex: 0 1 140px; }
+.replay-gold { flex: 1; height: 5px; border-radius: 5px; background: rgba(255, 255, 255, 0.06); overflow: hidden; min-width: 30px; }
+.replay-gold i { display: block; height: 100%; border-radius: 5px; background: var(--c); opacity: 0.7; transition: width 0.3s var(--ease); }
+.replay-side > .note, .replay-fight { min-height: 0; }
 .replay-side { min-width: 0; }
 .replay-players li.split { margin-top: 10px; }
 .replay-players button { display: flex; align-items: center; gap: 10px; width: 100%; padding: 5px 10px 5px 6px; border-radius: var(--r-m); text-align: left; border-left: 3px solid var(--c); background: rgba(255, 255, 255, 0.03); }
