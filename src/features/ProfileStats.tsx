@@ -29,7 +29,7 @@ const FILTERS: [Filter, string][] = [
   ["ranked", "Classé"],
   ["normal", "Normal"],
   ["aram", "ARAM"],
-  ["arena", "Arena"],
+  ["arena", "Arène"],
   ["other", "Autres"],
 ];
 const kindOf = (q: number): Filter =>

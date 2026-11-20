@@ -168,7 +168,7 @@ export function SettingsPanel() {
       ),
     },
     { id: "calm", sec: "app", label: "Couper les animations en partie", hint: "Plus rien ne bouge pendant que LoL tourne, pour économiser la RAM et le processeur.", control: sw("calmInGame") },
-    { id: "badges", sec: "app", label: "Badge du mode sur les parties", hint: "Classé, ARAM, Arena… en haut de chaque tuile.", control: sw("modeBadges") },
+    { id: "badges", sec: "app", label: "Badge du mode sur les parties", hint: "Classé, ARAM, Arène… en haut de chaque tuile.", control: sw("modeBadges") },
 
     { id: "version", sec: "upd", label: "Version", words: "mise à jour chercher nixus", wide: true, control: () => <UpdateRow /> },
     { id: "updAuto", sec: "upd", label: "Vérifier au démarrage", hint: "Te prévient quand une nouvelle version existe.", control: sw("checkUpdates") },

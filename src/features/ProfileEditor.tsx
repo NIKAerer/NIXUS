@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { snapshot } from "../lib/archive";
 import { actions, useClient } from "../lib/client";
 import { friendlyError } from "../lib/errors";
+import { challengeCategoryLabel, tierLabel } from "../lib/labels";
 import { gameAsset, lcu, profileIcon } from "../lib/lcu";
 import { Art, CloseButton, Modal, Seg, cx, int } from "../ui";
 
@@ -28,8 +29,6 @@ interface Title {
 }
 
 const LEVELS = ["IRON", "BRONZE", "SILVER", "GOLD", "PLATINUM", "DIAMOND", "MASTER", "GRANDMASTER", "CHALLENGER"];
-const LEVEL_FR: Record<string, string> = { NONE: "Aucun", IRON: "Fer", BRONZE: "Bronze", SILVER: "Argent", GOLD: "Or", PLATINUM: "Platine", DIAMOND: "Diamant", MASTER: "Maître", GRANDMASTER: "Grand Maître", CHALLENGER: "Challenger" };
-const CAT_FR: Record<string, string> = { IMAGINATION: "Imagination", EXPERTISE: "Expertise", VETERANCY: "Vétérance", TEAMWORK: "Travail d'équipe", COLLECTION: "Collection" };
 const DEBUG_PATHS = ["/lol-challenges/v1/summary-player-data/local-player", "/lol-challenges/v2/titles/local-player", "/lol-challenges/v2/titles/all", "/lol-inventory/v2/inventory/REGALIA_BANNER"] as const;
 const TABS = [
   ["look", "Apparence"],
@@ -38,7 +37,7 @@ const TABS = [
 
 const iconOf = (c: Challenge) => gameAsset(c.levelToIconPath?.[c.currentLevel ?? ""] ?? c.levelToIconPath?.IRON);
 const rankOf = (l?: string) => LEVELS.indexOf(l ?? "");
-const level = (l?: string) => LEVEL_FR[l ?? "NONE"] ?? l ?? "";
+const level = (l?: string) => tierLabel(l ?? "NONE");
 const progress = (value?: number, max?: number) => `${Math.min(100, ((value ?? 0) / (max || 1)) * 100)}%`;
 
 /** Personnaliser le profil : icône, titre, jetons de défis affichés, et progression des défis. */
@@ -187,7 +186,7 @@ export function ProfileEditor({ onClose }: { onClose: () => void }) {
               <div className="cats">
                 {summary.categoryProgress.map((c) => (
                   <div key={c.category}>
-                    <span className="label">{CAT_FR[c.category] ?? c.category}</span>
+                    <span className="label">{challengeCategoryLabel(c.category)}</span>
                     <b>{level(c.level)}</b>
                     <span className="bar">
                       <i style={{ width: progress(c.current, c.max) }} />

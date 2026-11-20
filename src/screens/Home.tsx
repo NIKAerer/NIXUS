@@ -3,7 +3,9 @@ import { Leaderboard } from "../features/Leaderboard";
 import { MatchTile } from "../features/MatchTile";
 import { readHeroSkin, SkinPicker, type HeroSkin } from "../features/SkinPicker";
 import { actions, useClient } from "../lib/client";
-import { championSplash, rankLabel, skinSplash } from "../lib/lcu";
+import { championSplash, clock, rankLabel, skinSplash } from "../lib/lcu";
+import type { RankedQueue } from "../lib/types";
+import { usePlay } from "../shell/PlayDock";
 import { queueInfo, useView } from "../lib/view";
 import { Breathing, Empty, Icon, RefreshButton, Skeleton, cx } from "../ui";
 
@@ -78,33 +80,7 @@ export function Home() {
           </div>
           <h1 className="display">{info.title}</h1>
           <p className="hero-blurb">{info.blurb}</p>
-          <div className="hero-stats">
-            {info.ranked && rank?.tier ? (
-              <span className="stat">
-                <span className="label">Ton rang</span>
-                <b>{rankLabel(rank.tier, rank.division)}</b>
-                <small>{rank.leaguePoints} LP</small>
-              </span>
-            ) : null}
-            {today.length > 0 && (
-              <span className="stat">
-                <span className="label">Aujourd'hui</span>
-                <b>
-                  <span className="up">{wins} V</span> · <span className="down">{today.length - wins} D</span>
-                </b>
-                <small>{today.length} partie{today.length > 1 ? "s" : ""}</small>
-              </span>
-            )}
-            {streak >= 2 && (
-              <span className="stat">
-                <span className="label">Série</span>
-                <b className={streakWin ? "up" : "down"}>
-                  {streak} {streakWin ? "victoires" : "défaites"}
-                </b>
-                <small>{streakWin ? "Continue comme ça" : "Respire, ça va tourner"}</small>
-              </span>
-            )}
-          </div>
+          <HeroPlay rank={info.ranked ? rank : undefined} recent={history.slice(0, 5).map((m) => !!m.participants[0]?.stats.win).reverse()} streak={streak} streakWin={streakWin} today={today.length} wins={wins} />
         </div>
 
         <Leaderboard className="hero-board" />
@@ -143,6 +119,90 @@ export function Home() {
 
       {picking && <SkinPicker champions={champions} current={heroSkin} autoChampion={heroChampion} onChange={setHeroSkin} onClose={() => setPicking(false)} />}
     </>
+  );
+}
+
+const TIER_ORDER = ["IRON", "BRONZE", "SILVER", "GOLD", "PLATINUM", "EMERALD", "DIAMOND"];
+const DIVISIONS = ["IV", "III", "II", "I"];
+
+/** Prochain palier : la division au-dessus, ou le tier suivant après la I. Rien au-dessus de Diamant (LP sans plafond). */
+function nextStep(rank: RankedQueue) {
+  const t = TIER_ORDER.indexOf(rank.tier);
+  const d = DIVISIONS.indexOf(rank.division);
+  if (t < 0 || d < 0) return null;
+  if (d < 3) return rankLabel(rank.tier, DIVISIONS[d + 1]);
+  return t + 1 < TIER_ORDER.length ? rankLabel(TIER_ORDER[t + 1], "IV") : "Maître";
+}
+
+/** Le gros bouton Jouer de l'accueil, avec à côté ce que la prochaine partie peut t'apporter. */
+function HeroPlay({ rank, recent, streak, streakWin, today, wins }: { rank?: RankedQueue; recent: boolean[]; streak: number; streakWin: boolean; today: number; wins: number }) {
+  const p = usePlay();
+  const next = rank?.tier ? nextStep(rank) : null;
+  const lp = rank?.leaguePoints ?? 0;
+  const mood =
+    streak >= 2
+      ? streakWin
+        ? `${streak} victoires de suite. Continue comme ça.`
+        : `${streak} défaites de suite. Respire, ça va tourner.`
+      : today
+        ? `Aujourd'hui : ${wins} V · ${today - wins} D.`
+        : "Première partie du jour.";
+
+  const label = p.searching ? clock(p.time) : p.preparing ? "…" : p.info.custom ? "Lancer" : "Jouer";
+  const sub = p.searching
+    ? p.found
+      ? "Partie trouvée"
+      : "Recherche en cours"
+    : p.preparing
+      ? "Préparation du client"
+      : p.info.title;
+  const hint = p.searching ? (p.eta ? `Temps estimé ${clock(p.eta)}` : "Temps estimé inconnu") : p.leader ? null : "Le chef du groupe lance la recherche";
+
+  return (
+    <div className={cx("heroplay", p.searching && "searching")}>
+      <button className="heroplay-btn" onClick={p.go} disabled={p.searching || p.preparing || !p.leader} aria-label={p.searching ? `Recherche en cours, ${clock(p.time)}` : `${label} : ${p.info.title}`}>
+        <Icon name="play" fill size={40} />
+        <span className="heroplay-word">{label}</span>
+        <span className="heroplay-meta">
+          {sub}
+          {hint && <span>{hint}</span>}
+        </span>
+        {p.searching && (
+          <i className="heroplay-progress" aria-hidden="true">
+            <i style={{ width: `${p.eta ? Math.min(100, (p.time / p.eta) * 100) : 0}%` }} />
+          </i>
+        )}
+      </button>
+      <div className="heroplay-stake">
+        {recent.length > 0 && (
+          <span className="heroplay-streak" title="Tes dernières parties, la plus récente à droite">
+            {recent.map((w, i) => (
+              <i key={i} className={w ? "w" : "l"} />
+            ))}
+          </span>
+        )}
+        {next ? (
+          <>
+            <b>
+              {next} à {Math.max(0, 100 - lp)} LP
+            </b>
+            <span className="heroplay-bar" aria-hidden="true">
+              <i style={{ width: `${Math.min(100, lp)}%` }} />
+            </span>
+          </>
+        ) : rank?.tier ? (
+          <b>
+            {rankLabel(rank.tier, rank.division)} · {lp} LP
+          </b>
+        ) : null}
+        <small>{mood}</small>
+        {p.searching && p.leader && (
+          <button className="btn btn-quiet heroplay-cancel" onClick={p.cancel}>
+            Annuler la recherche
+          </button>
+        )}
+      </div>
+    </div>
   );
 }
 

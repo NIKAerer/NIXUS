@@ -143,8 +143,6 @@ export function Loot() {
     .filter((o) => o.recipe)
     .sort((a, b) => b.times - a.times || b.item.count - a.item.count);
   const keys = owned.get(KEY) ?? 0;
-  const fragments = owned.get(KEY_FRAGMENT) ?? 0;
-  const forge = (recipes[KEY_FRAGMENT] ?? []).find((r) => actionOf(r) === "forge");
   const extras = useMemo(() => cleanupCandidates(items), [items]);
   const affordable = items
     .filter((l) => isShard(l) && !alreadyOwned(l) && l.upgradeEssenceValue && (owned.get(l.upgradeEssenceName ?? (kindOf(l) === "skin" ? "CURRENCY_cosmetic" : "CURRENCY_champion")) ?? 0) >= l.upgradeEssenceValue && kindOf(l) !== "chest")
@@ -167,17 +165,18 @@ export function Loot() {
   const groups = KINDS.map(([k, label]) => ({ k, label, list: visible.filter((l) => kindOf(l) === k) })).filter((g) => g.list.length && (kind === "all" || g.k === kind));
   const countOf = (k: Kind) => items.filter((l) => kindOf(l) === k).reduce((n, l) => n + l.count, 0);
 
+  const totalShown = visible.reduce((n, l) => n + l.count, 0);
+
   return (
     <div className="page loot">
-      <header className="loot-hero">
-        <div className="loot-hero-title">
-          <span className="eyebrow">Atelier Hextech</span>
+      <header className="loot-head">
+        <div className="grow">
+          <span className="eyebrow">Hextech</span>
           <h1>Butin</h1>
-          <p>Ouvre tes coffres, transforme tes fragments en champions et en skins, ou récupère leur essence.</p>
         </div>
         <div className="wallet" aria-label="Tes essences et tes clés">
           {ESSENCES.map((e) => (
-            <div key={e.id} className={cx("coin", `tone-${e.tone}`)}>
+            <div key={e.id} className={cx("coin", `tone-${e.tone}`)} title={e.name}>
               <Glyph kind="essence" tone={e.tone} />
               <span>
                 <b>
@@ -187,13 +186,11 @@ export function Loot() {
               </span>
             </div>
           ))}
-          <div className="coin tone-key">
+          <div className="coin tone-key" title="Clés Hextech">
             <Glyph kind="key" />
             <span>
               <b>{keys}</b>
-              <small>
-                {keys > 1 ? "Clés" : "Clé"} · {plural(fragments, "fragment")}
-              </small>
+              <small>{keys > 1 ? "Clés" : "Clé"}</small>
             </span>
           </div>
         </div>
@@ -201,172 +198,159 @@ export function Loot() {
 
       {error && <Empty title="Butin indisponible">{error}</Empty>}
 
-      {!loot && !error && (
-        <div className="loot-grid" aria-label="Chargement">
-          {Array.from({ length: 10 }, (_, i) => (
-            <Skeleton key={i} className="lc" />
-          ))}
-        </div>
-      )}
-
-      {loot && (
-        <section className="next" aria-label="Ce que tu peux faire maintenant">
-          {openables.length > 0 ? (
-            openables.slice(0, 1).map((o) => (
-              <div key={o.item.lootId} className={cx("next-card next-open", o.times === 0 && "locked")}>
-                <div className="next-art">
-                  <LootImage item={o.item} />
-                  {o.item.count > 1 && <span className="lc-count">×{o.item.count}</span>}
-                </div>
-                <div className="next-txt">
-                  <span className="label">{o.times > 0 ? "Prêt à ouvrir" : "Il manque une clé"}</span>
-                  <b>{o.times > 0 ? (o.times > 1 ? `${o.times} ${lootName(o.item).toLowerCase().startsWith("coffre") ? "coffres" : "× " + lootName(o.item)} à ouvrir` : `Ouvrir : ${lootName(o.item)}`) : `${plural(o.item.count, "coffre")} en attente`}</b>
-                  <small>
-                    {o.needsKey ? (o.times > 0 ? `Une clé par coffre · ${plural(keys, "clé")} en stock` : `Forge une clé avec 3 fragments (tu en as ${fragments}) ou gagne-en avec l'honneur.`) : "S'ouvre sans clé."}
-                  </small>
-                  {o.times > 0 && (
-                    <div className="next-btns">
-                      <button className="btn btn-red" disabled={busy} onClick={() => run(o.recipe!, o.item)}>
-                        <Icon name="loot" size={17} />
-                        Ouvrir
-                      </button>
-                      {o.times > 1 && (
-                        <button className="btn btn-quiet" disabled={busy} onClick={() => run(o.recipe!, o.item, o.times)}>
-                          Tout ouvrir ({o.times})
-                        </button>
-                      )}
-                    </div>
-                  )}
-                </div>
+      <div className="loot-layout">
+        <div className="loot-main">
+          {loot && (
+            <div className="loot-bar">
+              <div className="chips" role="tablist" aria-label="Catégories">
+                <button className="chip" role="tab" aria-selected={kind === "all"} onClick={() => setKind("all")}>
+                  Tout <span>{items.reduce((n, l) => n + l.count, 0)}</span>
+                </button>
+                {KINDS.filter(([k]) => countOf(k) > 0).map(([k, label]) => (
+                  <button key={k} className="chip" role="tab" aria-selected={kind === k} onClick={() => setKind(k)}>
+                    {label} <span>{countOf(k)}</span>
+                  </button>
+                ))}
               </div>
-            ))
-          ) : (
-            <div className="next-card next-open locked">
-              <div className="next-art">
-                <Glyph kind="chest" />
-              </div>
-              <div className="next-txt">
-                <span className="label">Coffres</span>
-                <b>Aucun coffre pour l'instant</b>
-                <small>Les coffres se gagnent avec le pass, les événements et l'honneur.</small>
+              <div className="loot-tools">
+                <Seg<Filter>
+                  value={filter}
+                  onChange={setFilter}
+                  label="Possession"
+                  options={[
+                    ["all", "Tout"],
+                    ["new", "Pas encore à moi"],
+                    ["owned", "Déjà possédé"],
+                  ]}
+                />
+                <select className="input" value={sort} onChange={(e) => setSort(e.target.value as Sort)} aria-label="Trier">
+                  <option value="value">Trier par valeur</option>
+                  <option value="rarity">Trier par rareté</option>
+                  <option value="name">Trier de A à Z</option>
+                </select>
+                <label className="search-box">
+                  <Icon name="search" size={15} />
+                  <input className="input" placeholder="Rechercher" value={query} onChange={(e) => setQuery(e.target.value)} aria-label="Rechercher dans le butin" />
+                </label>
               </div>
             </div>
           )}
 
-          <div className="next-side">
-            {(fragments > 0 || keys > 0) && (
-              <div className="next-mini">
-                <Glyph kind="fragment" />
-                <div className="next-txt">
-                  <b>{fragments >= 3 ? `Forger ${plural(Math.floor(fragments / 3), "clé")}` : "Fragments de clé"}</b>
-                  <div className="meter" aria-label={`${fragments % 3} fragments sur 3`}>
-                    {[0, 1, 2].map((i) => (
-                      <i key={i} className={cx(i < (fragments >= 3 ? 3 : fragments % 3) && "on")} />
+          {!loot && !error && (
+            <div className="loot-grid" aria-label="Chargement">
+              {Array.from({ length: 12 }, (_, i) => (
+                <Skeleton key={i} className="lc" />
+              ))}
+            </div>
+          )}
+
+          {loot && groups.length === 0 && <Empty title={query ? "Rien à ce nom" : items.length ? "Rien ici" : "Ton butin est vide"}>{items.length ? "Change de catégorie ou de filtre." : "Les coffres et les fragments que tu gagnes apparaîtront ici."}</Empty>}
+
+          {groups.map((g) => (
+            <section key={g.k} className="loot-sec">
+              <h2 className="loot-sec-head">
+                {g.label} <span>{g.list.reduce((n, l) => n + l.count, 0)}</span>
+                {g.k !== "chest" && extras.some((x) => kindOf(x.item) === g.k) && (
+                  <button className="mini ghost" onClick={() => setBulkOpen(true)}>
+                    Désenchanter les fragments en trop
+                  </button>
+                )}
+              </h2>
+              <div className={cx("loot-grid", (g.k === "chest" || g.k === "cosmetic" || g.k === "other") && "compact")}>
+                {g.list.map((l) => (
+                  <LootCard key={l.lootId} item={l} owned={owned} selected={l.lootId === selectedId} onOpen={() => setSelectedId(l.lootId === selectedId ? null : l.lootId)} />
+                ))}
+              </div>
+            </section>
+          ))}
+          {loot && groups.length > 0 && <p className="loot-foot note">{plural(totalShown, "objet")} affichés</p>}
+        </div>
+
+        {loot && (
+          <aside className="atelier" aria-label="Atelier">
+            {selected ? (
+              <LootPanel key={selected.lootId} item={selected} owned={owned} busy={busy} recipes={recipes[selected.lootId]} load={loadRecipes} onRun={run} onClose={() => setSelectedId(null)} />
+            ) : (
+              <div className="atelier-home">
+                <div className="atelier-title">
+                  <span className="label">Atelier</span>
+                  <p>Choisis un objet à gauche pour voir ce qu'il coûte, ce qu'il rapporte et ce que tu peux en faire.</p>
+                </div>
+
+                {openables.length > 0 ? (
+                  openables.slice(0, 1).map((o) => (
+                    <div key={o.item.lootId} className={cx("open-card", o.times === 0 && "locked")}>
+                      <div className="open-art">
+                        <LootImage item={o.item} />
+                      </div>
+                      <span className="label">{o.times > 0 ? "Prêt à ouvrir" : "Il te manque une clé"}</span>
+                      <b>{o.times > 1 ? `${o.times} × ${lootName(o.item)}` : lootName(o.item)}</b>
+                      <small>{o.needsKey ? (o.times > 0 ? `Une clé par coffre · ${plural(keys, "clé")}` : `${plural(o.item.count, "coffre")} en attente d'une clé.`) : "S'ouvre sans clé."}</small>
+                      {o.times > 0 && (
+                        <div className="open-btns">
+                          <button className="btn btn-red" disabled={busy} onClick={() => run(o.recipe!, o.item)}>
+                            Ouvrir
+                          </button>
+                          {o.times > 1 && (
+                            <button className="btn btn-quiet" disabled={busy} onClick={() => run(o.recipe!, o.item, o.times)}>
+                              Tout ouvrir ({o.times})
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <div className="open-card locked">
+                    <div className="open-art">
+                      <Glyph kind="chest" />
+                    </div>
+                    <b>Aucun coffre</b>
+                    <small>Les coffres arrivent avec le pass et les événements.</small>
+                  </div>
+                )}
+
+                {extras.length > 0 && (
+                  <button className="atelier-row" onClick={() => setBulkOpen(true)}>
+                    <Glyph kind="essence" tone="blue" />
+                    <span className="atelier-row-txt">
+                      <b>Faire le ménage</b>
+                      <small>
+                        {plural(extras.reduce((n, x) => n + x.qty, 0), "fragment")} en trop ·{" "}
+                        {sumByEssence(extras)
+                          .map(([id, v]) => `+${amount(id, v)}`)
+                          .join(" · ")}
+                      </small>
+                    </span>
+                    <Icon name="chevron" size={16} className="rot" />
+                  </button>
+                )}
+
+                {affordable.length > 0 && (
+                  <div className="atelier-list">
+                    <span className="label">À ta portée</span>
+                    {affordable.slice(0, 4).map((l) => (
+                      <button key={l.lootId} className="atelier-row" onClick={() => setSelectedId(l.lootId)}>
+                        <span className="atelier-face">
+                          <LootImage item={l} />
+                        </span>
+                        <span className="atelier-row-txt">
+                          <b>{lootName(l)}</b>
+                          <small>
+                            Débloquer pour {amount(l.upgradeEssenceName ?? (kindOf(l) === "skin" ? "CURRENCY_cosmetic" : "CURRENCY_champion"), l.upgradeEssenceValue ?? 0)}
+                          </small>
+                        </span>
+                        <Icon name="chevron" size={16} className="rot" />
+                      </button>
                     ))}
                   </div>
-                  <small>{fragments >= 3 ? `3 fragments = 1 clé · tu en as ${fragments}` : `Encore ${3 - (fragments % 3)} pour une clé`}</small>
-                </div>
-                {forge && fragments >= 3 && (
-                  <button className="btn btn-white btn-s" disabled={busy} onClick={() => run(forge, items.find((l) => l.lootId === KEY_FRAGMENT)!, Math.floor(fragments / 3))}>
-                    Forger
-                  </button>
                 )}
               </div>
             )}
+          </aside>
+        )}
+      </div>
 
-            {extras.length > 0 && (
-              <div className="next-mini">
-                <Glyph kind="essence" tone="blue" />
-                <div className="next-txt">
-                  <b>Faire le ménage</b>
-                  <small>
-                    {plural(extras.reduce((n, x) => n + x.qty, 0), "fragment")} en trop ·{" "}
-                    {sumByEssence(extras)
-                      .map(([id, v]) => `+${amount(id, v)}`)
-                      .join(" · ")}
-                  </small>
-                </div>
-                <button className="btn btn-quiet btn-s" disabled={busy} onClick={() => setBulkOpen(true)}>
-                  Choisir
-                </button>
-              </div>
-            )}
-
-            {affordable.length > 0 && (
-              <button className="next-mini next-unlock" onClick={() => setSelectedId(affordable[0].lootId)}>
-                <span className="next-faces">
-                  {affordable.slice(0, 3).map((l) => (
-                    <LootImage key={l.lootId} item={l} />
-                  ))}
-                </span>
-                <div className="next-txt">
-                  <b>{affordable.length > 1 ? `${affordable.length} déblocages à ta portée` : `${lootName(affordable[0])} est à ta portée`}</b>
-                  <small>
-                    {lootName(affordable[0])} pour {amount(affordable[0].upgradeEssenceName ?? "CURRENCY_champion", affordable[0].upgradeEssenceValue ?? 0)}
-                  </small>
-                </div>
-                <Icon name="chevron" size={16} className="rot" />
-              </button>
-            )}
-          </div>
-        </section>
-      )}
-
-      {loot && (
-        <div className="loot-bar">
-          <div className="chips" role="tablist" aria-label="Catégories">
-            <button className="chip" role="tab" aria-selected={kind === "all"} onClick={() => setKind("all")}>
-              Tout <span>{items.reduce((n, l) => n + l.count, 0)}</span>
-            </button>
-            {KINDS.filter(([k]) => countOf(k) > 0).map(([k, label]) => (
-              <button key={k} className="chip" role="tab" aria-selected={kind === k} onClick={() => setKind(k)}>
-                {label} <span>{countOf(k)}</span>
-              </button>
-            ))}
-          </div>
-          <div className="loot-tools">
-            <Seg<Filter>
-              value={filter}
-              onChange={setFilter}
-              label="Possession"
-              options={[
-                ["all", "Tout"],
-                ["new", "Pas encore à moi"],
-                ["owned", "Déjà possédé"],
-              ]}
-            />
-            <label className="sort">
-              <span className="label">Trier</span>
-              <select className="input" value={sort} onChange={(e) => setSort(e.target.value as Sort)}>
-                <option value="value">Par valeur</option>
-                <option value="rarity">Par rareté</option>
-                <option value="name">De A à Z</option>
-              </select>
-            </label>
-            <label className="search-box">
-              <Icon name="search" size={15} />
-              <input className="input" placeholder="Rechercher" value={query} onChange={(e) => setQuery(e.target.value)} aria-label="Rechercher dans le butin" />
-            </label>
-          </div>
-        </div>
-      )}
-
-      {loot && groups.length === 0 && <Empty title={query ? "Rien à ce nom" : items.length ? "Rien ici" : "Ton butin est vide"}>{items.length ? "Change de catégorie ou de filtre." : "Les coffres, fragments et récompenses que tu gagnes apparaîtront ici."}</Empty>}
-
-      {groups.map((g) => (
-        <section key={g.k} className="loot-sec">
-          <h2 className="sec-head">
-            {g.label} <span>{plural(g.list.reduce((n, l) => n + l.count, 0), "objet")}</span>
-          </h2>
-          <div className={cx("loot-grid", (g.k === "chest" || g.k === "cosmetic" || g.k === "other") && "compact")}>
-            {g.list.map((l) => (
-              <LootCard key={l.lootId} item={l} owned={owned} onOpen={() => setSelectedId(l.lootId)} />
-            ))}
-          </div>
-        </section>
-      ))}
-
-      {selected && <LootSheet item={selected} owned={owned} busy={busy} recipes={recipes[selected.lootId]} load={loadRecipes} onRun={run} onClose={() => setSelectedId(null)} />}
       {bulkOpen && (
         <BulkDisenchant
           candidates={extras}
@@ -477,7 +461,7 @@ function LootImage({ item, splash }: { item: LootItem; splash?: boolean }) {
 
 /* ---------- Carte ---------- */
 
-function LootCard({ item, owned, onOpen }: { item: LootItem; owned: Map<string, number>; onOpen: () => void }) {
+function LootCard({ item, owned, selected, onOpen }: { item: LootItem; owned: Map<string, number>; selected?: boolean; onOpen: () => void }) {
   const k = kindOf(item);
   const rar = rarityKey(item);
   const tall = k === "champion" || k === "skin";
@@ -485,7 +469,7 @@ function LootCard({ item, owned, onOpen }: { item: LootItem; owned: Map<string, 
   const costId = item.upgradeEssenceName ?? (k === "skin" ? "CURRENCY_cosmetic" : "CURRENCY_champion");
   const canPay = cost > 0 && (owned.get(costId) ?? 0) >= cost;
   return (
-    <button className={cx("lc", tall ? "lc-tall" : "lc-icon", rar && `rar-${rar}`, alreadyOwned(item) && "is-owned")} onClick={onOpen} title={lootName(item)}>
+    <button className={cx("lc", tall ? "lc-tall" : "lc-icon", rar && `rar-${rar}`, alreadyOwned(item) && "is-owned", selected && "is-selected")} onClick={onOpen} title={lootName(item)} aria-pressed={selected}>
       <span className="lc-art">
         <LootImage item={item} />
       </span>
@@ -522,7 +506,7 @@ const Drop = ({ id }: { id?: string }) => (
 
 /* ---------- Fiche d'un objet ---------- */
 
-function LootSheet({ item, owned, busy, recipes, load, onRun, onClose }: { item: LootItem; owned: Map<string, number>; busy: boolean; recipes?: Recipe[]; load: (id: string, force?: boolean) => Promise<Recipe[]>; onRun: (r: Recipe, l: LootItem, repeat?: number) => void; onClose: () => void }) {
+function LootPanel({ item, owned, busy, recipes, load, onRun, onClose }: { item: LootItem; owned: Map<string, number>; busy: boolean; recipes?: Recipe[]; load: (id: string, force?: boolean) => Promise<Recipe[]>; onRun: (r: Recipe, l: LootItem, repeat?: number) => void; onClose: () => void }) {
   useEscape(onClose);
   useEffect(() => {
     load(item.lootId);
@@ -534,10 +518,9 @@ function LootSheet({ item, owned, busy, recipes, load, onRun, onClose }: { item:
   const order = ["open", "forge", "upgrade", "other", "reroll", "disenchant"];
   const list = (recipes ?? []).slice().sort((a, b) => order.indexOf(actionOf(a)) - order.indexOf(actionOf(b)));
 
-  return createPortal(
-    <div className="sheet-scrim" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
-      <aside className={cx("loot-sheet", rar && `rar-${rar}`)} role="dialog" aria-modal="true" aria-label={lootName(item)}>
-        <CloseButton onClose={onClose} className="sheet-x" />
+  return (
+    <div className={cx("loot-sheet", rar && `rar-${rar}`)} aria-label={lootName(item)}>
+        <CloseButton onClose={onClose} label="Retour à l'atelier" className="sheet-x" />
         <div className={cx("sheet-art", tall ? "is-splash" : "is-icon")}>
           <LootImage item={item} splash />
         </div>
@@ -579,9 +562,7 @@ function LootSheet({ item, owned, busy, recipes, load, onRun, onClose }: { item:
             ))}
           </div>
         </div>
-      </aside>
-    </div>,
-    document.getElementById("layer") ?? document.body,
+    </div>
   );
 }
 

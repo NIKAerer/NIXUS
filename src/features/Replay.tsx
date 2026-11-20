@@ -98,6 +98,7 @@ export function Replay({ timeline, players, duration, assets, start }: { timelin
   };
   const killsBy = (team: number) => moments.filter((m) => m.kind === "kill" && m.t <= t && m.team === team).length;
   const ordered = [...players].sort((a, b) => Number(a.teamId !== allyTeam) - Number(b.teamId !== allyTeam));
+  const richest = Math.max(1, ...players.map((p) => statsOf(p.id).gold));
   // KDA de chaque joueur à l'instant t, compté sur les kills déjà passés.
   const kdaOf = (id: number) => {
     let k = 0,
@@ -226,6 +227,9 @@ export function Replay({ timeline, players, duration, assets, start }: { timelin
                     <b>{p.me ? "Toi" : p.champion}</b>
                     <small>{p.name}</small>
                   </span>
+                  <i className="replay-gold" title={`Or : ${kilo(l.gold)}`}>
+                    <i style={{ width: `${(l.gold / richest) * 100}%` }} />
+                  </i>
                   <span className="right">
                     <b className="mono">{kdaOf(p.id)}</b>
                     <small>Niv. {l.level}</small>

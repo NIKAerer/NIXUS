@@ -252,14 +252,13 @@ const eogPlayer = (name: string, championId: number, k: number, d: number, a: nu
 
 const friendRequests: { puuid: string; gameName: string; gameTag: string; icon: number; direction: string }[] = [{ puuid: "req-1", gameName: "Soren", gameTag: "EUW", icon: 4022, direction: "in" }];
 type MockLoot = { lootId: string; count: number; [k: string]: unknown };
-const champShard = (id: number, name: string, owned: boolean, dis: number, up: number, count = 1): MockLoot => ({ lootId: `CHAMPION_RENTAL_${id}`, count, type: "CHAMPION_RENTAL", localizedName: name, displayCategories: "CHAMPION", storeItemId: id, disenchantValue: dis, disenchantLootName: "CURRENCY_champion", upgradeEssenceValue: up, upgradeEssenceName: "CURRENCY_champion", itemStatus: owned ? "OWNED" : "NONE" });
-const skinShard = (id: number, name: string, rarity: string, owned: boolean, champOwned: boolean, dis: number, up: number, count = 1): MockLoot => ({ lootId: `CHAMPION_SKIN_RENTAL_${id}`, count, type: "SKIN_RENTAL", localizedName: name, displayCategories: "SKIN", storeItemId: id, parentStoreItemId: Math.floor(id / 1000), rarity, disenchantValue: dis, disenchantLootName: "CURRENCY_cosmetic", upgradeEssenceValue: up, upgradeEssenceName: "CURRENCY_cosmetic", itemStatus: owned ? "OWNED" : "NONE", parentItemStatus: champOwned ? "OWNED" : "NONE" });
+const champShard = (id: number, name: string, owned: boolean, dis: number, up: number, count = 1): MockLoot => ({ lootId: `CHAMPION_RENTAL_${id}`, count, type: "CHAMPION_RENTAL", lootName: "CHAMPION_RENTAL", localizedName: "", itemDesc: name, displayCategories: "CHAMPION", storeItemId: id, disenchantValue: dis, disenchantLootName: "CURRENCY_champion", upgradeEssenceValue: up, upgradeEssenceName: "CURRENCY_champion", itemStatus: owned ? "OWNED" : "NONE" });
+const skinShard = (id: number, name: string, rarity: string, owned: boolean, champOwned: boolean, dis: number, up: number, count = 1): MockLoot => ({ lootId: `CHAMPION_SKIN_RENTAL_${id}`, count, type: "SKIN_RENTAL", lootName: "CHAMPION_SKIN_RENTAL", localizedName: "", itemDesc: name, displayCategories: "SKIN", storeItemId: id, parentStoreItemId: Math.floor(id / 1000), rarity, disenchantValue: dis, disenchantLootName: "CURRENCY_cosmetic", upgradeEssenceValue: up, upgradeEssenceName: "CURRENCY_cosmetic", itemStatus: owned ? "OWNED" : "NONE", parentItemStatus: champOwned ? "OWNED" : "NONE" });
 const loot: MockLoot[] = [
   { lootId: "CURRENCY_champion", count: 3450 },
   { lootId: "CURRENCY_cosmetic", count: 1260 },
   { lootId: "CURRENCY_mythic", count: 10 },
   { lootId: "MATERIAL_key", count: 2, type: "MATERIAL", localizedName: "Clé Hextech", displayCategories: "CHEST" },
-  { lootId: "MATERIAL_key_fragment", count: 4, type: "MATERIAL", localizedName: "Fragment de clé", displayCategories: "CHEST" },
   { lootId: "CHEST_generic", count: 3, type: "CHEST", localizedName: "Coffre Hextech", displayCategories: "CHEST", localizedDescription: "Contient un fragment de champion, de skin ou de cosmétique, et parfois une gemme." },
   { lootId: "CHEST_honor_capsule", count: 1, type: "CHEST", localizedName: "Capsule d'honneur", displayCategories: "CHEST", localizedDescription: "Récompense d'honneur. S'ouvre sans clé." },
   champShard(64, "Lee Sin", true, 1260, 1890),
@@ -316,7 +315,7 @@ function mockCraft(recipe: string, ids: string[], repeat: number) {
       take(item.lootId, 1);
       if (recipe === "CHEST_generic_OPEN") take("MATERIAL_key", 1);
       added.push(give(chestRewards[rewardIndex++ % chestRewards.length]));
-      if (item.lootId !== "CHEST_generic") added.push(give({ lootId: "MATERIAL_key_fragment", count: 0, type: "MATERIAL", localizedName: "Fragment de clé", displayCategories: "CHEST" }));
+      if (item.lootId !== "CHEST_generic") added.push(give({ lootId: "CURRENCY_cosmetic", count: 0 }, 220));
     } else if (/forge$/.test(recipe)) {
       take(item.lootId, 3);
       added.push(give(loot.find((x) => x.lootId === "MATERIAL_key")!));
@@ -618,7 +617,7 @@ export function mockRequest(method: string, path: string, body?: unknown): unkno
   if (route === "/lol-chat/v1/friends")
     return [
       { id: "f101@eu1.pvp.net", summonerId: 101, groupName: "Duo jungle", puuid: "1", gameName: "Kaelith", availability: "chat", icon: 4568, lol: { gameStatus: "outOfGame" } },
-      { id: "f102@eu1.pvp.net", summonerId: 102, puuid: "2", gameName: "Orrin", availability: "dnd", icon: 588, lol: { gameStatus: "inGame", gameQueueType: "ARAM", timeStamp: String(now() - 18 * 60000) } },
+      { id: "f102@eu1.pvp.net", summonerId: 102, puuid: "2", gameName: "Orrin", availability: "dnd", icon: 588, lol: { gameStatus: "inGame", gameQueueType: "ARAM_UNRANKED_5x5", timeStamp: String(now() - 18 * 60000) } },
       { id: "f103@eu1.pvp.net", summonerId: 103, groupName: "Duo jungle", puuid: "3", gameName: "Thalys", availability: "dnd", icon: 3150, lol: { gameStatus: "championSelect" } },
       { id: "f104@eu1.pvp.net", summonerId: 104, groupName: "Clash", puuid: "4", gameName: "Mirela", availability: "chat", icon: 5023, lol: { gameStatus: "outOfGame" } },
       { id: "f105@eu1.pvp.net", summonerId: 105, groupName: "Clash", puuid: "5", gameName: "Voss", availability: "away", icon: 29, lol: { gameStatus: "outOfGame" } },
@@ -686,7 +685,7 @@ export function mockRequest(method: string, path: string, body?: unknown): unkno
     return mockCraft(recipe, body as string[], repeat);
   }
   if (route === "/lol-challenges/v1/summary-player-data/local-player")
-    return { title: { itemId: 2, name: "Le Grimpeur" }, topChallenges: [{ id: 101 }, { id: 104 }], totalPoints: { level: "PLATINUM", current: 6420, max: 9000 }, categoryProgress: ["IMAGINATION", "EXPERTISE", "VETERANCY", "TEAMWORK", "COLLECTION"].map((category, i) => ({ category, level: ["GOLD", "PLATINUM", "DIAMOND", "SILVER", "GOLD"][i], current: 400 + i * 120, max: 1000 })) };
+    return { title: { itemId: 2, name: "Le Grimpeur" }, topChallenges: [{ id: 101 }, { id: 104 }], totalPoints: { level: "PLATINUM", current: 6420, max: 9000 }, categoryProgress: ["IMAGINATION", "EXPERTISE", "VETERANCY", "TEAMWORK", "COLLECTION", "LEGACY"].map((category, i) => ({ category, level: ["GOLD", "PLATINUM", "DIAMOND", "SILVER", "GOLD", "NONE"][i], current: 400 + i * 120, max: 1000 })) };
   if (route === "/lol-challenges/v1/challenges/local-player")
     return Object.fromEntries([...Array(14)].map((_, i) => [101 + i, { id: 101 + i, name: ["Premier sang", "Jungle royale", "Vision parfaite", "Série gagnante", "Pentakill", "Sans mourir", "Objectifs", "Collectionneur", "Duo de choc", "Esprit d'équipe", "Rapide", "Tanky", "Farmeur", "Voleur de buff"][i], description: "Accomplis cet exploit en partie classée.", currentLevel: ["GOLD", "PLATINUM", "SILVER", "DIAMOND", "NONE", "BRONZE", "GOLD", "IRON", "MASTER", "SILVER", "NONE", "GOLD", "PLATINUM", "BRONZE"][i], currentValue: 20 + i * 7, nextThreshold: 120, levelToIconPath: {} }]));
   if (route === "/lol-challenges/v2/titles/local-player") return [{ itemId: 1, name: "L'Invaincu" }, { itemId: 2, name: "Le Grimpeur" }, { itemId: 3, name: "Maître de la jungle" }];

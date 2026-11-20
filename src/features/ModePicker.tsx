@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { actions, useClient, type CustomConfig } from "../lib/client";
+import { gameModeLabel } from "../lib/labels";
 import { lcu, QUEUES, skinSplash } from "../lib/lcu";
 import type { CustomGame, GameQueue } from "../lib/types";
 import { nav, useView } from "../lib/view";
@@ -28,7 +29,7 @@ const rank = (q: GameQueue) => {
 /** Noms en français pour les files connues ; sinon le nom donné par le client. */
 const FR: Record<number, string> = {
   480: "Partie rapide", 490: "Partie rapide", 400: "Draft", 430: "Aveugle", 420: "Classé Solo/Duo", 440: "Classé Flex", 4310: "Classé",
-  450: "ARAM", 2400: "ARAM : Chaos", 1750: "Arena", 1700: "Arena", 1710: "Arena", 870: "Intro", 880: "Débutant", 890: "Intermédiaire", 4320: "Contre l'IA",
+  450: "ARAM", 2400: "ARAM : Chaos", 1750: "Arène", 1700: "Arène", 1710: "Arène", 870: "Intro", 880: "Débutant", 890: "Intermédiaire", 4320: "Contre l'IA",
 };
 const BLURB: Record<number, string> = {
   480: "Nouvelles règles pour des parties plus rapides.", 400: "Sélection avec bannissements, sans enjeu de rang.", 420: "Grimpe le classement en solo ou en duo.",
@@ -58,7 +59,7 @@ const GROUPS: Record<string, { title: string; sub: string; art: number; size?: s
   rift: { title: "Faille de l'invocateur", sub: "Écrase ta voie et détruis le Nexus adverse.", art: 103, size: "5c5" },
   jade: { title: "Faille classique", sub: "La Faille d'avant, avec ses règles d'origine.", art: 89, size: "5c5" },
   aram: { title: "ARAM", sub: "Abîme hurlant · une seule voie", art: 222, size: "5c5" },
-  arena: { title: "Arena", sub: "Duos · rounds rapides et augments", art: 157 },
+  arena: { title: "Arène", sub: "Duos · rounds rapides et augments", art: 157 },
 };
 const ORDER = ["rift", "jade", "aram", "arena"];
 
@@ -288,7 +289,7 @@ function JoinCustom({ onJoin }: { onJoin: (id: number, password?: string) => voi
   const locked = (games ?? []).find((g) => g.id === joining) ?? null;
   const words = fold(query).split(/\s+/).filter(Boolean);
   const shown = (games ?? []).filter((g) => {
-    const text = fold(`${g.lobbyName} ${g.ownerDisplayName ?? g.ownerSummonerName ?? ""} ${MAPS[g.mapId ?? 0] ?? g.gameMode ?? ""}`);
+    const text = fold(`${g.lobbyName} ${g.ownerDisplayName ?? g.ownerSummonerName ?? ""} ${MAPS[g.mapId ?? 0] ?? gameModeLabel(g.gameMode, "")}`);
     return words.every((w) => text.includes(w));
   });
 
@@ -323,7 +324,7 @@ function JoinCustom({ onJoin }: { onJoin: (id: number, password?: string) => voi
                   {g.hasPassword === true && <em className="tag">Mot de passe</em>}
                 </b>
                 <span className="dim">
-                  {MAPS[g.mapId ?? 0] ?? g.gameMode ?? "Carte"} · {g.ownerDisplayName ?? g.ownerSummonerName ?? "?"} · {g.filledPlayerSlots ?? 0}/{g.maxPlayerSlots ?? g.maxPlayers ?? 10}
+                  {MAPS[g.mapId ?? 0] ?? gameModeLabel(g.gameMode, "Carte")} · {g.ownerDisplayName ?? g.ownerSummonerName ?? "?"} · {g.filledPlayerSlots ?? 0}/{g.maxPlayerSlots ?? g.maxPlayers ?? 10}
                 </span>
               </div>
               {/* Seules les parties protégées demandent un mot de passe, dans une petite fenêtre. */}

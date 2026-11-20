@@ -33,11 +33,36 @@ export function roleGuard(m?: LobbyMember | null): { ok: boolean; label: string;
 
 type Popover = null | "party" | 0 | 1;
 
+/** Ce qu'il faut pour lancer ou annuler une recherche : partagé entre la barre de jeu et le gros bouton de l'accueil. */
+export function usePlay() {
+  const phase = useClient((s) => s.phase);
+  const lobby = useClient((s) => s.lobby);
+  const search = useClient((s) => s.search);
+  const preparing = useClient((s) => s.preparing);
+  const queues = useClient((s) => s.queues);
+  const queueId = useView((s) => s.queueId);
+  const info = queueInfo(queueId, queues, lobby);
+  const searching = phase === "Matchmaking" || phase === "ReadyCheck";
+  const leader = !lobby || !!lobby.localMember?.isLeader;
+  return {
+    info,
+    searching,
+    found: phase === "ReadyCheck",
+    leader,
+    preparing,
+    time: search?.timeInQueue ?? 0,
+    eta: search?.estimatedQueueTime ?? 0,
+    go: () => (info.custom ? actions.startCustom() : actions.findMatch(queueId)),
+    cancel: actions.cancelSearch,
+  };
+}
+
 /**
  * Barre de jeu, toujours au même endroit sur toutes les pages : la file, le groupe, les rôles et le bouton pour jouer.
  * En recherche, elle se transforme en compteur avec le bouton Annuler.
+ * Sur l'accueil (`hero`), le gros bouton Jouer est sous le titre : la barre ne garde que la file et le groupe.
  */
-export function PlayDock() {
+export function PlayDock({ hero = false }: { hero?: boolean }) {
   const phase = useClient((s) => s.phase);
   const lobby = useClient((s) => s.lobby);
   const search = useClient((s) => s.search);
@@ -68,6 +93,8 @@ export function PlayDock() {
   }, [pop]);
 
   const searching = phase === "Matchmaking" || phase === "ReadyCheck";
+  // Sur l'accueil, le compteur est dans le gros bouton : la barre reste sur la file et le groupe, figés.
+  const searchView = searching && !hero;
   useEffect(() => {
     if (searching) setPop(null);
   }, [searching]);
@@ -108,8 +135,8 @@ export function PlayDock() {
       {lobby && <RoomChat key={lobby.multiUserChatId ?? "lobby"} kind="lobby" hint={lobby.multiUserChatId} lookup />}
       {pop === "party" && lobby && (customTeams ? <CustomSheet lobby={lobby} friends={friends} locked={searching} /> : <PartySheet lobby={lobby} members={members} max={max} friends={friends} locked={searching} />)}
 
-      <div className={cx("dock glass", searching && "searching")} role="region" aria-label="Barre de jeu">
-        {searching ? (
+      <div className={cx("dock glass", searchView && "searching", hero && "dock-hero")} role="region" aria-label="Barre de jeu">
+        {searchView ? (
           <>
             <span className="radar" aria-hidden="true">
               <i />
@@ -131,7 +158,7 @@ export function PlayDock() {
           </>
         ) : (
           <>
-            <button className="dock-queue" onClick={() => nav.modes(true)} title="Changer de mode de jeu">
+            <button className="dock-queue" onClick={() => nav.modes(true)} disabled={searching} title={searching ? "Annule la recherche pour changer de mode" : "Changer de mode de jeu"}>
               <span className="label">{lobby ? "Groupe prêt" : "Mode de jeu"}</span>
               <b>{info.title}</b>
               <Icon name="chevron" size={14} />
@@ -200,7 +227,7 @@ export function PlayDock() {
 
             <span className="dock-gap" />
 
-            {leader ? (
+            {hero ? null : leader ? (
               <button className="btn btn-red btn-l dock-go" disabled={preparing} onClick={() => (info.custom ? actions.startCustom() : actions.findMatch(queueId))}>
                 <Icon name="play" fill size={18} />
                 {preparing ? "Préparation du client…" : info.custom ? "Lancer la partie" : "Trouver une partie"}

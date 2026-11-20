@@ -1,11 +1,11 @@
 {
-  "version": "1.0.8",
-  "notes": "Replay : les champions ne restent plus figés",
-  "pub_date": "2026-11-20T00:31:28Z",
+  "version": "1.0.10",
+  "notes": "Graphiques : un menu déroulant par catégorie au lieu des boutons de stats",
+  "pub_date": "2026-11-20T01:35:38Z",
   "platforms": {
     "windows-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUU3M1c0VqSWpFM2lnLzl0UGYvb01LaFNnQU1Da0JTWEJFYkJWQURXcUt6OGFPQVhqeFQ5Sndnb3hMSlRzL2tGclJWanJlN1lCK2tSSVk5VVpPbklIYUhmY1ZhZHA1NUEwPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk1MTM0Njg3CWZpbGU6TklYVVNfMS4wLjhfeDY0LXNldHVwLmV4ZQl2ZXJzaW9uOjEuMC44CkVpQmhiMUZEeC9yYmJHTW1Rd0JybXcwOW42MG1qWjdPdjBCNCtaQ2F1R0FaVkJSc2RER3VwekNMQUFRRUhkRVlHd0NUN2ZGV3FrNEUrOXpiQnFJMEFBPT0K",
-      "url": "https://github.com/NIKAerer/NIXUS/releases/download/v1.0.8/NIXUS_1.0.8_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUU3M1c0VqSWpFM2pZa2d3VnkreUxoM0ZuRHhHaHpRL08rNmF1ODNpT1FnbkNkUFdWOG9UdnVHWUhQeG85Z2kzdTNKMUdoZ0JtRTJXdHg0QTBvcTUwK2UxYjB2WHVTRFE4PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk1MTM4NTM4CWZpbGU6TklYVVNfMS4wLjEwX3g2NC1zZXR1cC5leGUJdmVyc2lvbjoxLjAuMTAKN0tiV0dBNnlGYUNKb0c4a1VnZG1HajNGd1BwRUo5UWRTeWd0NGV2eW5ZMm9IeGNjN0ZQLzdoZno0SHJLdjk4S1c4bnhaR2d5Ni83SWVHcENLM2MyRGc9PQo=",
+      "url": "https://github.com/NIKAerer/NIXUS/releases/download/v1.0.10/NIXUS_1.0.10_x64-setup.exe"
     }
   }
 }

@@ -95,7 +95,7 @@ export function App() {
           <div className="view" key={draft ? "draft" : eog ? "eog" : inGame ? "game" : page} onScroll={(e) => setScrolled(e.currentTarget.scrollTop > 24)}>
             {draft ? <Draft /> : eog ? <EndOfGame /> : inGame ? <InGame /> : page === "home" ? <Home /> : page === "grind" ? <Grind /> : page === "collection" ? <Collection /> : page === "loot" ? <Loot /> : <Profile />}
           </div>
-          {dock && <PlayDock />}
+          {dock && <PlayDock hero={page === "home" && !modesOpen} />}
         </main>
         {friendsOpen && !draft && <FriendsPanel />}
       </div>

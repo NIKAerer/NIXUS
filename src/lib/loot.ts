@@ -1,3 +1,4 @@
+import { LOOT_MATERIALS, LOOT_TYPES, looksLikeCode, lootKind } from "./labels";
 import { gameAsset, lcu } from "./lcu";
 
 /** Objet du butin Hextech, tel que le renvoie /lol-loot/v1/player-loot (seuls les champs utilisés). */
@@ -114,14 +115,10 @@ export function kindLabel(l: LootItem) {
   return "Objet";
 }
 
-const KNOWN_NAMES: Record<string, string> = {
-  [KEY]: "Clé Hextech",
-  [KEY_FRAGMENT]: "Fragment de clé",
-  CHEST_generic: "Coffre Hextech",
-  CHEST_champion_mastery: "Coffre de maîtrise",
-  CHEST_224: "Coffre Hextech de maître",
-};
-export const lootName = (l: LootItem) => l.localizedName || KNOWN_NAMES[l.lootId] || l.itemDesc || (l.lootName && !/^[A-Z0-9_]+$/.test(l.lootName) ? l.lootName : "") || humanize(l.lootId);
+const KNOWN_NAMES: Record<string, string> = { ...LOOT_MATERIALS, CHEST_224: "Coffre Hextech de maître" };
+const readable = (s?: string) => (s && !looksLikeCode(s) ? s : "");
+/** Le client laisse souvent localizedName vide et met le nom du champion ou du skin dans itemDesc. */
+export const lootName = (l: LootItem) => readable(l.localizedName) || KNOWN_NAMES[l.lootId] || readable(l.itemDesc) || readable(l.lootName) || LOOT_TYPES[lootKind(l)] || humanize(l.lootId);
 
 /* ---------- Raretés ---------- */
 

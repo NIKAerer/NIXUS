@@ -164,7 +164,7 @@
 
 /* Replay */
 /* La carte prend toute la hauteur disponible, la liste des joueurs occupe le reste de la largeur. */
-.replay { display: grid; grid-template-columns: auto minmax(300px, 1fr); gap: 18px; align-items: start; }
+.replay { display: grid; grid-template-columns: auto minmax(300px, 1fr); gap: 18px; align-items: stretch; }
 .replay-stage { display: flex; flex-direction: column; gap: 10px; width: clamp(470px, calc(100vh - 370px), 760px); }
 .replay-map { width: 100%; aspect-ratio: 1; border-radius: var(--r-l); background: #0b1210; border: 1px solid var(--line); }
 .replay-schematic rect { fill: #0e1714; }
@@ -184,7 +184,14 @@
 .replay-side { display: flex; flex-direction: column; gap: 10px; }
 .replay-score { display: grid; grid-template-columns: 1fr auto 1fr; gap: 10px; padding: 12px 14px; border-radius: 14px; background: var(--panel); border: 1px solid var(--line); text-align: center; }
 .replay-score b { display: block; font: 400 30px/1 var(--display); }
-.replay-players { display: flex; flex-direction: column; gap: 2px; }
+.replay-players { display: flex; flex-direction: column; gap: 3px; flex: 1; }
+/* Les lignes s'étirent pour finir à la hauteur de la carte, sans vide en dessous. */
+.replay-players li { flex: 1 1 0; display: flex; min-height: 40px; max-height: 64px; }
+.replay-players li .replay-jungler { flex: 1; }
+.replay-players span:first-of-type { flex: 0 1 140px; }
+.replay-gold { flex: 1; height: 5px; border-radius: 5px; background: rgba(255, 255, 255, 0.06); overflow: hidden; min-width: 30px; }
+.replay-gold i { display: block; height: 100%; border-radius: 5px; background: var(--c); opacity: 0.7; transition: width 0.3s var(--ease); }
+.replay-side > .note, .replay-fight { min-height: 0; }
 .replay-side { min-width: 0; }
 .replay-players li.split { margin-top: 10px; }
 .replay-players button { display: flex; align-items: center; gap: 10px; width: 100%; padding: 5px 10px 5px 6px; border-radius: var(--r-m); text-align: left; border-left: 3px solid var(--c); background: rgba(255, 255, 255, 0.03); }
@@ -250,3 +257,34 @@
 .game:has(.story) .ghero-stats .stat small { display: none; }
 .eog .scene-map { top: calc(var(--bar) + 12px); }
 
+
+/* Graphiques : une barre par joueur, comme les graphiques de fin de partie du client. */
+.gcharts { display: flex; flex-direction: column; gap: 16px; }
+.gcharts-head { display: flex; gap: 12px; align-items: center; justify-content: space-between; }
+.gcharts-pick { width: auto; min-width: 240px; font-weight: 600; }
+.gcharts-totals { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; font-size: 13px; color: var(--dim); }
+.gcharts-totals b { font: 400 22px/1 var(--display); letter-spacing: 0.03em; margin: 0 4px; }
+.gcharts-totals > i { display: flex; height: 6px; border-radius: 6px; overflow: hidden; gap: 2px; }
+.gcharts-totals > i > i { display: block; }
+.gcharts-bars { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 10px; height: clamp(260px, 40vh, 440px); padding: 14px 16px 12px; border-radius: var(--r-l); background: var(--panel); border: 1px solid var(--line); }
+.gbar { display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0; }
+.gbar.split { margin-left: 18px; }
+.gbar > b { font-size: 12.5px; white-space: nowrap; }
+.gbar-track { flex: 1; width: 100%; max-width: 46px; display: flex; align-items: flex-end; border-radius: 8px; background: rgba(255, 255, 255, 0.04); }
+.gbar-fill { width: 100%; display: flex; flex-direction: column-reverse; border-radius: 8px; overflow: hidden; min-height: 3px; transition: height 0.35s var(--ease); }
+.gbar-fill > i { display: block; min-height: 0; }
+.gbar.ally .gbar-fill { background: var(--ally); }
+.gbar.enemy .gbar-fill { background: var(--enemy); }
+.gbar.ally .gbar-fill > i:only-child { background: var(--ally); }
+.gbar.enemy .gbar-fill > i:only-child { background: var(--enemy); }
+.gbar.ally .gbar-track { box-shadow: inset 0 -3px 0 var(--ally); }
+.gbar.enemy .gbar-track { box-shadow: inset 0 -3px 0 var(--enemy); }
+.gbar img, .gbar .art-missing { width: 36px; height: 36px; border-radius: 9px; flex: none; }
+.gbar.me img { outline: 2px solid #fff; outline-offset: 1px; }
+.gbar small { font-size: 11px; color: var(--dim); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gbar.me small { color: #fff; font-weight: 700; }
+.gcharts-legend { display: flex; gap: 16px; font-size: 12px; color: var(--dim); }
+.gcharts-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.gcharts-legend i { width: 10px; height: 10px; border-radius: 3px; }
+.gbar.ally > b { color: var(--ally); }
+.gbar.enemy > b { color: var(--enemy); }
