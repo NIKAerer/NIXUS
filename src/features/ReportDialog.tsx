@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useClient } from "../lib/client";
+import { friendlyError } from "../lib/errors";
 import { lcu } from "../lib/lcu";
 import type { EndOfGame, EogPlayer } from "../lib/types";
 import { CloseButton, Modal } from "../ui";
@@ -44,7 +45,7 @@ export function ReportDialog({ eog, target, onClose }: { eog: EndOfGame; target:
       setMsg(`${name} est signalé. Merci.`);
       setTimeout(onClose, 1200);
     } catch (e) {
-      setMsg(`Le signalement n'est pas passé : ${(e as Error)?.message ?? e}`);
+      setMsg(`Le signalement n'est pas passé : ${friendlyError(e)}`);
     }
     setBusy(false);
   };

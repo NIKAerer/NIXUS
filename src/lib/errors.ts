@@ -1,3 +1,5 @@
+import { looksLikeCode } from "./labels";
+
 /** Transforme une erreur brute du client Riot (« 404 … », « 500 … ») en phrase claire. */
 export function friendlyError(e: unknown): string {
   const raw = (e instanceof Error ? e.message : String(e ?? "")).trim();
@@ -31,5 +33,7 @@ export function friendlyError(e: unknown): string {
     case 503:
       return "Le client Riot a rencontré un problème. Réessaie dans un instant.";
   }
-  return raw || "Une erreur inconnue est survenue.";
+  // Message technique du client (JSON, RPC_ERROR, clé brute) : on ne l'affiche pas tel quel.
+  if (!raw || looksLikeCode(raw) || /[{}]|\b[A-Z]+_[A-Z_]+\b|\b[a-z]+_[a-z_]+\b/.test(raw)) return "Le client Riot a renvoyé une erreur. Réessaie dans un instant.";
+  return raw;
 }

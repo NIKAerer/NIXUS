@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { actions, useClient } from "../lib/client";
 import { friendlyError } from "../lib/errors";
+import { humanize } from "../lib/labels";
 import { championSquare, gameAsset, isClassicCopy, lcu, profileIcon, skinSplash } from "../lib/lcu";
 import { Art, Breathing, Empty, Icon, Seg, Skeleton, Tabs, cx, int, readJson, writeJson } from "../ui";
 
@@ -99,7 +100,7 @@ async function loadTab(tab: Tab, sid?: number): Promise<Partial<Record<Tab, Item
           .filter((s) => !s.isBase)
           .map((s) => {
             const rarity = rarityOf(meta[String(s.id)]?.rarity, s.rarityGemPath);
-            return { id: s.id, name: s.name, img: skinSplash(c.id, s.id), owned: !!s.ownership?.owned, sub: rarity === "kNoRarity" ? c.name : `${c.name} · ${RLABEL[rarity]}`, champ: c.name, rarity, roles: c.roles };
+            return { id: s.id, name: s.name, img: skinSplash(c.id, s.id), owned: !!s.ownership?.owned, sub: rarity === "kNoRarity" ? c.name : `${c.name} · ${RLABEL[rarity] ?? humanize(rarity, "Standard")}`, champ: c.name, rarity, roles: c.roles };
           }),
       ),
     };

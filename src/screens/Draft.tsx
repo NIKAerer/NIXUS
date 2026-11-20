@@ -2,6 +2,7 @@ import { useState } from "react";
 import { RoomChat } from "../features/RoomChat";
 import { RuneEditor } from "../features/RuneEditor";
 import { HIDDEN_SPELLS, ROLES, SPELLS, STEPS, SWAPS, SWAP_KINDS, useDraft, type DraftState } from "../features/useDraft";
+import { positionLabel } from "../lib/labels";
 import { championSplash, championSquare, gameAsset, skinSplash, timeAgo } from "../lib/lcu";
 import { versus, withChamp, type Tally } from "../lib/matchups";
 import type { ChampSelectAction } from "../lib/types";
@@ -266,7 +267,7 @@ export function Draft() {
                   {p.championId > 0 && d.matchups && (
                     <MatchupBadge
                       t={versus(d.matchups, p.championId, me?.championId || undefined, me?.assignedPosition || null)}
-                      title={`${me?.championId ? `${name(me.championId)} contre ${name(p.championId)}` : `Contre ${name(p.championId)}`}${me?.assignedPosition ? ` en ${ROLES[me.assignedPosition] ?? me.assignedPosition}` : ""}, dans tes parties classées archivées`}
+                      title={`${me?.championId ? `${name(me.championId)} contre ${name(p.championId)}` : `Contre ${name(p.championId)}`}${me?.assignedPosition ? ` en ${positionLabel(me.assignedPosition)}` : ""}, dans tes parties classées archivées`}
                     />
                   )}
                 </div>

@@ -3,6 +3,7 @@ import { isMine, loadMessages, markRead, openConversation, sendMessage, useConve
 import { actions, useClient } from "../lib/client";
 import { friendlyError } from "../lib/errors";
 import { addFriend, answerRequest, createGroup, deleteGroup, moveFriend, useFriendRequests } from "../lib/friends";
+import { gameStatusLabel, queueTypeLabel } from "../lib/labels";
 import { championSquare, lcu, profileIcon, queueName, rankLabel, timeAgo } from "../lib/lcu";
 import type { Friend, Match, MatchHistory, RankedStats } from "../lib/types";
 import { nav } from "../lib/view";
@@ -15,12 +16,14 @@ type Tone = "on" | "busy" | "away" | "off";
 /** Ce que fait un ami, en clair, et la couleur de sa pastille. */
 export function friendStatus(f: Friend): { text: string; tone: Tone } {
   const s = f.lol?.gameStatus;
+  const queue = f.lol?.gameQueueType ? ` · ${queueTypeLabel(f.lol.gameQueueType)}` : "";
   if (f.availability === "offline") return { text: "Hors ligne", tone: "off" };
-  if (s === "inGame") return { text: `En partie${f.lol?.gameQueueType ? ` · ${f.lol.gameQueueType}` : ""}`, tone: "busy" };
-  if (s === "championSelect") return { text: "Sélection des champions", tone: "busy" };
-  if (s === "inQueue") return { text: "En file d'attente", tone: "busy" };
+  if (s === "inGame" || s === "spectating") return { text: `${gameStatusLabel(s)}${queue}`, tone: "busy" };
+  if (s === "championSelect" || s === "inQueue") return { text: gameStatusLabel(s), tone: "busy" };
   if (f.availability === "away") return { text: "Absent", tone: "away" };
+  if (f.availability === "dnd") return { text: s && s !== "outOfGame" ? gameStatusLabel(s) : "Occupé", tone: "busy" };
   if (f.availability === "mobile") return { text: "Sur mobile", tone: "off" };
+  if (s && /^hosting/i.test(s)) return { text: gameStatusLabel(s), tone: "on" };
   return { text: "Disponible", tone: "on" };
 }
 

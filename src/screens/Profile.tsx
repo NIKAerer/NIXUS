@@ -9,7 +9,7 @@ import { Art, Breathing, Empty, Icon, RefreshButton, int, kda, pct, plural } fro
 const QUEUE_LABELS: Record<string, string> = {
   RANKED_SOLO_5x5: "Solo/Duo",
   RANKED_FLEX_SR: "Flex",
-  CHERRY: "Arena",
+  CHERRY: "Arène",
   RANKED_TFT: "TFT",
   RANKED_TFT_DOUBLE_UP: "TFT Double",
 };

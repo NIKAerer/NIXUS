@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { isDesktop, lcu } from "./lcu";
 import { snapshot } from "./archive";
+import { looksLikeCode } from "./labels";
 
 /**
  * Retours de signalement, messages de Riot et avertissements (leaver buster) que le client officiel affiche
@@ -37,9 +38,11 @@ const DEFAULT_TITLE: Record<string, string> = {
 function normalize(r: Raw, path: string): Feedback | null {
   const id = String(r.id ?? r.feedbackId ?? r.messageId ?? `${JSON.stringify(r).length}:${str(r.title, r.message) ?? ""}`);
   const data = (r.data ?? r.payload ?? {}) as Raw;
-  const title = str(r.title, data.title) ?? DEFAULT_TITLE[path] ?? "Message de Riot";
+  // Le client met parfois une clé (« TAINTED_WARNING ») à la place du texte : on prend alors le titre par défaut.
+  const text = (s?: string) => (s && !looksLikeCode(s) ? s : undefined);
+  const title = text(str(r.title, data.title)) ?? DEFAULT_TITLE[path] ?? "Message de Riot";
   const body =
-    str(r.message, r.body, r.detail, r.msgBody, data.message, data.body) ??
+    text(str(r.message, r.body, r.detail, r.msgBody, data.message, data.body)) ??
     (path.includes("report-sender") ? "Un joueur que tu as signalé a reçu une sanction. Merci d'aider à garder les parties agréables." : "Ouvre la fenêtre du client LoL pour voir le détail.");
   const t = r.created ?? r.createdAt ?? r.timestamp ?? r.time;
   return { id: `${path}:${id}`, title, body, at: typeof t === "number" ? t : typeof t === "string" ? Date.parse(t) || undefined : undefined };
