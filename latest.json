@@ -1,11 +1,11 @@
 {
-  "version": "1.0.6",
-  "notes": "Replay : les dix joueurs à droite avec leur KDA, sans ralenti ni arrêts, carte plus grande",
-  "pub_date": "2026-11-19T23:54:37Z",
+  "version": "1.0.7",
+  "notes": "Finalisation : colonnes, cartes et skins qui grandissent sur les grands écrans",
+  "pub_date": "2026-11-20T00:21:45Z",
   "platforms": {
     "windows-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUU3M1c0VqSWpFM3ArMit6QzBiN1hTRE5QcVQzbHFoaS83cnJWdkM3bjdURzRja2dNa1EvbVBoNTdLYUpaTXhxaVdWRnJ4N2RjWG1lWmRpY1JSTVBicXpSdkFpcHFTemdvPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk1MTMyNDc3CWZpbGU6TklYVVNfMS4wLjZfeDY0LXNldHVwLmV4ZQl2ZXJzaW9uOjEuMC42Clhxbk5XM2EyVmdQOVRKdk1oODBhUlF5T3A3d0JkeWNuTG9NRWV0SDk3WUZaYit6ekV6MS90dnVFRXBSQU5yVWZzWWF0eEljN1MyRGlOSmZLVUg0SEFRPT0K",
-      "url": "https://github.com/NIKAerer/NIXUS/releases/download/v1.0.6/NIXUS_1.0.6_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUU3M1c0VqSWpFM3AzWVFFczhnY0hsVnJRRzlqU09qL2gzNWoyNDBaclFjV0FlT3g0YWZZN01tZVMwK0NrdktQRUJ1ZXZmV3FJMjhHb25OaGZoRzRZTFF5NmZlMWo5SmdrPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk1MTM0MTA0CWZpbGU6TklYVVNfMS4wLjdfeDY0LXNldHVwLmV4ZQl2ZXJzaW9uOjEuMC43CkhiTkNaWWdEckRJNlFVb0dMaEl4aVJva1dtZElCc25YOUd1NGJoMlRQZkhucVpPYzRyN2trQXNMaWFVUTdsZE96b3EzVFhPbWpCaDBINWt6UzVCQkFRPT0K",
+      "url": "https://github.com/NIKAerer/NIXUS/releases/download/v1.0.7/NIXUS_1.0.7_x64-setup.exe"
     }
   }
 }
