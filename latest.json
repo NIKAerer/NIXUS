@@ -1,11 +1,11 @@
 {
-  "version": "1.0.14",
-  "notes": "Menus déroulants sombres partout, journal du Grind sur 3 colonnes, colonnes Grind/Profil à la même hauteur",
-  "pub_date": "2026-11-20T23:28:12Z",
+  "version": "1.0.15",
+  "notes": "Corrections et améliorations.",
+  "pub_date": "2026-11-20T23:31:28Z",
   "platforms": {
     "windows-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUU3M1c0VqSWpFM3ZZSEZPalBIQUNMMlN5Zitxc1pvRzh1cGNlcnByNFM0UmlrSTdHWUlqTDhPTWZjOHFDcmU5T1Z0bU9JUXgyYW1PTjJ4QytqRHdTTENkQkhxL3R2OWdJPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk1MjE3MjkyCWZpbGU6TklYVVNfMS4wLjE0X3g2NC1zZXR1cC5leGUJdmVyc2lvbjoxLjAuMTQKQ0k5cnVXZFh0d3dKTENxdm9wUFNmVG0xU2hsQmQrdWE5M2k4a3FnTEo2ODcwdVB1TE5BTDRQR1JjVlZiendkMm14M3VHL1JmS0lPQVljeG02K0lwQnc9PQo=",
-      "url": "https://github.com/NIKAerer/NIXUS/releases/download/v1.0.14/NIXUS_1.0.14_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUU3M1c0VqSWpFM2krR2NzZ3ltUm44cVNEOGJjbWR2d05sczRNMnhMRk5raTdaK2lEdFVGTS9ObnRERDVJb2RtNWVqS3RON0RtMGlrWmo4c0s1VjQxaEt1RWJtNW9XS1FBPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk1MjE3NDg4CWZpbGU6TklYVVNfMS4wLjE1X3g2NC1zZXR1cC5leGUJdmVyc2lvbjoxLjAuMTUKYXVCdG1rMXFWWkFPM3hRajhFZG1ETGpqK0o4eWpFdU9ZbkljVFZFRUxXRDhvMDVZSUNGUW5kbkpHeE5YWkJ6MmVzU1FYQVFtOVV6a3JMN0ZXU01aQWc9PQo=",
+      "url": "https://github.com/NIKAerer/NIXUS/releases/download/v1.0.15/NIXUS_1.0.15_x64-setup.exe"
     }
   }
 }
