@@ -6,9 +6,10 @@ import { championSplash, clock, lcu, queueName, timeAgo } from "../lib/lcu";
 import type { GameDetail, Match, Timeline } from "../lib/types";
 import { Art, Breathing, ChampIcon, CloseButton, Icon, Modal, Tabs, cx, dec, int, kda, kilo } from "../ui";
 import { toPlayers, type GamePlayer } from "./game";
+import { GameCharts } from "./GameCharts";
 import { Story } from "./Story";
 
-type Tab = "board" | "story";
+type Tab = "board" | "charts" | "story";
 const MULTI: Record<number, string> = { 2: "Double kill", 3: "Triple kill", 4: "Quadra kill", 5: "Penta kill" };
 
 /** Bandeau d'une partie : splash du champion, résultat en grand, chiffres clés. Partagé avec l'écran de fin de partie. */
@@ -123,18 +124,20 @@ export function MatchDetail({ match, myPuuid, onClose }: { match: Match; myPuuid
   );
 }
 
-/** Onglets Tableau et Replay, partagés par la fiche de partie et l'écran de fin de partie. */
+/** Onglets Tableau, Graphiques et Replay, partagés par la fiche de partie et l'écran de fin de partie. */
 export function GameTabs({ detail, timeline, players, myTeam, duration, assets, onReport }: { detail: GameDetail; timeline: Timeline | null; players: GamePlayer[]; myTeam: number; duration: number; assets: StaticData | null; onReport?: (p: GamePlayer) => void }) {
   const [tab, setTab] = useState<Tab>("board");
   const minutes = Math.max(duration / 60, 1);
-  const tabs: [Tab, string][] = [["board", "Tableau"]];
+  const tabs: [Tab, string][] = [["board", "Tableau"], ["charts", "Graphiques"]];
   if (timeline) tabs.push(["story", "Replay"]);
   const won = detail.teams.find((t) => t.teamId === myTeam)?.win === "Win";
   return (
     <>
       {tabs.length > 1 && <Tabs value={tab} options={tabs} onChange={setTab} />}
       <div className="game-body">
-        {tab === "board" || !timeline ? (
+        {tab === "charts" ? (
+          <GameCharts detail={detail} players={players} myTeam={myTeam} minutes={minutes} />
+        ) : tab === "board" || !timeline ? (
           <Scoreboard detail={detail} players={players} myTeam={myTeam} assets={assets} minutes={minutes} onReport={onReport} />
         ) : (
           <Story timeline={timeline} players={players} myTeam={myTeam} won={won} duration={duration} assets={assets} />

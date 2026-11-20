@@ -226,6 +226,27 @@ export function mockGameDetail(m: Summary): { detail: GameDetail; timeline: Time
         goldEarned: f.totalGold,
         totalDamageDealtToChampions: damage,
         totalDamageTaken: Math.round(14000 + r() * 16000),
+        ...(() => {
+          // Démo : répartition des dégâts et autres stats du graphique de fin de partie.
+          const ph = 0.2 + r() * 0.6;
+          const taken = 14000 + r() * 16000;
+          return {
+            physicalDamageDealtToChampions: Math.round(damage * ph),
+            magicDamageDealtToChampions: Math.round(damage * (1 - ph) * 0.85),
+            trueDamageDealtToChampions: Math.round(damage * (1 - ph) * 0.15),
+            physicalDamageTaken: Math.round(taken * 0.55),
+            magicalDamageTaken: Math.round(taken * 0.38),
+            trueDamageTaken: Math.round(taken * 0.07),
+            damageSelfMitigated: Math.round(8000 + r() * 22000),
+            totalHeal: Math.round(1500 + r() * 9000),
+            damageDealtToObjectives: Math.round((p.role === "JUNGLE" ? 18000 : 3000) + r() * 9000),
+            damageDealtToBuildings: Math.round(r() * 7000),
+            totalDamageDealt: Math.round(damage * (3 + r() * 4)),
+            timeCCingOthers: Math.round(5 + r() * 40),
+            largestKillingSpree: Math.max(0, ks - 1),
+            longestTimeSpentLiving: Math.round(300 + r() * 600),
+          };
+        })(),
         totalMinionsKilled: f.minionsKilled,
         neutralMinionsKilled: f.jungleMinionsKilled,
         visionScore: Math.round(duration / 60 * (p.role === "UTILITY" ? 2.4 : p.role === "JUNGLE" ? 1.3 : 0.8)),
