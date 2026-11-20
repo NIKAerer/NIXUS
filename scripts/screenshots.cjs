@@ -19,6 +19,8 @@ const shot = async (name) => {
   await page.screenshot({ path: `${OUT}/${name}.png` });
   console.log("captured", name);
 };
+// Clic direct sur le bouton : une notification en haut à droite peut le couvrir.
+const tap = (sel) => page.locator(sel).first().evaluate((el) => el.click());
 const nav = (label) => page.locator("nav, header").getByText(label, { exact: true }).first().click();
 
 // Accueil
@@ -27,14 +29,24 @@ await settle(4000);
 await shot("home");
 
 // Grind, Profil, Collection
-for (const [label, name] of [["Grind", "grind"], ["Profil", "profile"], ["Collection", "collection"]]) {
+for (const [label, name] of [["Grind", "grind"], ["Profil", "profile"], ["Collection", "collection"], ["Events", "events"]]) {
   await nav(label);
   await settle(2500);
   await shot(name);
 }
 
+// Boutique (bouton à côté du solde) et notes de patch (carte de l'accueil)
+await tap("button.top-shop");
+await settle(2500);
+await shot("boutique");
+await tap("button.logo");
+await settle(1500);
+await tap("button.patch-card");
+await settle(2500);
+await shot("notes-de-patch");
+
 // Détail d'une partie (première carte de « Dernières parties »)
-await nav("Accueil");
+await tap("button.logo");
 await settle(1500);
 const card = page.locator(".tiles > *").first();
 if (await card.count()) {
@@ -46,7 +58,7 @@ if (await card.count()) {
 }
 
 // Draft : recherche → acceptation → sélection des champions
-await page.getByRole("button", { name: /Trouver une partie/ }).first().click();
+await page.getByRole("button", { name: /Trouver une partie|^Jouer/ }).first().click();
 await page.getByRole("button", { name: /Accepter/ }).first().click({ timeout: 20000 });
 await page.waitForTimeout(10000); // fin de la phase de déclaration, début des bans
 await settle(1500);

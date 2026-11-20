@@ -25,7 +25,7 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self'; img-src 'self' data: https://cdn.communitydragon.org https://raw.communitydragon.org https://ddragon.leagueoflegends.com; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' ipc: http://ipc.localhost https://ddragon.leagueoflegends.com"
+      "csp": "default-src 'self'; img-src 'self' data: https://am-a.akamaihd.net https://cmsassets.rgpub.io https://cdn.communitydragon.org https://raw.communitydragon.org https://ddragon.leagueoflegends.com; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' ipc: http://ipc.localhost https://ddragon.leagueoflegends.com"
     }
   },
   "bundle": {

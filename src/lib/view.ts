@@ -4,7 +4,7 @@ import { createStore, useStore } from "./store";
 import type { Friend, GameQueue, Lobby, Match } from "./types";
 
 /** État de l'interface partagé entre les écrans : page ouverte, file choisie, fenêtres ouvertes. */
-export type Page = "home" | "grind" | "collection" | "loot" | "profile";
+export type Page = "home" | "grind" | "collection" | "loot" | "profile" | "patch" | "shop" | "events";
 
 export interface ViewState {
   page: Page;

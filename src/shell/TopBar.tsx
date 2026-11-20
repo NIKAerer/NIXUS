@@ -7,12 +7,10 @@ import { toggleMaximize } from "../lib/window";
 import { Art, Icon, RefreshButton, cx, int, plural, type IconName } from "../ui";
 import { WindowControls } from "./WindowControls";
 
-const PAGES: [Page, string, IconName][] = [
-  ["home", "Accueil", "home"],
-  ["grind", "Grind", "grind"],
-  ["collection", "Collection", "collection"],
-  ["loot", "Butin", "loot"],
-  ["profile", "Profil", "profile"],
+/** Le logo NIXUS mène à l'accueil ; les autres pages sont rangées par groupes : ta progression, puis tes affaires. */
+const GROUPS: { label: string; pages: [Page, string, IconName][] }[] = [
+  { label: "Progression", pages: [["grind", "Grind", "grind"], ["profile", "Profil", "profile"]] },
+  { label: "Tes affaires", pages: [["collection", "Collection", "collection"], ["loot", "Butin", "loot"], ["events", "Events", "event"]] },
 ];
 
 /** Barre du haut : navigation, compte, amis, réglages. `locked` pendant la sélection des champions. */
@@ -36,16 +34,26 @@ export function TopBar({ locked }: { locked: boolean }) {
 
   return (
     <header className="top" data-tauri-drag-region onDoubleClick={(e) => e.target === e.currentTarget && toggleMaximize()}>
-      <div className="logo" data-tauri-drag-region>
-        NIXUS
-      </div>
+      {locked ? (
+        <div className="logo" data-tauri-drag-region>
+          NIXUS
+        </div>
+      ) : (
+        <button className="logo" aria-current={page === "home" || page === "patch" ? "page" : undefined} onClick={() => open("home")} title="Accueil" aria-label="NIXUS, accueil">
+          NIXUS
+        </button>
+      )}
       {!locked && (
         <nav className="nav" aria-label="Navigation">
-          {PAGES.map(([id, label, icon]) => (
-            <button key={id} aria-current={page === id ? "page" : undefined} onClick={() => open(id)}>
-              <Icon name={icon} size={16} />
-              <span>{label}</span>
-            </button>
+          {GROUPS.map((g) => (
+            <div key={g.label} className="nav-group" role="group" aria-label={g.label}>
+              {g.pages.map(([id, label, icon]) => (
+                <button key={id} aria-current={page === id ? "page" : undefined} onClick={() => open(id)}>
+                  <Icon name={icon} size={16} />
+                  <span>{label}</span>
+                </button>
+              ))}
+            </div>
           ))}
         </nav>
       )}
@@ -61,6 +69,12 @@ export function TopBar({ locked }: { locked: boolean }) {
           <i />
           <b>{int(wallet.RP ?? 0)}</b> RP
         </span>
+      )}
+      {!locked && (
+        <button className="top-shop" aria-current={page === "shop" ? "page" : undefined} onClick={() => open("shop")} title="Boutique : soldes et champions à débloquer">
+          <Icon name="shop" size={16} />
+          <span>Boutique</span>
+        </button>
       )}
       {summoner && (
         <button className="top-me" onClick={() => !locked && open("profile")} disabled={locked} title="Ton profil">
