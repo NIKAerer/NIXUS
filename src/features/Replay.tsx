@@ -4,7 +4,7 @@ import { championSquare, clock } from "../lib/lcu";
 import type { Timeline } from "../lib/types";
 import { ChampIcon, Icon, Seg, cx, kilo } from "../ui";
 import { momentsOf, type GamePlayer, type Moment } from "./game";
-import { buildPathing, positionAt, type Sample } from "./pathing";
+import { buildPathing, livelyAt, positionAt, type Sample } from "./pathing";
 
 /** Les coordonnées Riot vont de 0 à ~15 000, base bleue en bas à gauche. */
 const SIZE = 15000;
@@ -50,6 +50,17 @@ export function Replay({ timeline, players, duration, assets, start }: { timelin
   const end = Math.max(duration, timeline.frames[timeline.frames.length - 1]?.timestamp / 1000 || 0);
 
   const moments = useMemo(() => momentsOf(timeline, players), [timeline, players]);
+  // Moments où chaque joueur est mort : de sa mort jusqu'à la réapparition (le saut suivant de son trajet).
+  const deadOf = useMemo(() => {
+    const out = new Map<number, [number, number][]>();
+    for (const m of moments) {
+      if (m.kind !== "kill" || !m.event.victimId) continue;
+      const id = m.event.victimId;
+      const back = (tracks.get(id) ?? []).find((s) => s.jump && s.t > m.t)?.t ?? m.t + 30;
+      out.set(id, [...(out.get(id) ?? []), [m.t, back]]);
+    }
+    return out;
+  }, [moments, tracks]);
   const fights = useMemo(() => fightsOf(moments, shown), [moments, shown.join()]);
   const tRef = useRef(t);
   tRef.current = t;
@@ -126,7 +137,7 @@ export function Replay({ timeline, players, duration, assets, start }: { timelin
           <Schematic />
           {assets && !mapFailed && <image href={mapImage(assets.version)} width={SIZE} height={SIZE} opacity={0.62} onError={() => setMapFailed(true)} />}
           {shown.map((id) => (
-            <Trail key={id} samples={tracks.get(id) ?? []} t={t} stroke={color(byId.get(id)?.teamId ?? 100)} />
+            <Trail key={id} samples={tracks.get(id) ?? []} now={livelyAt(tracks.get(id) ?? [], t, id, deadOf.get(id))} t={t} stroke={color(byId.get(id)?.teamId ?? 100)} />
           ))}
           {objectives.map((m, i) => {
             const pos = m.event.position!;
@@ -141,7 +152,7 @@ export function Replay({ timeline, players, duration, assets, start }: { timelin
             );
           })}
           {[...players].sort((a, b) => Number(shown.includes(a.id)) - Number(shown.includes(b.id))).map((p) => {
-            const pos = positionAt(tracks.get(p.id) ?? [], t);
+            const pos = livelyAt(tracks.get(p.id) ?? [], t, p.id, deadOf.get(p.id));
             if (!pos) return null;
             const focused = shown.includes(p.id);
             return (
@@ -255,12 +266,11 @@ export function MarkerImage({ id }: { id: number }) {
 }
 
 /** Trajet du joueur suivi : chaque bout s'efface tout seul et disparaît après `TRAIL` secondes de jeu. */
-function Trail({ samples, t, stroke }: { samples: Sample[]; t: number; stroke: string }) {
+function Trail({ samples, t, stroke, now }: { samples: Sample[]; t: number; stroke: string; now: { x: number; y: number } | null }) {
   const pts = samples.filter((s) => s.t <= t && s.t >= t - TRAIL);
   // Point de départ interpolé pile à la limite, pour que la ligne ne saute pas d'une minute à l'autre.
   const tail = positionAt(samples, t - TRAIL);
   if (tail && t > TRAIL) pts.unshift({ ...tail, t: t - TRAIL });
-  const now = positionAt(samples, t);
   if (now) pts.push({ ...now, t });
   if (pts.length < 2) return null;
   return (

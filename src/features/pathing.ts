@@ -499,3 +499,27 @@ export function positionAt(samples: Sample[], t: number): Point | null {
   const f = (t - a.t) / (b.t - a.t || 1);
   return { x: a.x + (b.x - a.x) * f, y: a.y + (b.y - a.y) * f };
 }
+
+/**
+ * Position affichée : celle du trajet, plus un petit va-et-vient quand le joueur avance lentement (en voie, devant un
+ * camp, en base). Riot ne donne qu'une position par minute : sans ça, un laner resté sur place semble figé.
+ * Rien quand le joueur est mort (`dead` : intervalles [mort, réapparition]).
+ */
+export function livelyAt(samples: Sample[], t: number, seed: number, dead: [number, number][] = []): Point | null {
+  const p = positionAt(samples, t);
+  if (!p || dead.some(([a, b]) => t >= a && t < b)) return p;
+  const a = positionAt(samples, t - 3)!;
+  const b = positionAt(samples, t + 3)!;
+  const speed = Math.hypot(b.x - a.x, b.y - a.y) / 6;
+  const k = Math.max(0, 1 - speed / 140);
+  if (k === 0) return p;
+  // Douceur à l'approche d'une mort ou d'une réapparition, pour ne pas sauter.
+  const near = dead.reduce((m, [d0, d1]) => Math.min(m, Math.abs(t - d0), Math.abs(t - d1)), Infinity);
+  const fade = Math.min(1, near / 3);
+  const A = 380 * k * fade;
+  const ph = seed * 1.7;
+  return {
+    x: p.x + A * (0.7 * Math.sin((2 * Math.PI * t) / 13 + ph) + 0.3 * Math.sin((2 * Math.PI * t) / 5.3 + ph * 2)),
+    y: p.y + A * (0.7 * Math.sin((2 * Math.PI * t) / 17 + ph * 3) + 0.3 * Math.sin((2 * Math.PI * t) / 6.1 + ph)),
+  };
+}
