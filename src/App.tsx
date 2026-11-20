@@ -18,7 +18,9 @@ import { Grind } from "./screens/Grind";
 import { Home } from "./screens/Home";
 import { InGame } from "./screens/InGame";
 import { Loot } from "./screens/Loot";
+import { Events } from "./screens/Events";
 import { Patch } from "./screens/Patch";
+import { Shop } from "./screens/Shop";
 import { Profile } from "./screens/Profile";
 import { Boot, Disconnected } from "./shell/Boot";
 import { Notices, ReadyCheck } from "./shell/Overlays";
@@ -94,7 +96,7 @@ export function App() {
       <div className="body">
         <main className={cx("stage", dock && "has-dock")}>
           <div className="view" key={draft ? "draft" : eog ? "eog" : inGame ? "game" : page} onScroll={(e) => setScrolled(e.currentTarget.scrollTop > 24)}>
-            {draft ? <Draft /> : eog ? <EndOfGame /> : inGame ? <InGame /> : page === "home" ? <Home /> : page === "grind" ? <Grind /> : page === "collection" ? <Collection /> : page === "loot" ? <Loot /> : page === "patch" ? <Patch /> : <Profile />}
+            {draft ? <Draft /> : eog ? <EndOfGame /> : inGame ? <InGame /> : page === "home" ? <Home /> : page === "grind" ? <Grind /> : page === "collection" ? <Collection /> : page === "loot" ? <Loot /> : page === "patch" ? <Patch /> : page === "shop" ? <Shop /> : page === "events" ? <Events /> : <Profile />}
           </div>
           {dock && <PlayDock hero={page === "home" && !modesOpen} />}
         </main>

@@ -11,6 +11,7 @@ import "./styles/match.css";
 import "./styles/pages.css";
 import "./styles/loot.css";
 import "./styles/patch.css";
+import "./styles/shop.css";
 import "./styles/social.css";
 import "./styles/settings.css";
 import "./styles/themes.css";
