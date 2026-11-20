@@ -260,8 +260,8 @@
 
 /* Graphiques : une barre par joueur, comme les graphiques de fin de partie du client. */
 .gcharts { display: flex; flex-direction: column; gap: 16px; }
-.gcharts-head { display: flex; gap: 12px; align-items: flex-start; justify-content: space-between; }
-.gcharts-head .chips { flex: 1; }
+.gcharts-head { display: flex; gap: 12px; align-items: center; justify-content: space-between; }
+.gcharts-pick { width: auto; min-width: 240px; font-weight: 600; }
 .gcharts-totals { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; font-size: 13px; color: var(--dim); }
 .gcharts-totals b { font: 400 22px/1 var(--display); letter-spacing: 0.03em; margin: 0 4px; }
 .gcharts-totals > i { display: flex; height: 6px; border-radius: 6px; overflow: hidden; gap: 2px; }

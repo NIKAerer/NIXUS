@@ -5,7 +5,7 @@ import type { GamePlayer } from "./game";
 
 /** Une part d'une barre (ex. dégâts physiques), avec sa couleur. */
 type Part = { key: string; label: string; color: string };
-type Metric = { id: string; label: string; keys: string[]; parts?: Part[]; fmt?: (v: number) => string; per?: boolean };
+type Metric = { id: string; group: string; label: string; keys: string[]; parts?: Part[]; fmt?: (v: number) => string; per?: boolean };
 
 const PHYS = "#ff8a3d";
 const MAGIC = "#5aa9ff";
@@ -17,7 +17,7 @@ const TRUE = "#e8e8ee";
  */
 const METRICS: Metric[] = [
   {
-    id: "dmg",
+    id: "dmg", group: "Combat",
     label: "Dégâts aux champions",
     keys: ["totalDamageDealtToChampions"],
     parts: [
@@ -28,7 +28,7 @@ const METRICS: Metric[] = [
     per: true,
   },
   {
-    id: "taken",
+    id: "taken", group: "Défense",
     label: "Dégâts subis",
     keys: ["totalDamageTaken"],
     parts: [
@@ -38,23 +38,25 @@ const METRICS: Metric[] = [
     ],
     per: true,
   },
-  { id: "mitig", label: "Dégâts atténués", keys: ["damageSelfMitigated"], per: true },
-  { id: "gold", label: "Or gagné", keys: ["goldEarned"], per: true },
-  { id: "cs", label: "Sbires et monstres", keys: ["totalMinionsKilled", "neutralMinionsKilled"], fmt: (v) => String(v), per: true },
-  { id: "heal", label: "Soins", keys: ["totalHeal"], per: true },
-  { id: "shield", label: "Boucliers sur alliés", keys: ["totalDamageShieldedOnTeammates"] },
-  { id: "allyHeal", label: "Soins sur alliés", keys: ["totalHealsOnTeammates"] },
-  { id: "obj", label: "Dégâts aux objectifs", keys: ["damageDealtToObjectives"] },
-  { id: "tower", label: "Dégâts aux tours", keys: ["damageDealtToTurrets", "damageDealtToBuildings"] },
-  { id: "total", label: "Dégâts totaux", keys: ["totalDamageDealt"] },
-  { id: "cc", label: "Contrôle infligé (s)", keys: ["timeCCingOthers"], fmt: (v) => String(v) },
-  { id: "vision", label: "Score de vision", keys: ["visionScore"], fmt: (v) => String(v), per: true },
-  { id: "wards", label: "Balises posées", keys: ["wardsPlaced"], fmt: (v) => String(v) },
-  { id: "wardsKilled", label: "Balises détruites", keys: ["wardsKilled"], fmt: (v) => String(v) },
-  { id: "pinks", label: "Balises de contrôle", keys: ["visionWardsBoughtInGame"], fmt: (v) => String(v) },
-  { id: "spree", label: "Plus longue série", keys: ["largestKillingSpree"], fmt: (v) => String(v) },
-  { id: "alive", label: "Plus longue vie", keys: ["longestTimeSpentLiving"], fmt: (v) => `${Math.floor(v / 60)}:${String(v % 60).padStart(2, "0")}` },
+  { id: "mitig", group: "Défense", label: "Dégâts atténués", keys: ["damageSelfMitigated"], per: true },
+  { id: "gold", group: "Économie", label: "Or gagné", keys: ["goldEarned"], per: true },
+  { id: "cs", group: "Économie", label: "Sbires et monstres", keys: ["totalMinionsKilled", "neutralMinionsKilled"], fmt: (v) => String(v), per: true },
+  { id: "heal", group: "Défense", label: "Soins", keys: ["totalHeal"], per: true },
+  { id: "shield", group: "Soutien", label: "Boucliers sur alliés", keys: ["totalDamageShieldedOnTeammates"] },
+  { id: "allyHeal", group: "Soutien", label: "Soins sur alliés", keys: ["totalHealsOnTeammates"] },
+  { id: "obj", group: "Objectifs", label: "Dégâts aux objectifs", keys: ["damageDealtToObjectives"] },
+  { id: "tower", group: "Objectifs", label: "Dégâts aux tours", keys: ["damageDealtToTurrets", "damageDealtToBuildings"] },
+  { id: "total", group: "Combat", label: "Dégâts totaux", keys: ["totalDamageDealt"] },
+  { id: "cc", group: "Combat", label: "Contrôle infligé (s)", keys: ["timeCCingOthers"], fmt: (v) => String(v) },
+  { id: "vision", group: "Vision", label: "Score de vision", keys: ["visionScore"], fmt: (v) => String(v), per: true },
+  { id: "wards", group: "Vision", label: "Balises posées", keys: ["wardsPlaced"], fmt: (v) => String(v) },
+  { id: "wardsKilled", group: "Vision", label: "Balises détruites", keys: ["wardsKilled"], fmt: (v) => String(v) },
+  { id: "pinks", group: "Vision", label: "Balises de contrôle", keys: ["visionWardsBoughtInGame"], fmt: (v) => String(v) },
+  { id: "spree", group: "Combat", label: "Plus longue série", keys: ["largestKillingSpree"], fmt: (v) => String(v) },
+  { id: "alive", group: "Défense", label: "Plus longue vie", keys: ["longestTimeSpentLiving"], fmt: (v) => `${Math.floor(v / 60)}:${String(v % 60).padStart(2, "0")}` },
 ];
+
+const GROUPS = ["Combat", "Défense", "Économie", "Soutien", "Objectifs", "Vision"];
 
 const num = (v: unknown) => (typeof v === "number" && isFinite(v) ? v : 0);
 
@@ -86,13 +88,20 @@ export function GameCharts({ detail, players, myTeam, minutes }: { detail: GameD
   return (
     <div className="gcharts">
       <div className="gcharts-head">
-        <div className="chips" role="group" aria-label="Statistique affichée">
-          {available.map((m) => (
-            <button key={m.id} className="chip" aria-pressed={m.id === metric.id} onClick={() => setPick(m.id)}>
-              {m.label}
-            </button>
-          ))}
-        </div>
+        <select className="input gcharts-pick" value={metric.id} onChange={(e) => setPick(e.target.value)} aria-label="Statistique affichée">
+          {GROUPS.map((g) => {
+            const list = available.filter((m) => m.group === g);
+            return list.length ? (
+              <optgroup key={g} label={g}>
+                {list.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.label}
+                  </option>
+                ))}
+              </optgroup>
+            ) : null;
+          })}
+        </select>
         {metric.per && (
           <button className="chip" aria-pressed={perMin} onClick={() => setPerMin((v) => !v)}>
             Par minute
