@@ -38,7 +38,7 @@ import {
   type LootItem,
   type Recipe,
 } from "../lib/loot";
-import { CloseButton, CountUp, Empty, Icon, Modal, Seg, Skeleton, cx, plural, useEscape } from "../ui";
+import { CloseButton, CountUp, Empty, Icon, Modal, Seg, Skeleton, cx, plural, useEscape, Select } from "../ui";
 
 type Filter = "all" | "new" | "owned";
 type Sort = "value" | "rarity" | "name";
@@ -223,11 +223,16 @@ export function Loot() {
                     ["owned", "Déjà possédé"],
                   ]}
                 />
-                <select className="input" value={sort} onChange={(e) => setSort(e.target.value as Sort)} aria-label="Trier">
-                  <option value="value">Trier par valeur</option>
-                  <option value="rarity">Trier par rareté</option>
-                  <option value="name">Trier de A à Z</option>
-                </select>
+                <Select<Sort>
+                  value={sort}
+                  onChange={setSort}
+                  label="Trier"
+                  options={[
+                    ["value", "Trier par valeur"],
+                    ["rarity", "Trier par rareté"],
+                    ["name", "Trier de A à Z"],
+                  ]}
+                />
                 <label className="search-box">
                   <Icon name="search" size={15} />
                   <input className="input" placeholder="Rechercher" value={query} onChange={(e) => setQuery(e.target.value)} aria-label="Rechercher dans le butin" />

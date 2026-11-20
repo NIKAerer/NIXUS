@@ -146,7 +146,8 @@ export function Grind() {
   const sum = (pick: (g: RankedRecord) => number) => games.reduce((s, g) => s + pick(g), 0);
   const minutes = sum((g) => g.duration / 60) || 1;
   const byChampion = useMemo(() => group(games, (g) => g.championId).slice(0, 10), [games]);
-  const byOpponent = useMemo(() => group(games.filter((g) => g.opponentId), (g) => g.opponentId!).slice(0, 8), [games]);
+  // Autant d'adversaires que la colonne de gauche peut en équilibrer (2 de moins que de champions, car « Par rôle » est au-dessus).
+  const byOpponent = useMemo(() => group(games.filter((g) => g.opponentId), (g) => g.opponentId!).slice(0, Math.min(8, Math.max(3, byChampion.length - 2))), [games, byChampion.length]);
   const roleMax = Math.max(1, ...ROLES.map(([r]) => games.filter((g) => g.role === r).length));
   const cover = byChampion[0]?.[0] ?? inQueue[0]?.championId ?? 64;
   const gd10 = avg(games.map((g) => g.gd10));
@@ -234,7 +235,7 @@ export function Grind() {
             <Kpi label="Vision / min" value={dec(sum((g) => g.vision) / minutes, 2)} />
           </div>
 
-          <div className="duo">
+          <div className="duo fit">
             <section className="card card-pad">
               <h3>Tes champions</h3>
               <div className="table" role="table" style={{ ["--cols" as string]: "minmax(0, 1.6fr) 0.6fr 1.1fr 0.7fr 0.8fr 0.6fr" }}>
@@ -288,7 +289,7 @@ export function Grind() {
                   })}
                 </div>
               </section>
-              <section className="card card-pad">
+              <section className="card card-pad fill">
                 <h3>Face à</h3>
                 {byOpponent.length ? (
                   <ul className="rows">
@@ -326,7 +327,8 @@ export function Grind() {
 
 /** Journal des sessions : une ligne par jour avec le bilan, les LP du jour et chaque partie en vignette. */
 function Journal({ games, points, name, puuid }: { games: RankedRecord[]; points: LpPoint[]; name: (id: number | null) => string; puuid?: string }) {
-  const [shown, setShown] = useState(7);
+  // 9 jours = 3 lignes pleines quand les journées sont sur 3 colonnes
+  const [shown, setShown] = useState(9);
   const days = useMemo(() => {
     const map = new Map<number, RankedRecord[]>();
     for (const g of games) map.set(dayKey(g.createdAt), [...(map.get(dayKey(g.createdAt)) ?? []), g]);
@@ -392,7 +394,7 @@ function Journal({ games, points, name, puuid }: { games: RankedRecord[]; points
           );
         })}
         {days.length > shown && (
-          <button className="btn btn-quiet btn-s journal-more" onClick={() => setShown((n) => n + 7)}>
+          <button className="btn btn-quiet btn-s journal-more" onClick={() => setShown((n) => n + 9)}>
             Voir plus de jours
           </button>
         )}

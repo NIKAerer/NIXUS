@@ -4,7 +4,7 @@ import { actions, useClient } from "../lib/client";
 import { friendlyError } from "../lib/errors";
 import { challengeCategoryLabel, tierLabel } from "../lib/labels";
 import { gameAsset, lcu, profileIcon } from "../lib/lcu";
-import { Art, CloseButton, Modal, Seg, cx, int } from "../ui";
+import { Art, CloseButton, Modal, Seg, cx, int, Select } from "../ui";
 
 interface Challenge {
   id: number;
@@ -126,21 +126,15 @@ export function ProfileEditor({ onClose }: { onClose: () => void }) {
               {titles === null ? (
                 <p className="note">Chargement…</p>
               ) : titles.length ? (
-                <select
-                  className="input editor-select"
-                  value={summary?.title?.itemId ?? ""}
-                  onChange={(e) => {
-                    const value = e.target.value;
+                <Select<string>
+                  className="editor-select"
+                  value={String(summary?.title?.itemId ?? "")}
+                  label="Titre"
+                  onChange={(value) => {
                     run(() => prefs({ title: value }), "Titre changé.").then(() => setSummary((s) => ({ ...s, title: titles.find((t) => String(t.itemId) === value) })));
                   }}
-                >
-                  <option value="">Aucun titre</option>
-                  {titles.map((t) => (
-                    <option key={t.itemId} value={t.itemId}>
-                      {t.name}
-                    </option>
-                  ))}
-                </select>
+                  options={[["", "Aucun titre"] as const, ...titles.map((t) => [String(t.itemId), t.name] as const)]}
+                />
               ) : (
                 <p className="note">
                   {summary?.title?.name ? `Titre actuel : ${summary.title.name}. ` : ""}La liste des titres n'est pas disponible sur ce client pour l'instant.

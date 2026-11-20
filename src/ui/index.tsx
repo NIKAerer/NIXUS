@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { neckOf, watch } from "../lib/breath";
 import { championSquare } from "../lib/lcu";
@@ -228,3 +228,89 @@ export const WinBar = ({ ratio }: { ratio: number }) => (
     <i style={{ width: `${Math.max(0, Math.min(1, ratio)) * 100}%` }} />
   </i>
 );
+
+/**
+ * Menu déroulant au style de l'app. Remplace le `<select>` natif, dont la liste s'ouvre
+ * avec les couleurs du système (bandes et séparateurs blancs sous Windows).
+ * La liste est posée sur `body` pour ne pas être coupée par un panneau qui défile.
+ */
+export function Select<T extends string | number>({ value, options, onChange, label, id, className, autoFocus, onClose, describedBy }: { value: T; options: readonly (readonly [T, ReactNode])[]; onChange: (v: T) => void; label?: string; id?: string; className?: string; autoFocus?: boolean; onClose?: () => void; describedBy?: string }) {
+  const [open, setOpen] = useState(!!autoFocus);
+  const [hover, setHover] = useState(-1);
+  const [pos, setPos] = useState<CSSProperties>({});
+  const btn = useRef<HTMLButtonElement>(null);
+  const menu = useRef<HTMLDivElement>(null);
+  const current = options.find(([v]) => v === value);
+  const close = (refocus = true) => {
+    setOpen(false);
+    onClose?.();
+    if (refocus) btn.current?.focus();
+  };
+  const place = () => {
+    const r = btn.current?.getBoundingClientRect();
+    if (!r) return;
+    const below = window.innerHeight - r.bottom - 12;
+    const up = below < 220 && r.top > below;
+    const max = Math.min(340, (up ? r.top : below) - 6);
+    setPos({ left: r.left, minWidth: r.width, maxHeight: max, ...(up ? { bottom: window.innerHeight - r.top + 6 } : { top: r.bottom + 6 }) });
+  };
+  useEffect(() => {
+    if (autoFocus) btn.current?.focus();
+  }, [autoFocus]);
+  useEffect(() => {
+    if (!open) return;
+    place();
+    setHover(Math.max(0, options.findIndex(([v]) => v === value)));
+    const away = (e: MouseEvent) => !btn.current?.contains(e.target as Node) && !menu.current?.contains(e.target as Node) && close(false);
+    const move = (e: Event) => !menu.current?.contains(e.target as Node) && close(false);
+    document.addEventListener("mousedown", away);
+    window.addEventListener("resize", move);
+    document.addEventListener("scroll", move, true);
+    return () => {
+      document.removeEventListener("mousedown", away);
+      window.removeEventListener("resize", move);
+      document.removeEventListener("scroll", move, true);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+  useEffect(() => {
+    if (open && hover >= 0) menu.current?.children[hover]?.scrollIntoView({ block: "nearest" });
+  }, [open, hover]);
+  const pick = (v: T) => {
+    if (v !== value) onChange(v);
+    close();
+  };
+  const onKey = (e: KeyboardEvent) => {
+    if (e.key === "Escape" && open) {
+      e.stopPropagation();
+      close();
+    } else if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+      e.preventDefault();
+      if (!open) return setOpen(true);
+      const n = options.length;
+      setHover((h) => (h + (e.key === "ArrowDown" ? 1 : n - 1)) % n);
+    } else if ((e.key === "Enter" || e.key === " ") && open) {
+      e.preventDefault();
+      if (options[hover]) pick(options[hover][0]);
+    } else if (e.key === "Tab" && open) close(false);
+  };
+  return (
+    <>
+      <button ref={btn} type="button" id={id} className={cx("input select", className)} aria-haspopup="listbox" aria-expanded={open} aria-label={label} aria-describedby={describedBy} onClick={() => (open ? close() : setOpen(true))} onKeyDown={onKey}>
+        <span>{current?.[1]}</span>
+        <Icon name="chevron" size={15} className="select-chev" />
+      </button>
+      {open &&
+        createPortal(
+          <div ref={menu} className="select-menu" role="listbox" aria-label={label} style={pos}>
+            {options.map(([v, l], i) => (
+              <button key={String(v)} type="button" role="option" tabIndex={-1} aria-selected={v === value} className={cx(i === hover && "hover")} onMouseEnter={() => setHover(i)} onClick={() => pick(v)}>
+                {l}
+              </button>
+            ))}
+          </div>,
+          document.body,
+        )}
+    </>
+  );
+}

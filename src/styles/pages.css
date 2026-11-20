@@ -19,6 +19,15 @@
 /* ---------- Mise en page commune ---------- */
 .duo { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 18px; align-items: start; }
 .stack { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+/* Les deux colonnes finissent à la même hauteur : la colonne la plus courte étire ses lignes
+   (tableau à gauche, dernière liste à droite) au lieu de laisser un trou dessous. */
+.duo.fit { align-items: stretch; }
+.duo.fit > .card, .duo.fit > .stack > .fill { display: flex; flex-direction: column; }
+.duo.fit > .stack > .fill { flex: 1; }
+.duo.fit > .card > .table { flex: 1; grid-auto-rows: minmax(auto, 58px); }
+.duo.fit > .card > .table > .th { align-self: end; }
+.duo.fit > .stack > .fill > .rows { flex: 1; }
+.duo.fit > .stack > .fill > .rows li { flex: 1 1 auto; max-height: 68px; }
 .rows { display: flex; flex-direction: column; }
 .rows li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 2px; border-bottom: 1px solid var(--line); }
 .rows li:last-child { border-bottom: 0; padding-bottom: 0; }
@@ -59,13 +68,15 @@
 .lp-tip small { color: var(--dim); font-size: 11.5px; }
 
 /* ---------- Journal des sessions ---------- */
-.journal { display: flex; flex-direction: column; gap: 18px; }
-.journal-day > header { display: flex; align-items: center; gap: 14px; margin-bottom: 8px; font-size: 13px; }
-.journal-day > header > b { font: 400 18px/1 var(--display); letter-spacing: 0.05em; min-width: 190px; }
+/* Les journées côte à côte (2 à 3 par ligne) : plus de grande bande vide à droite des parties */
+.journal { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 400px), 1fr)); gap: 22px 28px; align-items: start; }
+.journal > .journal-more { grid-column: 1 / -1; justify-self: center; }
+.journal-day > header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 13px; }
+.journal-day > header > b { font: 400 18px/1 var(--display); letter-spacing: 0.05em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .journal-day > header > b::first-letter { text-transform: uppercase; }
-.journal-day > header .winbar { width: 90px; }
+.journal-day > header .winbar { width: 60px; flex: none; }
 .journal-lp { margin-left: auto; font-weight: 700; }
-.journal-games { display: grid; grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); gap: 8px; }
+.journal-games { display: grid; grid-template-columns: repeat(auto-fill, minmax(122px, 1fr)); gap: 8px; }
 .journal-game { position: relative; isolation: isolate; height: 84px; border-radius: var(--r-m); overflow: hidden; text-align: left; padding: 9px 11px 9px 14px; display: flex; flex-direction: column; justify-content: flex-end; gap: 1px; transition: transform 0.2s var(--ease), box-shadow 0.2s; }
 .journal-game:hover { transform: translateY(-3px); box-shadow: 0 10px 26px rgba(0, 0, 0, 0.6), 0 0 0 1.5px rgba(255, 255, 255, 0.45); z-index: 1; }
 .journal-game .cover { z-index: -1; }
@@ -193,3 +204,5 @@
   .posters.six .poster { aspect-ratio: 16 / 10; }
   .journal-day > header > b { min-width: 0; }
 }
+
+.friend-move { min-width: 130px; height: 28px; font-size: 12.5px; }
