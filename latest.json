@@ -1,11 +1,11 @@
 {
-  "version": "1.0.8",
-  "notes": "Replay : les champions ne restent plus figés",
-  "pub_date": "2026-11-20T00:31:28Z",
+  "version": "1.0.9",
+  "notes": "Replay : la liste des joueurs remplit la hauteur de la carte, avec une barre d'or · Fiche de partie : onglet Graphiques avec les stats de chaque joueur",
+  "pub_date": "2026-11-20T01:27:05Z",
   "platforms": {
     "windows-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUU3M1c0VqSWpFM2lnLzl0UGYvb01LaFNnQU1Da0JTWEJFYkJWQURXcUt6OGFPQVhqeFQ5Sndnb3hMSlRzL2tGclJWanJlN1lCK2tSSVk5VVpPbklIYUhmY1ZhZHA1NUEwPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk1MTM0Njg3CWZpbGU6TklYVVNfMS4wLjhfeDY0LXNldHVwLmV4ZQl2ZXJzaW9uOjEuMC44CkVpQmhiMUZEeC9yYmJHTW1Rd0JybXcwOW42MG1qWjdPdjBCNCtaQ2F1R0FaVkJSc2RER3VwekNMQUFRRUhkRVlHd0NUN2ZGV3FrNEUrOXpiQnFJMEFBPT0K",
-      "url": "https://github.com/NIKAerer/NIXUS/releases/download/v1.0.8/NIXUS_1.0.8_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUU3M1c0VqSWpFM2hRQndiZFJueWFpbTJjaFRVeUVBUkExbVRQQnU4TUVPemdIWXJxdVQwdFhMbEtVR3U4KzRLRm9BMlkrVXRLSTh0NmwyMzg4NEs2eGo3Y2tTNDk2amdzPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk1MTM4MDI1CWZpbGU6TklYVVNfMS4wLjlfeDY0LXNldHVwLmV4ZQl2ZXJzaW9uOjEuMC45CkovTFdINGFKckV1RlJNV0pHR1lRWWFsSE9WSGhDdGczSk85WTVEQXcycHl1cUVoMHg0cXBOVHU4QWZmeGU1cmllOU1lRmxXazN4TU96U0lPRU9hR0JBPT0K",
+      "url": "https://github.com/NIKAerer/NIXUS/releases/download/v1.0.9/NIXUS_1.0.9_x64-setup.exe"
     }
   }
 }
