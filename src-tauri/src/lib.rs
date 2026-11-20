@@ -3,6 +3,7 @@ mod lcu;
 mod riot;
 mod launch;
 mod usage;
+mod news;
 
 use lcu::{Lcu, Status};
 use serde_json::Value;
@@ -102,6 +103,11 @@ fn civil_date(secs: u64) -> String {
 }
 
 #[tauri::command]
+async fn news_page(news: State<'_, news::News>, path: String) -> Result<String, String> {
+    news.page(&path).await
+}
+
+#[tauri::command]
 fn ux_running() -> bool {
     launch::ux_running()
 }
@@ -120,7 +126,8 @@ pub fn run() {
         .manage(usage::Usage::new())
         .manage(Lcu::new())
         .manage(riot::Riot::new())
-        .invoke_handler(tauri::generate_handler![lcu_status, lcu_request, archive_put, archive_get, archive_list, riot_get, launch_league, ux_running, client_memory, nixus_usage, archive_stats, archive_backup, archive_restore])
+        .manage(news::News::new())
+        .invoke_handler(tauri::generate_handler![lcu_status, lcu_request, archive_put, archive_get, archive_list, riot_get, launch_league, ux_running, client_memory, nixus_usage, archive_stats, archive_backup, archive_restore, news_page])
         .run(tauri::generate_context!())
         .expect("erreur au lancement de NIXUS");
 }

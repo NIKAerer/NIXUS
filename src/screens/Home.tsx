@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Leaderboard } from "../features/Leaderboard";
+import { PatchCard } from "./Patch";
 import { MatchTile } from "../features/MatchTile";
 import { readHeroSkin, SkinPicker, type HeroSkin } from "../features/SkinPicker";
 import { actions, useClient } from "../lib/client";
@@ -83,7 +84,10 @@ export function Home() {
           <HeroPlay rank={info.ranked ? rank : undefined} recent={history.slice(0, 5).map((m) => !!m.participants[0]?.stats.win).reverse()} streak={streak} streakWin={streakWin} today={today.length} wins={wins} />
         </div>
 
-        <Leaderboard className="hero-board" />
+        <div className="hero-side">
+          <PatchCard />
+          <Leaderboard className="hero-board" />
+        </div>
 
       </section>
 

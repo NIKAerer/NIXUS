@@ -34,7 +34,7 @@ for (const [label, name] of [["Grind", "grind"], ["Profil", "profile"], ["Collec
 }
 
 // Détail d'une partie (première carte de « Dernières parties »)
-await nav("Accueil");
+await page.locator("button.logo").click();
 await settle(1500);
 const card = page.locator(".tiles > *").first();
 if (await card.count()) {
