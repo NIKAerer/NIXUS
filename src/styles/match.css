@@ -259,14 +259,27 @@
 
 
 /* Graphiques : une barre par joueur, comme les graphiques de fin de partie du client. */
-.gcharts { display: flex; flex-direction: column; gap: 16px; }
+.gcharts { display: flex; flex-direction: column; gap: 16px; flex: 1; min-height: 0; }
 .gcharts-head { display: flex; gap: 12px; align-items: center; justify-content: space-between; }
-.gcharts-pick { width: auto; min-width: 240px; font-weight: 600; }
+.gpick { position: relative; }
+.gpick-btn { display: flex; align-items: center; gap: 10px; min-width: 260px; height: 42px; padding: 0 12px 0 14px; border-radius: var(--r-m); background: var(--panel); border: 1px solid var(--line); text-align: left; }
+.gpick-btn:hover, .gpick-btn[aria-expanded="true"] { border-color: var(--line-2); }
+.gpick-btn small { font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--dim); }
+.gpick-btn b { flex: 1; font-size: 14px; }
+.gpick-chev { transform: none; color: var(--dim); transition: transform 0.15s; }
+.gpick-btn[aria-expanded="true"] .gpick-chev { transform: rotate(180deg); }
+/* Le menu s'ouvre en colonnes pour tout montrer d'un coup, sans défiler. */
+.gpick-menu { position: absolute; z-index: 20; top: calc(100% + 6px); left: 0; display: grid; grid-template-columns: repeat(3, minmax(170px, 1fr)); gap: 4px 14px; padding: 12px; border-radius: var(--r-l); background: var(--panel-2); border: 1px solid var(--line-2); box-shadow: 0 18px 40px rgba(0, 0, 0, 0.55); }
+.gpick-group { display: flex; flex-direction: column; gap: 1px; padding-bottom: 6px; }
+.gpick-group > span { padding: 6px 10px 4px; font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--dim); }
+.gpick-group button { padding: 7px 10px; border-radius: 8px; font-size: 13px; text-align: left; color: var(--text, #e8e8ee); }
+.gpick-group button:hover { background: rgba(255, 255, 255, 0.06); }
+.gpick-group button[aria-selected="true"] { background: rgba(255, 255, 255, 0.1); color: #fff; font-weight: 600; box-shadow: inset 3px 0 0 var(--accent, var(--ally)); }
 .gcharts-totals { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; font-size: 13px; color: var(--dim); }
 .gcharts-totals b { font: 400 22px/1 var(--display); letter-spacing: 0.03em; margin: 0 4px; }
 .gcharts-totals > i { display: flex; height: 6px; border-radius: 6px; overflow: hidden; gap: 2px; }
 .gcharts-totals > i > i { display: block; }
-.gcharts-bars { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 10px; height: clamp(260px, 40vh, 440px); padding: 14px 16px 12px; border-radius: var(--r-l); background: var(--panel); border: 1px solid var(--line); }
+.gcharts-bars { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 10px; flex: 1; min-height: 300px; padding: 14px 16px 12px; border-radius: var(--r-l); background: var(--panel); border: 1px solid var(--line); }
 .gbar { display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0; }
 .gbar.split { margin-left: 18px; }
 .gbar > b { font-size: 12.5px; white-space: nowrap; }

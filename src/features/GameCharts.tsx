@@ -1,6 +1,6 @@
-import { useMemo, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import type { GameDetail } from "../lib/types";
-import { ChampIcon, cx, int, kilo } from "../ui";
+import { ChampIcon, Icon, cx, int, kilo } from "../ui";
 import type { GamePlayer } from "./game";
 
 /** Une part d'une barre (ex. dégâts physiques), avec sa couleur. */
@@ -9,7 +9,7 @@ type Metric = { id: string; group: string; label: string; keys: string[]; parts?
 
 const PHYS = "#ff8a3d";
 const MAGIC = "#5aa9ff";
-const TRUE = "#e8e8ee";
+const TRUE = "#b98cff";
 
 /**
  * Les stats du détail de partie, comme les graphiques de fin de partie du client.
@@ -88,20 +88,7 @@ export function GameCharts({ detail, players, myTeam, minutes }: { detail: GameD
   return (
     <div className="gcharts">
       <div className="gcharts-head">
-        <select className="input gcharts-pick" value={metric.id} onChange={(e) => setPick(e.target.value)} aria-label="Statistique affichée">
-          {GROUPS.map((g) => {
-            const list = available.filter((m) => m.group === g);
-            return list.length ? (
-              <optgroup key={g} label={g}>
-                {list.map((m) => (
-                  <option key={m.id} value={m.id}>
-                    {m.label}
-                  </option>
-                ))}
-              </optgroup>
-            ) : null;
-          })}
-        </select>
+        <StatPicker metrics={available} value={metric.id} onPick={setPick} />
         {metric.per && (
           <button className="chip" aria-pressed={perMin} onClick={() => setPerMin((v) => !v)}>
             Par minute
@@ -152,6 +139,58 @@ export function GameCharts({ detail, players, myTeam, minutes }: { detail: GameD
               {part.label}
             </span>
           ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Menu des stats, groupé par catégorie, au style de l'app (le menu natif affiche les groupes sur fond blanc). */
+function StatPicker({ metrics, value, onPick }: { metrics: Metric[]; value: string; onPick: (id: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const box = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const away = (e: MouseEvent) => !box.current?.contains(e.target as Node) && setOpen(false);
+    const esc = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    document.addEventListener("mousedown", away);
+    document.addEventListener("keydown", esc);
+    return () => {
+      document.removeEventListener("mousedown", away);
+      document.removeEventListener("keydown", esc);
+    };
+  }, [open]);
+  const current = metrics.find((m) => m.id === value);
+  return (
+    <div className="gpick" ref={box}>
+      <button className="gpick-btn" aria-haspopup="listbox" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
+        <small>{current?.group}</small>
+        <b>{current?.label}</b>
+        <Icon name="chevron" size={16} className="gpick-chev" />
+      </button>
+      {open && (
+        <div className="gpick-menu" role="listbox" aria-label="Statistique affichée">
+          {GROUPS.map((g) => {
+            const list = metrics.filter((m) => m.group === g);
+            return list.length ? (
+              <div key={g} className="gpick-group">
+                <span>{g}</span>
+                {list.map((m) => (
+                  <button
+                    key={m.id}
+                    role="option"
+                    aria-selected={m.id === value}
+                    onClick={() => {
+                      onPick(m.id);
+                      setOpen(false);
+                    }}
+                  >
+                    {m.label}
+                  </button>
+                ))}
+              </div>
+            ) : null;
+          })}
         </div>
       )}
     </div>
