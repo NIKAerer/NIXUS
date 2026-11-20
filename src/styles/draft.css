@@ -31,9 +31,10 @@
 .draft.urgent .draft-clock > b { color: var(--accent-hi); animation: pulse 1s ease-in-out infinite; }
 .draft.urgent .draft-clock > i > i { background: var(--accent); }
 
-.draft-main { flex: 1; min-height: 0; display: grid; grid-template-columns: 250px minmax(0, 1fr) 250px; gap: 18px; }
+/* Les colonnes d'équipe et les cartes grandissent avec la fenêtre pour ne pas laisser de vide sur les grands écrans. */
+.draft-main { flex: 1; min-height: 0; display: grid; grid-template-columns: clamp(250px, 16vw, 340px) minmax(0, 1fr) clamp(250px, 16vw, 340px); gap: 18px; }
 .draft-team { display: flex; flex-direction: column; gap: 8px; min-height: 0; }
-.pcard { position: relative; flex: 1; min-height: 0; max-height: 132px; border-radius: 14px; overflow: hidden; background: rgba(20, 20, 25, 0.75); border: 1px solid var(--line); display: flex; align-items: flex-end; padding: 10px 12px; isolation: isolate; transition: border-color 0.2s, box-shadow 0.2s; }
+.pcard { position: relative; flex: 1; min-height: 0; max-height: 210px; border-radius: 14px; overflow: hidden; background: rgba(20, 20, 25, 0.75); border: 1px solid var(--line); display: flex; align-items: flex-end; padding: 10px 12px; isolation: isolate; transition: border-color 0.2s, box-shadow 0.2s; }
 .pcard .cover { z-index: -1; }
 .pcard .cover img { object-position: center 22%; }
 .pcard .cover::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(8, 8, 10, 0.92), rgba(8, 8, 10, 0.25) 75%), linear-gradient(0deg, rgba(8, 8, 10, 0.7), transparent 60%); }
@@ -120,11 +121,11 @@
 .rune-pick select { flex: 1; max-width: 320px; }
 .loadout-skins { display: flex; flex-direction: column; gap: 10px; }
 .loadout-skins-head { display: flex; align-items: center; justify-content: space-between; }
-.skin-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 230px)); gap: 12px; padding: 4px 2px 10px; }
+.skin-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(clamp(170px, 11vw, 280px), 1fr)); gap: 12px; padding: 4px 2px 10px; }
 .skin { position: relative; width: 100%; aspect-ratio: 16 / 10; border-radius: 12px; overflow: hidden; isolation: isolate; display: flex; align-items: flex-end; padding: 8px 10px; text-align: left; outline: 2px solid transparent; outline-offset: -2px; transition: outline-color 0.15s, transform 0.2s var(--ease); }
 .skin .cover { z-index: -1; }
 .skin .cover::after { content: ""; position: absolute; inset: 0; background: linear-gradient(0deg, rgba(0, 0, 0, 0.85), transparent 55%); }
-.skin b { font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.skin b { font-size: clamp(12.5px, 0.75vw, 15px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .skin:hover:not(:disabled) { transform: translateY(-3px); outline-color: var(--line-2); }
 .skin[aria-pressed="true"] { outline-color: #fff; }
 .skin:disabled .cover img { filter: grayscale(0.9) brightness(0.5); }
