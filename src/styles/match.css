@@ -250,3 +250,34 @@
 .game:has(.story) .ghero-stats .stat small { display: none; }
 .eog .scene-map { top: calc(var(--bar) + 12px); }
 
+
+/* Graphiques : une barre par joueur, comme les graphiques de fin de partie du client. */
+.gcharts { display: flex; flex-direction: column; gap: 16px; }
+.gcharts-head { display: flex; gap: 12px; align-items: flex-start; justify-content: space-between; }
+.gcharts-head .chips { flex: 1; }
+.gcharts-totals { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; font-size: 13px; color: var(--dim); }
+.gcharts-totals b { font: 400 22px/1 var(--display); letter-spacing: 0.03em; margin: 0 4px; }
+.gcharts-totals > i { display: flex; height: 6px; border-radius: 6px; overflow: hidden; gap: 2px; }
+.gcharts-totals > i > i { display: block; }
+.gcharts-bars { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 10px; height: clamp(260px, 40vh, 440px); padding: 14px 16px 12px; border-radius: var(--r-l); background: var(--panel); border: 1px solid var(--line); }
+.gbar { display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0; }
+.gbar.split { margin-left: 18px; }
+.gbar > b { font-size: 12.5px; white-space: nowrap; }
+.gbar-track { flex: 1; width: 100%; max-width: 46px; display: flex; align-items: flex-end; border-radius: 8px; background: rgba(255, 255, 255, 0.04); }
+.gbar-fill { width: 100%; display: flex; flex-direction: column-reverse; border-radius: 8px; overflow: hidden; min-height: 3px; transition: height 0.35s var(--ease); }
+.gbar-fill > i { display: block; min-height: 0; }
+.gbar.ally .gbar-fill { background: var(--ally); }
+.gbar.enemy .gbar-fill { background: var(--enemy); }
+.gbar.ally .gbar-fill > i:only-child { background: var(--ally); }
+.gbar.enemy .gbar-fill > i:only-child { background: var(--enemy); }
+.gbar.ally .gbar-track { box-shadow: inset 0 -3px 0 var(--ally); }
+.gbar.enemy .gbar-track { box-shadow: inset 0 -3px 0 var(--enemy); }
+.gbar img, .gbar .art-missing { width: 36px; height: 36px; border-radius: 9px; flex: none; }
+.gbar.me img { outline: 2px solid #fff; outline-offset: 1px; }
+.gbar small { font-size: 11px; color: var(--dim); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gbar.me small { color: #fff; font-weight: 700; }
+.gcharts-legend { display: flex; gap: 16px; font-size: 12px; color: var(--dim); }
+.gcharts-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.gcharts-legend i { width: 10px; height: 10px; border-radius: 3px; }
+.gbar.ally > b { color: var(--ally); }
+.gbar.enemy > b { color: var(--enemy); }
