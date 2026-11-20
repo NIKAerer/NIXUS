@@ -32,8 +32,12 @@ jobs:
       TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
       TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
     steps:
+      # Toujours la pointe de main, pas le commit qui a déclenché : si deux fusions arrivent coup sur coup,
+      # la seconde publication part après la première et doit voir son « NIXUS x.y.z », sinon elle
+      # recalcule le même numéro et la release échoue (« tag already exists »).
       - uses: actions/checkout@v4
         with:
+          ref: main
           fetch-depth: 0
 
       - name: Check the signing key
@@ -74,7 +78,7 @@ jobs:
         run: |
           dir=src-tauri/target/release/bundle/nsis
           gh release create "v$V" "$dir/NIXUS_${V}_x64-setup.exe" "$dir/NIXUS_${V}_x64-setup.exe.sig" \
-            --target "$GITHUB_SHA" --title "NIXUS $V" --notes-file release-notes.txt
+            --target "$(git rev-parse HEAD)" --title "NIXUS $V" --notes-file release-notes.txt
 
       - name: Commit the version and latest.json
         env:
