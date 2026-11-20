@@ -251,16 +251,88 @@ const eogPlayer = (name: string, championId: number, k: number, d: number, a: nu
 });
 
 const friendRequests: { puuid: string; gameName: string; gameTag: string; icon: number; direction: string }[] = [{ puuid: "req-1", gameName: "Soren", gameTag: "EUW", icon: 4022, direction: "in" }];
-const loot = [
+type MockLoot = { lootId: string; count: number; [k: string]: unknown };
+const champShard = (id: number, name: string, owned: boolean, dis: number, up: number, count = 1): MockLoot => ({ lootId: `CHAMPION_RENTAL_${id}`, count, type: "CHAMPION_RENTAL", lootName: "CHAMPION_RENTAL", localizedName: "", itemDesc: name, displayCategories: "CHAMPION", storeItemId: id, disenchantValue: dis, disenchantLootName: "CURRENCY_champion", upgradeEssenceValue: up, upgradeEssenceName: "CURRENCY_champion", itemStatus: owned ? "OWNED" : "NONE" });
+const skinShard = (id: number, name: string, rarity: string, owned: boolean, champOwned: boolean, dis: number, up: number, count = 1): MockLoot => ({ lootId: `CHAMPION_SKIN_RENTAL_${id}`, count, type: "SKIN_RENTAL", lootName: "CHAMPION_SKIN_RENTAL", localizedName: "", itemDesc: name, displayCategories: "SKIN", storeItemId: id, parentStoreItemId: Math.floor(id / 1000), rarity, disenchantValue: dis, disenchantLootName: "CURRENCY_cosmetic", upgradeEssenceValue: up, upgradeEssenceName: "CURRENCY_cosmetic", itemStatus: owned ? "OWNED" : "NONE", parentItemStatus: champOwned ? "OWNED" : "NONE" });
+const loot: MockLoot[] = [
   { lootId: "CURRENCY_champion", count: 3450 },
   { lootId: "CURRENCY_cosmetic", count: 1260 },
-  { lootId: "MATERIAL_key", count: 2, localizedName: "Clé Hextech", displayCategories: "CHEST" },
-  { lootId: "MATERIAL_key_fragment", count: 1, localizedName: "Fragment de clé", displayCategories: "CHEST" },
-  { lootId: "CHEST_generic", count: 3, localizedName: "Coffre Hextech", displayCategories: "CHEST" },
-  { lootId: "CHAMPION_RENTAL_64", count: 1, type: "CHAMPION_RENTAL", lootName: "CHAMPION_RENTAL", localizedName: "", itemDesc: "Lee Sin", displayCategories: "CHAMPION", storeItemId: 64, disenchantValue: 1260, disenchantLootName: "CURRENCY_champion", upgradeEssenceValue: 1890, itemStatus: "OWNED" },
-  { lootId: "CHAMPION_RENTAL_893", count: 2, type: "CHAMPION_RENTAL", lootName: "CHAMPION_RENTAL", localizedName: "", itemDesc: "Aurora", displayCategories: "CHAMPION", storeItemId: 893, disenchantValue: 1890, disenchantLootName: "CURRENCY_champion", upgradeEssenceValue: 3150, itemStatus: "NONE" },
-  { lootId: "CHAMPION_SKIN_RENTAL_64005", count: 1, type: "SKIN_RENTAL", lootName: "CHAMPION_SKIN_RENTAL", localizedName: "", itemDesc: "Lee Sin Projet", displayCategories: "SKIN", storeItemId: 64005, disenchantValue: 270, disenchantLootName: "CURRENCY_cosmetic", upgradeEssenceValue: 810 },
+  { lootId: "CURRENCY_mythic", count: 10 },
+  { lootId: "MATERIAL_key", count: 2, type: "MATERIAL", localizedName: "Clé Hextech", displayCategories: "CHEST" },
+  { lootId: "CHEST_generic", count: 3, type: "CHEST", localizedName: "Coffre Hextech", displayCategories: "CHEST", localizedDescription: "Contient un fragment de champion, de skin ou de cosmétique, et parfois une gemme." },
+  { lootId: "CHEST_honor_capsule", count: 1, type: "CHEST", localizedName: "Capsule d'honneur", displayCategories: "CHEST", localizedDescription: "Récompense d'honneur. S'ouvre sans clé." },
+  champShard(64, "Lee Sin", true, 1260, 1890),
+  champShard(893, "Aurora", false, 1890, 3150, 2),
+  champShard(234, "Viego", false, 1890, 3150),
+  champShard(141, "Kayn", true, 960, 1440),
+  champShard(59, "Jarvan IV", true, 630, 945),
+  champShard(103, "Ahri", true, 960, 1440),
+  skinShard(64011, "Lee Sin Poing divin", "LEGENDARY", false, true, 364, 1092),
+  skinShard(103001, "Ahri dynastique", "EPIC", true, true, 270, 810),
+  skinShard(141002, "Kayn de l'Odyssée", "EPIC", false, true, 270, 810),
+  skinShard(893001, "Aurora lapine de combat", "EPIC", false, false, 270, 810),
+  { lootId: "WARD_SKIN_RENTAL_12", count: 1, type: "WARDSKIN_RENTAL", localizedName: "Balise Poro", displayCategories: "WARDSKIN", disenchantValue: 192, disenchantLootName: "CURRENCY_cosmetic", upgradeEssenceValue: 576, upgradeEssenceName: "CURRENCY_cosmetic", itemStatus: "NONE" },
+  { lootId: "SUMMONER_ICON_5367", count: 1, type: "SUMMONERICON", localizedName: "Icône Poro royal", displayCategories: "SUMMONERICON", storeItemId: 5367, disenchantValue: 150, disenchantLootName: "CURRENCY_cosmetic", itemStatus: "OWNED" },
 ];
+// Ce que donnent les coffres de la démo, dans l'ordre.
+const chestRewards: MockLoot[] = [champShard(157, "Yasuo", false, 1890, 3150), skinShard(222005, "Jinx Mecha zéro", "LEGENDARY", false, false, 364, 1092), { ...champShard(254, "Vi", true, 960, 1440) }];
+let rewardIndex = 0;
+const lootRecipes = (id: string) => {
+  const item = loot.find((x) => x.lootId === id);
+  if (!item) return [];
+  if (id === "CHEST_generic") return [{ recipeName: "CHEST_generic_OPEN", type: "OPEN", contextMenuText: "Ouvrir", slots: [{ lootIds: ["CHEST_generic"], quantity: 1 }, { lootIds: ["MATERIAL_key"], quantity: 1 }] }];
+  if (id.startsWith("CHEST_")) return [{ recipeName: `${id}_OPEN`, type: "OPEN", contextMenuText: "Ouvrir", slots: [{ lootIds: [id], quantity: 1 }] }];
+  if (id === "MATERIAL_key_fragment") return [{ recipeName: "MATERIAL_key_fragment_forge", type: "FORGE", contextMenuText: "Fabriquer une clé", slots: [{ lootIds: ["MATERIAL_key_fragment"], quantity: 3 }], outputs: [{ lootName: "MATERIAL_key", quantity: 1 }] }];
+  const t = String(item.type ?? "");
+  const out: unknown[] = [];
+  if (t.endsWith("_RENTAL")) {
+    out.push({ recipeName: `${t}_upgrade`, type: "UPGRADE", contextMenuText: "Améliorer", slots: [{ lootIds: [id], quantity: 1 }, { lootIds: [item.upgradeEssenceName], quantity: item.upgradeEssenceValue }] });
+  }
+  if (item.disenchantValue) out.push({ recipeName: `${t}_disenchant`, type: "DISENCHANT", contextMenuText: "Désenchanter", slots: [{ lootIds: [id], quantity: 1 }] });
+  if (t === "SKIN_RENTAL") {
+    const ids = loot.filter((x) => x.type === "SKIN_RENTAL" && x.count > 0).map((x) => x.lootId);
+    out.push({ recipeName: "SKIN_RENTAL_reroll", type: "REROLL", contextMenuText: "Relancer", slots: [1, 2, 3].map(() => ({ lootIds: ids, quantity: 1 })) });
+  }
+  return out;
+};
+const give = (l: MockLoot, n = 1) => {
+  const cur = loot.find((x) => x.lootId === l.lootId);
+  if (cur) cur.count += n;
+  else loot.push({ ...l, count: n });
+  return { deltaCount: n, playerLoot: { ...(cur ?? l), count: (cur?.count ?? n) } };
+};
+const take = (id: string, n: number) => {
+  const cur = loot.find((x) => x.lootId === id);
+  if (cur) cur.count = Math.max(0, cur.count - n);
+};
+function mockCraft(recipe: string, ids: string[], repeat: number) {
+  const added: unknown[] = [];
+  const redeemed: unknown[] = [];
+  for (let i = 0; i < repeat; i++) {
+    const item = loot.find((x) => x.lootId === ids[0]);
+    if (!item || item.count <= 0) break;
+    if (/_OPEN$/.test(recipe)) {
+      take(item.lootId, 1);
+      if (recipe === "CHEST_generic_OPEN") take("MATERIAL_key", 1);
+      added.push(give(chestRewards[rewardIndex++ % chestRewards.length]));
+      if (item.lootId !== "CHEST_generic") added.push(give({ lootId: "CURRENCY_cosmetic", count: 0 }, 220));
+    } else if (/forge$/.test(recipe)) {
+      take(item.lootId, 3);
+      added.push(give(loot.find((x) => x.lootId === "MATERIAL_key")!));
+    } else if (/disenchant$/.test(recipe)) {
+      take(item.lootId, 1);
+      added.push(give({ lootId: String(item.disenchantLootName), count: 0 }, Number(item.disenchantValue)));
+    } else if (/upgrade$/.test(recipe)) {
+      take(item.lootId, 1);
+      take(String(item.upgradeEssenceName), Number(item.upgradeEssenceValue));
+      redeemed.push({ deltaCount: 1, playerLoot: { ...item, lootId: item.lootId.replace("_RENTAL", ""), type: String(item.type).replace("_RENTAL", ""), count: 1 } });
+    } else if (/reroll$/.test(recipe)) {
+      ids.forEach((id) => take(id, 1));
+      redeemed.push({ deltaCount: 1, playerLoot: { ...skinShard(157001, "Yasuo du Far West", "EPIC", false, false, 0, 0), lootId: "CHAMPION_SKIN_157001", type: "SKIN" } });
+    }
+  }
+  return { added, redeemed, removed: [] };
+}
 const chats: Record<string, { id: string; body: string; fromId: string; timestamp: string; type: string }[]> = {
   "f101@eu1.pvp.net": [
     { id: "1", body: "tu joues ce soir ?", fromId: "f101@eu1.pvp.net", timestamp: new Date(Date.now() - 600000).toISOString(), type: "chat" },
@@ -605,27 +677,12 @@ export function mockRequest(method: string, path: string, body?: unknown): unkno
     state.icon = (b as { profileIconId: number }).profileIconId;
     return null;
   }
-  if (route === "/lol-loot/v1/player-loot") return loot;
-  if (route.startsWith("/lol-loot/v1/recipes/initial-item/")) {
-    const id = decodeURIComponent(route.split("/").pop()!);
-    if (id === "CHEST_generic") return [{ recipeName: "CHEST_generic_OPEN", type: "OPEN", contextMenuText: "Ouvrir", slots: [{ lootIds: ["CHEST_generic"], quantity: 1 }, { lootIds: ["MATERIAL_key"], quantity: 1 }] }];
-    if (id === "MATERIAL_key_fragment") return [{ recipeName: "MATERIAL_key_fragment_forge", type: "FORGE", contextMenuText: "Fabriquer une clé", slots: [{ lootIds: ["MATERIAL_key_fragment"], quantity: 3 }] }];
-    if (id.includes("RENTAL")) {
-      const kind = id.includes("SKIN") ? "SKIN_RENTAL" : "CHAMPION_RENTAL";
-      const cur = kind === "SKIN_RENTAL" ? "CURRENCY_cosmetic" : "CURRENCY_champion";
-      return [
-        { recipeName: `${kind}_upgrade`, type: "UPGRADE", contextMenuText: "", slots: [{ lootIds: [id], quantity: 1 }, { lootIds: [cur], quantity: 810 }] },
-        { recipeName: `${kind}_disenchant`, type: "DISENCHANT", contextMenuText: "", slots: [{ lootIds: [id], quantity: 1 }] },
-      ];
-    }
-    return [];
-  }
-  if (route.startsWith("/lol-loot/v1/recipes/") && method === "POST") {
-    for (const id of body as string[]) {
-      const l = loot.find((x) => x.lootId === id);
-      if (l && !id.startsWith("CURRENCY")) l.count--;
-    }
-    return null;
+  if (route === "/lol-loot/v1/player-loot") return loot.filter((x) => x.count > 0).map((x) => ({ ...x }));
+  if (route.startsWith("/lol-loot/v1/recipes/initial-item/")) return lootRecipes(decodeURIComponent(route.split("/").pop()!));
+  if (route.startsWith("/lol-loot/v1/recipes/") && m === "POST") {
+    const recipe = decodeURIComponent(route.split("/")[4]);
+    const repeat = Number(new URLSearchParams(path.split("?")[1] ?? "").get("repeat")) || 1;
+    return mockCraft(recipe, body as string[], repeat);
   }
   if (route === "/lol-challenges/v1/summary-player-data/local-player")
     return { title: { itemId: 2, name: "Le Grimpeur" }, topChallenges: [{ id: 101 }, { id: 104 }], totalPoints: { level: "PLATINUM", current: 6420, max: 9000 }, categoryProgress: ["IMAGINATION", "EXPERTISE", "VETERANCY", "TEAMWORK", "COLLECTION", "LEGACY"].map((category, i) => ({ category, level: ["GOLD", "PLATINUM", "DIAMOND", "SILVER", "GOLD", "NONE"][i], current: 400 + i * 120, max: 1000 })) };

@@ -186,15 +186,6 @@
 .chip.rar-exalted, .chip.rar-transcendent { color: var(--gold); }
 .chip[class*="rar-"][aria-pressed="true"] { color: #000; }
 .more { align-self: center; }
-.kpi.ess-champion b { color: #58b6ff; }
-.kpi.ess-cosmetic b { color: #ff9d47; }
-.kpi.ess-mythic b { color: #c48bff; }
-.loot-art { height: 220px; background: radial-gradient(closest-side, rgba(var(--accent-rgb), 0.2), transparent), var(--panel); display: grid; place-items: center; flex: none; }
-.loot-art img, .loot-art .art-missing { max-width: 100%; height: 100%; object-fit: contain; }
-.loot-modal .modal-body { display: flex; flex-direction: column; gap: 8px; }
-.loot-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
-.loot-actions .btn { justify-content: space-between; height: 46px; }
-.loot-actions .btn small { font-weight: 500; font-size: 12px; opacity: 0.8; }
 
 @media (max-width: 1240px) {
   .duo { grid-template-columns: 1fr; }
