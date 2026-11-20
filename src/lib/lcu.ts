@@ -1,6 +1,7 @@
 import { getSettings } from "./settings";
 import { invoke } from "@tauri-apps/api/core";
 import { mockRequest } from "./mock";
+import { tierLabel } from "./labels";
 
 /** Vrai quand l'interface tourne dans l'app Tauri (sinon : navigateur, données de démo). */
 export const isDesktop = "__TAURI_INTERNALS__" in window;
@@ -23,9 +24,9 @@ export async function lcu<T>(method: string, path: string, body?: unknown): Prom
 export const QUEUES = [
   { id: 420, label: "Classé Solo/Duo", short: "Solo/Duo", blurb: "Grimpe le classement en solo ou en duo." },
   { id: 440, label: "Classé Flex", short: "Flex", blurb: "Classé en groupe, de 1 à 5 joueurs." },
-  { id: 400, label: "Normal Draft", short: "Draft", blurb: "Sélection avec bannissements, sans enjeu de rang." },
+  { id: 400, label: "Normale (draft)", short: "Draft", blurb: "Sélection avec bannissements, sans enjeu de rang." },
   { id: 450, label: "ARAM", short: "ARAM", blurb: "Une seule voie, champions aléatoires, combats non-stop." },
-  { id: 1700, label: "Arena", short: "Arena", blurb: "Duels en équipes de deux, augments et rounds rapides." },
+  { id: 1700, label: "Arène", short: "Arène", blurb: "Duels en équipes de deux, augments et rounds rapides." },
 ] as const;
 
 // Noms des files fournis par le client (toutes les files, y compris les modes temporaires).
@@ -37,7 +38,7 @@ export function setQueueNames(list: { id: number; name: string; description?: st
 export const queueName = (id: number) =>
   QUEUES.find((q) => q.id === id)?.label ??
   liveQueueNames.get(id) ??
-  ({ 430: "Normal Blind", 490: "Partie rapide", 900: "URF", 0: "Personnalisée", 3140: "Entraînement" } as Record<number, string>)[id] ??
+  ({ 430: "Normale (aveugle)", 490: "Partie rapide", 900: "URF", 0: "Personnalisée", 3140: "Entraînement" } as Record<number, string>)[id] ??
   "Partie";
 
 // Les visuels viennent de CommunityDragon (CDN public des assets du jeu).
@@ -107,22 +108,10 @@ export const skinSplash = (championId: number, skinId: number) =>
   skinId % 1000 === 0 ? baseSplash(championId) : `${CDN}/champion/${championId}/splash-art/centered/skin/${skinId % 1000}`;
 export const profileIcon = (id: number) => `${CDN}/profile-icon/${id}`;
 
-const TIERS: Record<string, string> = {
-  IRON: "Fer",
-  BRONZE: "Bronze",
-  SILVER: "Argent",
-  GOLD: "Or",
-  PLATINUM: "Platine",
-  EMERALD: "Émeraude",
-  DIAMOND: "Diamant",
-  MASTER: "Maître",
-  GRANDMASTER: "Grand Maître",
-  CHALLENGER: "Challenger",
-};
 
 export function rankLabel(tier?: string, division?: string) {
   if (!tier || tier === "NONE" || tier === "") return "Non classé";
-  const name = TIERS[tier] ?? tier;
+  const name = tierLabel(tier);
   return division && division !== "NA" ? `${name} ${division}` : name;
 }
 

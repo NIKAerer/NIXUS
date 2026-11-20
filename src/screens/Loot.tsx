@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { friendlyError } from "../lib/errors";
+import { CURRENCIES, CURRENCY_SHORT, LOOT_MATERIALS, looksLikeCode, lootKind, lootTypeLabel, recipeLabel } from "../lib/labels";
 import { championSquare, gameAsset, lcu, skinSplash } from "../lib/lcu";
 import { Art, CloseButton, Empty, Icon, Modal, Skeleton, cx, int, plural } from "../ui";
 
@@ -31,16 +32,25 @@ const SECTIONS: [string, string, (l: LootItem) => boolean][] = [
   ["skin", "Skins", (l) => l.displayCategories === "SKIN"],
   ["other", "Autres", () => true],
 ];
-const ESSENCE: Record<string, string> = { CURRENCY_champion: "Essence bleue", CURRENCY_cosmetic: "Essence orange", CURRENCY_mythic: "Essence mythique" };
+const ESSENCE: Record<string, string> = { CURRENCY_champion: CURRENCIES.CURRENCY_champion, CURRENCY_cosmetic: CURRENCIES.CURRENCY_cosmetic, CURRENCY_mythic: CURRENCIES.CURRENCY_mythic };
 
 function lootImage(l: LootItem) {
   if (l.displayCategories === "CHAMPION" && l.storeItemId) return championSquare(l.storeItemId);
   if (l.displayCategories === "SKIN" && l.storeItemId) return skinSplash(Math.floor(l.storeItemId / 1000), l.storeItemId);
   return gameAsset(l.tilePath);
 }
-const lootName = (l: LootItem) => l.localizedName || l.itemDesc || l.lootName || l.lootId;
-const isFinal = (r: Recipe) => /disenchant|reroll/i.test(r.recipeName) || r.type === "DISENCHANT";
-const costName = (id: string) => ESSENCE[id] ?? (id === "MATERIAL_key" ? "clé" : id.replace(/_/g, " ").toLowerCase());
+/** Nom lisible d'un objet : le client laisse souvent localizedName vide et met le nom du champion ou du skin dans itemDesc. */
+const readable = (s?: string) => (s && !looksLikeCode(s) ? s : "");
+const lootName = (l: LootItem) =>
+  readable(l.localizedName) || readable(l.itemDesc) || CURRENCIES[l.lootId] || LOOT_MATERIALS[l.lootId] || lootTypeLabel(lootKind(l));
+const isFinal = (r: Recipe) => /disenchant|reroll/i.test(r.recipeName) || r.type === "DISENCHANT" || r.type === "REROLL";
+const costName = (id: string, loot: LootItem[] | null) => {
+  if (CURRENCIES[id]) return CURRENCIES[id].replace(/^Essence/, "essence");
+  if (id === "MATERIAL_key") return "clé";
+  if (id === "MATERIAL_key_fragment") return "fragments de clé";
+  const item = loot?.find((l) => l.lootId === id);
+  return (item ? lootName(item) : lootTypeLabel(lootKind({ lootId: id }))).toLowerCase();
+};
 
 /** Butin Hextech : ouvrir, désenchanter, améliorer. Chaque fabrication part d'un clic, comme dans le client. */
 export function Loot() {
@@ -102,7 +112,7 @@ export function Loot() {
     setNote(null);
     try {
       await lcu("POST", `/lol-loot/v1/recipes/${encodeURIComponent(r.recipeName)}/craft?repeat=1`, ids);
-      setNote({ ok: true, text: `${r.contextMenuText ?? "Fait"} : ${lootName(selected)}.` });
+      setNote({ ok: true, text: `${recipeLabel(r)} : ${lootName(selected)}. C'est fait.` });
       setSelected(null);
       await reload();
     } catch (e) {
@@ -171,7 +181,7 @@ export function Loot() {
                   <b>{lootName(l)}</b>
                   {!!l.disenchantValue && (
                     <small>
-                      {l.disenchantValue} {l.disenchantLootName === "CURRENCY_cosmetic" ? "EO" : "EB"} au désenchantement
+                      {l.disenchantValue} {CURRENCY_SHORT[l.disenchantLootName ?? ""] ?? "EB"} au désenchantement
                     </small>
                   )}
                 </div>
@@ -199,12 +209,12 @@ export function Loot() {
               {recipes?.map((r) => {
                 const cost = r.slots
                   .filter((sl) => !sl.lootIds.includes(selected.lootId))
-                  .map((sl) => `${sl.quantity} ${costName(sl.lootIds[0])}`)
+                  .map((sl) => `${int(sl.quantity)} ${costName(sl.lootIds[0], loot)}`)
                   .join(" + ");
                 const confirm = armed === r.recipeName;
                 return (
-                  <button key={r.recipeName} className={cx("btn", isFinal(r) ? (confirm ? "btn-white" : "btn-quiet") : "btn-red")} disabled={busy || !ready(r)} onClick={() => craft(r)} title={r.description}>
-                    <span>{confirm ? "Confirmer : c'est définitif" : r.contextMenuText || r.recipeName}</span>
+                  <button key={r.recipeName} className={cx("btn", isFinal(r) ? (confirm ? "btn-white" : "btn-quiet") : "btn-red")} disabled={busy || !ready(r)} onClick={() => craft(r)} title={readable(r.description) || undefined}>
+                    <span>{confirm ? "Confirmer : c'est définitif" : recipeLabel(r)}</span>
                     {cost && !confirm && <small>{cost}</small>}
                   </button>
                 );
