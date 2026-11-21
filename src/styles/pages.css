@@ -69,14 +69,15 @@
 
 /* ---------- Journal des sessions ---------- */
 /* Les journées côte à côte (2 à 3 par ligne) : plus de grande bande vide à droite des parties */
-.journal { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 400px), 1fr)); gap: 22px 28px; align-items: start; }
-.journal > .journal-more { grid-column: 1 / -1; justify-self: center; }
-.journal-day > header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 13px; }
-.journal-day > header > b { font: 400 18px/1 var(--display); letter-spacing: 0.05em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* Une journée par ligne, de la plus récente à la plus ancienne : le bilan à gauche, les parties à droite sur toute la largeur. */
+.journal { display: flex; flex-direction: column; gap: 16px; }
+.journal-day { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 18px; align-items: center; }
+.journal-day > header { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; font-size: 13px; }
+.journal-day > header > b { flex-basis: 100%; font: 400 20px/1 var(--display); letter-spacing: 0.05em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .journal-day > header > b::first-letter { text-transform: uppercase; }
-.journal-day > header .winbar { width: 60px; flex: none; }
+.journal-day > header .winbar { width: 50px; flex: none; }
 .journal-lp { margin-left: auto; font-weight: 700; }
-.journal-games { display: grid; grid-template-columns: repeat(auto-fill, minmax(122px, 1fr)); gap: 8px; }
+.journal-games { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
 .journal-game { position: relative; isolation: isolate; height: 84px; border-radius: var(--r-m); overflow: hidden; text-align: left; padding: 9px 11px 9px 14px; display: flex; flex-direction: column; justify-content: flex-end; gap: 1px; transition: transform 0.2s var(--ease), box-shadow 0.2s; }
 .journal-game:hover { transform: translateY(-3px); box-shadow: 0 10px 26px rgba(0, 0, 0, 0.6), 0 0 0 1.5px rgba(255, 255, 255, 0.45); z-index: 1; }
 .journal-game .cover { z-index: -1; }
@@ -88,7 +89,7 @@
 .journal-game .mono em { font-style: normal; color: var(--loss); }
 .journal-game small { font-size: 11px; font-weight: 600; }
 .journal-game .badge-tag { position: absolute; top: 7px; right: 7px; }
-.journal-more { align-self: center; }
+.journal-more { align-self: center; margin-top: 8px; }
 
 /* ---------- Profil ---------- */
 .who { display: flex; align-items: center; gap: 20px; }
@@ -203,6 +204,9 @@
   .posters.six { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .posters.six .poster { aspect-ratio: 16 / 10; }
   .journal-day > header > b { min-width: 0; }
+}
+@media (max-width: 900px) {
+  .journal-day { grid-template-columns: 1fr; gap: 8px; }
 }
 
 .friend-move { min-width: 130px; height: 28px; font-size: 12.5px; }

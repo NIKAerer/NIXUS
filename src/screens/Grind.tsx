@@ -327,8 +327,7 @@ export function Grind() {
 
 /** Journal des sessions : une ligne par jour avec le bilan, les LP du jour et chaque partie en vignette. */
 function Journal({ games, points, name, puuid }: { games: RankedRecord[]; points: LpPoint[]; name: (id: number | null) => string; puuid?: string }) {
-  // 9 jours = 3 lignes pleines quand les journées sont sur 3 colonnes
-  const [shown, setShown] = useState(9);
+  const [shown, setShown] = useState(7);
   const days = useMemo(() => {
     const map = new Map<number, RankedRecord[]>();
     for (const g of games) map.set(dayKey(g.createdAt), [...(map.get(dayKey(g.createdAt)) ?? []), g]);
@@ -394,7 +393,7 @@ function Journal({ games, points, name, puuid }: { games: RankedRecord[]; points
           );
         })}
         {days.length > shown && (
-          <button className="btn btn-quiet btn-s journal-more" onClick={() => setShown((n) => n + 9)}>
+          <button className="btn btn-quiet btn-s journal-more" onClick={() => setShown((n) => n + 7)}>
             Voir plus de jours
           </button>
         )}
