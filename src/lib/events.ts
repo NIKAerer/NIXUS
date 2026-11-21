@@ -35,6 +35,10 @@ export interface Reward {
 }
 
 export interface Track {
+  /** Boucle bonus après le dernier palier (récompenses qui reviennent à chaque tour). */
+  bonus: Reward[];
+  /** Nombre de tours de la boucle bonus déjà faits. */
+  bonusRound?: number;
   level?: number;
   /** Nombre de paliers de la piste ; au-delà, c'est la phase bonus. */
   levels?: number;
@@ -81,7 +85,8 @@ export function normalizeEvent(r: Raw): GameEvent | null {
     type: str(info.eventType),
     start: date(info.startDate),
     end: date(info.progressEndDate ?? info.endDate),
-    icon: icon(info.eventIcon ?? info.navBarIcon ?? info.localizedLogo),
+    // eventIcon est vide sur le client : navBarIcon est la vraie icône.
+    icon: icon(str(info.eventIcon) ?? str(info.navBarIcon) ?? info.localizedLogo),
     tokens: sane(info.currentTokenBalance),
     passOwned: typeof info.isPassPurchased === "boolean" ? info.isPassPurchased : undefined,
     unclaimed: sane(info.unclaimedRewardCount),
@@ -142,17 +147,27 @@ export interface EventsData {
 
 async function loadTrack(ev: GameEvent): Promise<Track | null> {
   const base = `/lol-event-hub/v1/events/${encodeURIComponent(ev.id)}/reward-track`;
-  const [items, progress, unclaimed] = await Promise.all([
+  const [items, progress, unclaimed, bonusItems, xp] = await Promise.all([
     get<Raw[]>(`${base}/items`).catch(() => null),
     get<Raw>(`${base}/progress`).catch(() => null),
     get<Raw>(`${base}/unclaimed-rewards`).catch(() => null),
+    get<Raw[]>(`${base}/bonus-items`).catch(() => null),
+    get<Raw>(`${base}/xp`).catch(() => null),
   ]);
   const level = sane(progress?.level);
   const rewards = (Array.isArray(items) ? items : []).map((r) => normalizeReward(r, level));
   // Pass vide (récompenses de test non traduites) : rien à montrer.
-  if (rewards.length && rewards.every((r) => /placeholder/i.test(r.name))) return null;
+  if (rewards.some((r) => /placeholder|do not translate/i.test(r.name))) return null;
   if (!rewards.length && !progress) return null;
+  // Après le dernier palier, le client fait tourner une boucle bonus (bonus-items) : une seule fois à l'écran.
+  const bonusPhase = xp?.isBonusPhase === true;
+  const bonus = (Array.isArray(bonusItems) ? bonusItems : []).map((r) => {
+    const b = normalizeReward(r);
+    return { ...b, state: b.state === "claimed" ? b.state : "locked" } as Reward;
+  });
   return {
+    bonus,
+    bonusRound: bonusPhase ? sane(xp?.iteration) : undefined,
     level,
     levels: sane(progress?.totalLevels),
     xp: sane(progress?.currentLevelXP),
@@ -169,26 +184,18 @@ export async function loadEvents(eventId?: string): Promise<EventsData> {
     snapshot("events-failed", [], { error: String((e as Error)?.message ?? e) }).catch(() => {});
     return null;
   });
-  const all = rank((Array.isArray(rawEvents) ? rawEvents : []).map(normalizeEvent).filter((e): e is GameEvent => !!e));
+  // Le client n'affiche que les events de navigation-button-data : on fait pareil quand la liste existe.
+  const nav = await get<Raw[]>("/lol-event-hub/v1/navigation-button-data").catch(() => null);
+  const shown = new Set((Array.isArray(nav) ? nav : []).map((n) => str(n.activeEventId)).filter(Boolean));
+  const navIcon = new Map((Array.isArray(nav) ? nav : []).map((n) => [str(n.activeEventId), icon(n.iconPath)]));
+  const all = rank((Array.isArray(rawEvents) ? rawEvents : []).map(normalizeEvent).filter((e): e is GameEvent => !!e && (!shown.size || shown.has(e.id)))).map((e) => ({ ...e, icon: e.icon ?? navIcon.get(e.id) }));
 
-  // On garde les events qui ont vraiment une piste ; l'event demandé passe en premier.
-  const events: GameEvent[] = [];
-  let current: GameEvent | null = null;
-  let track: Track | null = null;
-  const wanted = all.find((e) => e.id === eventId);
-  for (const ev of wanted ? [wanted, ...all.filter((e) => e !== wanted)] : all) {
-    if (current) {
-      events.push(ev);
-      continue;
-    }
-    const t = await loadTrack(ev).catch(() => null);
-    if (t) {
-      current = ev;
-      track = t;
-      events.push(ev);
-    }
-  }
-  events.sort((a, b) => all.indexOf(a) - all.indexOf(b));
+  // On ne garde que les events qui ont une vraie piste (pas de pass de test « Placeholder ») ; l'event demandé d'abord.
+  const tracks = await Promise.all(all.map((ev) => loadTrack(ev).catch(() => null)));
+  const events = all.filter((_, i) => tracks[i]);
+  const pick = Math.max(0, events.findIndex((e) => e.id === eventId));
+  const current = events[pick] ?? null;
+  const track = current ? tracks[all.indexOf(current)] : null;
 
   const rawMissions = await get<Raw[]>("/lol-missions/v1/missions").catch(() => null);
   const now = Date.now();
@@ -237,13 +244,14 @@ function mockEvents(eventId?: string): EventsData {
     { id: "demo-etoile", name: "En route vers la gloire", end: new Date(now + 12 * 86400_000).toISOString() },
   ];
   if (eventId === "demo-etoile")
-    return { events, current: events[1], track: { level: 1, levels: 10, rewards: ["Icône", "Émote", "Coffre"].map((name, i) => ({ name, threshold: i + 1, state: i ? "locked" : "claimed" })), unclaimed: 0 }, missions: [] };
+    return { events, current: events[1], track: { bonus: [], level: 1, levels: 10, rewards: ["Icône", "Émote", "Coffre"].map((name, i) => ({ name, threshold: i + 1, state: i ? "locked" : "claimed" })), unclaimed: 0 }, missions: [] };
   const names = ["Icône de l'event", "Émote « Tranquille »", "Coffre Hextech", "Orbe de l'event", "Bordure de profil", "250 essences orange", "Fragment de skin", "Balise de l'event", "Coffre Hextech", "Titre « Gardien des neiges »", "Skin prestige (fragment)", "Icône animée"];
   const level = 7;
   return {
     events,
     current: events[0],
     track: {
+      bonus: ["750 essences bleues", "750 essences bleues", "25 essences orange"].map((name, i) => ({ name, threshold: 13 + i, state: "locked" })),
       level,
       levels: 12,
       xp: 420,

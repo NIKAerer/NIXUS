@@ -72,3 +72,4 @@
 .ev-mission.done { opacity: 0.7; }
 .ev-mission.done .ev-bar > i { background: var(--win); box-shadow: none; }
 .ev-hero .seg { align-self: flex-start; margin-top: 4px; }
+.ev-reward.bonus { opacity: 0.85; }

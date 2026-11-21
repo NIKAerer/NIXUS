@@ -5,6 +5,15 @@ import { Art, Empty, Icon, RefreshButton, Seg, Skeleton, cx, int, plural } from 
 
 const daysLeft = (iso?: string) => (iso ? Math.max(0, Math.ceil((new Date(iso).getTime() - Date.now()) / 86400_000)) : undefined);
 
+/** Fait défiler la piste jusqu'au premier palier pas encore obtenu (une fois). */
+function scrollToCurrent(el: HTMLElement) {
+  if (el.dataset.scrolled) return;
+  el.dataset.scrolled = "1";
+  const next = el.querySelector<HTMLElement>(".ev-reward.ready, .ev-reward.locked");
+  if (next) el.scrollLeft = Math.max(0, next.offsetLeft - el.offsetLeft - 160);
+  else el.scrollLeft = el.scrollWidth;
+}
+
 /** Events : le pass en cours, sa piste de récompenses (avec « Tout récupérer ») et les missions. */
 export function Events() {
   const [data, setData] = useState<EventsData | null>(null);
@@ -97,13 +106,35 @@ export function Events() {
           <h2 className="sec-head">
             Piste du pass<span>{plural(track.rewards.filter((r) => r.state !== "locked").length, "récompense débloquée", "récompenses débloquées")} sur {track.rewards.length}</span>
           </h2>
-          <ol className="ev-track">
+          <ol className="ev-track" ref={(el) => {
+              if (el) scrollToCurrent(el);
+            }}>
             {track.rewards.map((r, i) => (
               <li key={i} className={cx("ev-reward", r.state)}>
                 <span className="ev-reward-lvl">{r.threshold ?? i + 1}</span>
                 <span className="ev-reward-art">{r.icon ? <Art src={r.icon} /> : <Icon name={r.state === "locked" ? "loot" : "star"} size={26} />}</span>
                 <b>{r.name}</b>
                 <small>{r.state === "claimed" ? "Récupérée" : r.state === "ready" ? "À récupérer" : "Verrouillée"}</small>
+              </li>
+            ))}
+          </ol>
+        </section>
+      )}
+
+      {track && track.bonus.length > 0 && (
+        <section>
+          <h2 className="sec-head">
+            Boucle bonus
+            <span>
+              après le palier {track.levels ?? track.rewards.length}, ces récompenses reviennent à chaque tour{track.bonusRound ? ` · tour ${track.bonusRound}` : ""}
+            </span>
+          </h2>
+          <ol className="ev-track">
+            {track.bonus.map((r, i) => (
+              <li key={i} className={cx("ev-reward", "bonus", r.state)}>
+                <span className="ev-reward-lvl">+{i + 1}</span>
+                <span className="ev-reward-art">{r.icon ? <Art src={r.icon} /> : <Icon name="loot" size={26} />}</span>
+                <b>{r.name}</b>
               </li>
             ))}
           </ol>
