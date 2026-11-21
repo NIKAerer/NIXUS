@@ -1,11 +1,11 @@
 {
-  "version": "1.0.17",
-  "notes": "Boutique, Events et pré-choix : corrigés avec les vraies réponses du client",
-  "pub_date": "2026-11-21T02:48:24Z",
+  "version": "1.0.18",
+  "notes": "Notes de patch : mise en page rangée (sommaire, icônes à la bonne taille) et lecture fidèle à la page Riot · Finalisation : skins, sorts et runes ancrés en bas du centre",
+  "pub_date": "2026-11-21T03:40:45Z",
   "platforms": {
     "windows-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUU3M1c0VqSWpFM2tuVG9HZW02RGE2YjB3bkZvQWtDZ1pxTUdDMk5GOVB5SzFzTHhNTjdXRTFFNXZOSWRXTFlYOE15RERNSkh4a2MwZTBwTEllTkRoYVhqWmV6Q1B4N0FnPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk1MjI5MzA0CWZpbGU6TklYVVNfMS4wLjE3X3g2NC1zZXR1cC5leGUJdmVyc2lvbjoxLjAuMTcKZldlNWYxR3ZtRUk5T294NWE5bzd1b1haRzdXbFhJT0VCQXREcklzTUtPS3JabTFUYmZJWmhyWlJTKzBYTlAvZmVhSVBGUTJiajFrWW5mTmJJa2x3Qmc9PQo=",
-      "url": "https://github.com/NIKAerer/NIXUS/releases/download/v1.0.17/NIXUS_1.0.17_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUU3M1c0VqSWpFM3NHTnlCVVVmYzZlZ2F2akE1TFJZYVlDSDFJMWtZdERlS1l4RHM4dWYzSDVtRzlVVjZ5YlZyakh0UFRkRDZrbEFma2VMSC9YZ1pPVHI0RmV5Z1RmRndrPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk1MjMyNDQ1CWZpbGU6TklYVVNfMS4wLjE4X3g2NC1zZXR1cC5leGUJdmVyc2lvbjoxLjAuMTgKZDFqSlJDaElvb0ZWNmxBQ1lPWXBPTzY5WTNLcEl2U0RGaHVSWHJ5U2ptOWVjQk4vb3p2Q1B2M09ESGRrNXd2MzhNYmY1OEVIYS8xVU1HSTB2MklzRFE9PQo=",
+      "url": "https://github.com/NIKAerer/NIXUS/releases/download/v1.0.18/NIXUS_1.0.18_x64-setup.exe"
     }
   }
 }
