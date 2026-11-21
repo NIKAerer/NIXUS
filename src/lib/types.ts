@@ -51,7 +51,8 @@ export interface Friend {
 
 export interface MatchParticipant {
   championId: number;
-  stats: { kills: number; deaths: number; assists: number; win: boolean };
+  /** Le client (LCU) et l'API Riot donnent aussi les multi-kills. */
+  stats: { kills: number; deaths: number; assists: number; win: boolean; pentaKills?: number; quadraKills?: number; largestMultiKill?: number };
 }
 
 export interface Match {

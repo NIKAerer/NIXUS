@@ -227,7 +227,8 @@ const games = [
   gameCreation: now() - (hoursAgo as number) * H,
   gameDuration: 1700 + i * 90,
   queueId: [420, 450, 420, 1700, 400, 420, 450, 440][i],
-  participants: [{ championId: championId as number, stats: { kills, deaths, assists, win } as never }],
+  // La 1re partie de la démo a un pentakill, pour voir la tuile mise en avant.
+  participants: [{ championId: championId as number, stats: { kills, deaths, assists, win, pentaKills: i === 0 ? 1 : 0, largestMultiKill: i === 0 ? 5 : 1 } as never }],
 }));
 
 // Classes des champions (champion-summary.json les donne dans "roles").
