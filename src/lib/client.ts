@@ -87,10 +87,12 @@ let manualUntil = 0;
 const uxRunning = () => (isDesktop ? invoke<boolean>("ux_running").catch(() => true) : Promise.resolve(true));
 
 /** Bouton « Afficher » : on rouvre le client et on le laisse ouvert 10 minutes (boutique, réglages…). */
-export function showLolWindow() {
+export async function showLolWindow() {
   manualUntil = Date.now() + 10 * 60_000;
   uxClosed = false;
-  return lcu("POST", "/riotclient/launch-ux").catch(() => {});
+  await lcu("POST", "/riotclient/launch-ux").catch(() => {});
+  // Fenêtre déjà ouverte mais derrière ou réduite : on la ramène devant.
+  await lcu("POST", "/riotclient/ux-show").catch(() => {});
 }
 
 /* Fermeture automatique : au repos (aucune file) après 8 s, et pendant la partie après 10 s, comme l'option

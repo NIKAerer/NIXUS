@@ -16,9 +16,9 @@ function BuyInClient({ className }: { className?: string }) {
         showLolWindow();
         setOpened(true);
       }}
-      title="Ouvre le client officiel de League of Legends : l'achat se fait là-bas"
+      title="Ramène le client officiel devant. Le client ne permet pas d'ouvrir directement sa Boutique : un clic sur l'onglet Boutique suffit ensuite."
     >
-      <Icon name="shop" size={17} /> {opened ? "Client ouvert : va dans la Boutique" : "Acheter dans le client"}
+      <Icon name="shop" size={17} /> {opened ? "Client devant : clique sur la Boutique" : "Ouvrir le client pour acheter"}
     </button>
   );
 }
