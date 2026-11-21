@@ -135,25 +135,14 @@ export function useDraft() {
 
   const stage: Stage =
     phase === "PLANNING" ? "planning" : phase === "FINALIZATION" ? "final" : isBan ? "ban" : myAction ? "pick" : me?.championId ? "final" : actions.some((a) => a.type === "ban" && a.isInProgress) ? "ban" : "waiting";
-  const stepIndex = stage === "waiting" ? (actions.some((a) => a.type === "pick" && a.completed) ? 2 : 1) : STEPS.findIndex((s) => s.id === stage);
+  const bansDone = actions.some((a) => a.type === "ban") && actions.every((a) => a.type !== "ban" || a.completed);
+  const stepIndex = stage === "waiting" ? (bansDone || actions.some((a) => a.type === "pick" && a.completed) ? 2 : 1) : STEPS.findIndex((s) => s.id === stage);
 
   // Changer de phase remet la sélection à zéro : en ban, on ne part pas du champion qu'on veut jouer.
   useEffect(() => {
     setSelected(0);
     setConfirmBan(false);
   }, [myAction?.id]);
-
-  // Ton tour de pick arrive : le champion déclaré à l'avance (pré-choix) est survolé tout de suite, prêt à verrouiller.
-  const preHovered = useRef(0);
-  useEffect(() => {
-    if (myAction?.type !== "pick" || myAction.championId || preHovered.current === myAction.id) return;
-    const intent = me?.championPickIntent || 0;
-    if (!intent) return;
-    preHovered.current = myAction.id;
-    lcu("PATCH", `/lol-champ-select/v1/session/actions/${myAction.id}`, { championId: intent }).catch((e) =>
-      snapshot("cs-prehover-error", [], { action: myAction, championId: intent, error: String((e as Error)?.message ?? e) }),
-    );
-  }, [myAction?.id, myAction?.type, myAction?.championId, me?.championPickIntent]);
 
   useEffect(() => {
     const path = isBan ? "/lol-champ-select/v1/bannable-champion-ids" : "/lol-champ-select/v1/pickable-champion-ids";
@@ -283,9 +272,9 @@ export function useDraft() {
   const hover = async (id: number) => {
     setSelected(id);
     setConfirmBan(false);
-    // Pas encore ton tour (intentions, ou bans terminés en attendant ton pick) : on déclare le choix sur ton
-    // action de pick, comme le client officiel. Sinon on survole l'action en cours.
-    const target = myAction ?? myPickAction;
+    // À ton tour (ban ou pick), on survole l'action en cours. Le reste du temps (intentions, après ton ban, pendant que
+    // les autres choisissent), on pré-sélectionne sur ton action de pick, comme le survol du client.
+    const target = (stage === "planning" ? undefined : myAction) ?? myPickAction;
     if (!target) return;
     await lcu("PATCH", `/lol-champ-select/v1/session/actions/${target.id}`, { championId: id }).catch((e) => {
       fail(e);

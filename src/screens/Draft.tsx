@@ -217,7 +217,7 @@ export function Draft() {
             <span className="grow" />
             {stage === "planning" && <span className="note">Tes alliés voient ton intention. Les bans commencent dans {seconds} s.</span>}
             {isBan && <span className="note">Les bans sont révélés une fois que tout le monde a banni.</span>}
-            {stage === "waiting" && !locked && !aram && <span className="note">Choisis ton champion à l'avance : il sera survolé dès que ce sera ton tour.</span>}
+            {!aram && !myAction && !locked && stage !== "planning" && stage !== "final" && <span className="note">Pré-sélectionne ton champion : tes alliés le voient, tu le verrouilles à ton tour.</span>}
             {aram && <span className="note">Prends un champion du banc à droite, ou échange avec un allié.</span>}
             {shownId > 0 && !locked && !isBan && !aram && (
               <button className="btn btn-quiet" onClick={() => d.toggleFavorite(shownId)} aria-pressed={d.favorites.includes(shownId)}>
