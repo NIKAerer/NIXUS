@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { friendlyError } from "../lib/errors";
 import { claimAll, loadEvents, type EventsData } from "../lib/events";
-import { Art, Empty, Icon, RefreshButton, Skeleton, cx, int, plural } from "../ui";
+import { Art, Empty, Icon, RefreshButton, Seg, Skeleton, cx, int, plural } from "../ui";
 
 const daysLeft = (iso?: string) => (iso ? Math.max(0, Math.ceil((new Date(iso).getTime() - Date.now()) / 86400_000)) : undefined);
 
@@ -11,7 +11,7 @@ export function Events() {
   const [claiming, setClaiming] = useState(false);
   const [note, setNote] = useState<string | null>(null);
 
-  const load = () => loadEvents().then(setData, () => setData({ events: [], track: null, missions: [] }));
+  const load = (id?: string) => loadEvents(id ?? data?.current?.id).then(setData, () => setData({ events: [], current: null, track: null, missions: [] }));
   useEffect(() => void load(), []);
 
   if (!data) {
@@ -23,7 +23,7 @@ export function Events() {
     );
   }
 
-  const ev = data.events[0];
+  const ev = data.current;
   const track = data.track;
   const left = daysLeft(ev?.end);
 
@@ -53,7 +53,10 @@ export function Events() {
           <div className="ev-hero-row">
             {track?.level !== undefined && (
               <div className="ev-level">
-                <b>Niveau {track.level}</b>
+                <b>
+                  Niveau {track.level}
+                  {track.levels && track.level > track.levels ? " · phase bonus" : ""}
+                </b>
                 {track.xp !== undefined && track.xpNeeded ? (
                   <>
                     <i className="ev-bar">
@@ -79,12 +82,13 @@ export function Events() {
             )}
           </div>
           {note && <p className="ev-note">{note}</p>}
+          {data.events.length > 1 && <Seg label="Event" value={ev.id} options={data.events.map((e) => [e.id, e.name] as const)} onChange={(id) => load(id)} />}
         </section>
       ) : (
         <Empty title="Aucun event en cours">
           NIXUS n'a pas trouvé d'event actif dans le client. S'il y en a un, il apparaîtra ici dès que le client l'aura chargé.
           <br />
-          <RefreshButton label="Actualiser" onRefresh={load} />
+          <RefreshButton label="Actualiser" onRefresh={() => load()} />
         </Empty>
       )}
 
