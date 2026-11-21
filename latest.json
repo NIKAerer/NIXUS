@@ -1,11 +1,11 @@
 {
-  "version": "1.0.15",
-  "notes": "Corrections et améliorations.",
-  "pub_date": "2026-11-20T23:31:28Z",
+  "version": "1.0.16",
+  "notes": "Pré-sélection du champion après les bans",
+  "pub_date": "2026-11-21T02:13:56Z",
   "platforms": {
     "windows-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUU3M1c0VqSWpFM2krR2NzZ3ltUm44cVNEOGJjbWR2d05sczRNMnhMRk5raTdaK2lEdFVGTS9ObnRERDVJb2RtNWVqS3RON0RtMGlrWmo4c0s1VjQxaEt1RWJtNW9XS1FBPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk1MjE3NDg4CWZpbGU6TklYVVNfMS4wLjE1X3g2NC1zZXR1cC5leGUJdmVyc2lvbjoxLjAuMTUKYXVCdG1rMXFWWkFPM3hRajhFZG1ETGpqK0o4eWpFdU9ZbkljVFZFRUxXRDhvMDVZSUNGUW5kbkpHeE5YWkJ6MmVzU1FYQVFtOVV6a3JMN0ZXU01aQWc9PQo=",
-      "url": "https://github.com/NIKAerer/NIXUS/releases/download/v1.0.15/NIXUS_1.0.15_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUU3M1c0VqSWpFM3V2S1ZMV0l1U0JTdW9UNERxdlJCalZ3dk1XME5BYmFGMUtKTkw4ZTRIbFhLeisxVC84VVZ4cTk1VXp1RGVVV29iZE85b3MxSHNURU9iOXQwZFZ5MmdVPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk1MjI3MjM2CWZpbGU6TklYVVNfMS4wLjE2X3g2NC1zZXR1cC5leGUJdmVyc2lvbjoxLjAuMTYKanFJTEF5VmNOalV3aHZFUlFkeHdWRkRFOGx6YzBRMlFrNDBRc3JsV0RqWm14c3F3MVRzb1lvOTdSZnVuT1dubCtuNi9pcEJ0aTNuOGNQUDNqZWloREE9PQo=",
+      "url": "https://github.com/NIKAerer/NIXUS/releases/download/v1.0.16/NIXUS_1.0.16_x64-setup.exe"
     }
   }
 }
