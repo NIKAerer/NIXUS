@@ -21,7 +21,9 @@ import {
   isShard,
   kindLabel,
   kindOf,
+  GENERIC_CHEST,
   lootArt,
+  lootIcon,
   lootName,
   lootSplash,
   missingChampion,
@@ -177,7 +179,7 @@ export function Loot() {
         <div className="wallet" aria-label="Tes essences et tes clés">
           {ESSENCES.map((e) => (
             <div key={e.id} className={cx("coin", `tone-${e.tone}`)} title={e.name}>
-              <Glyph kind="essence" tone={e.tone} />
+              <LootIcon id={e.id} small />
               <span>
                 <b>
                   <CountUp text={num(owned.get(e.id) ?? 0)} />
@@ -187,7 +189,7 @@ export function Loot() {
             </div>
           ))}
           <div className="coin tone-key" title="Clés Hextech">
-            <Glyph kind="key" />
+            <LootIcon id={KEY} small />
             <span>
               <b>{keys}</b>
               <small>{keys > 1 ? "Clés" : "Clé"}</small>
@@ -308,7 +310,7 @@ export function Loot() {
                 ) : (
                   <div className="open-card locked">
                     <div className="open-art">
-                      <Glyph kind="chest" />
+                      <LootIcon id="CHEST_generic" />
                     </div>
                     <b>Aucun coffre</b>
                     <small>Les coffres arrivent avec le pass et les événements.</small>
@@ -317,7 +319,7 @@ export function Loot() {
 
                 {extras.length > 0 && (
                   <button className="atelier-row" onClick={() => setBulkOpen(true)}>
-                    <Glyph kind="essence" tone="blue" />
+                    <LootIcon id="CURRENCY_champion" />
                     <span className="atelier-row-txt">
                       <b>Faire le ménage</b>
                       <small>
@@ -448,6 +450,10 @@ function LootImage({ item, splash }: { item: LootItem; splash?: boolean }) {
   const [state, setState] = useState<{ src: string; url: string; status: "loading" | "ready" | "error" }>({ src, url: src, status: "loading" });
   const cur = state.src === src ? state : { src, url: src, status: "loading" as const };
   if (cur !== state) setState(cur);
+  const next = (c: typeof cur) => {
+    const alt = fallbackUrl(item, c.url);
+    return alt ? { ...c, url: alt } : { ...c, status: "error" as const };
+  };
   if (!src || cur.status === "error") return <Glyph kind={glyphOf(item)} tone={isCurrency(item) ? essenceTone(item.lootId) : undefined} />;
   return (
     <img
@@ -459,7 +465,35 @@ function LootImage({ item, splash }: { item: LootItem; splash?: boolean }) {
       draggable={false}
       onLoad={() => setState({ ...cur, status: "ready" })}
       // Le visuel d'un skin manque parfois sur le CDN : on retombe sur celui du champion, puis sur le pictogramme.
-      onError={() => setState(/\/skin\/\d+$/.test(cur.url) ? { ...cur, url: cur.url.replace(/\/skin\/\d+$/, "") } : { ...cur, status: "error" })}
+      onError={() => setState(next(cur))}
+    />
+  );
+}
+
+/** Image de repli quand un visuel manque sur le CDN : le champion pour un skin, le coffre Hextech pour un coffre inconnu. */
+function fallbackUrl(item: LootItem, url: string): string {
+  if (/\/skin\/\d+$/.test(url)) return url.replace(/\/skin\/\d+$/, "");
+  if (kindOf(item) === "chest" && item.lootId !== KEY && item.lootId !== KEY_FRAGMENT && url !== GENERIC_CHEST) return GENERIC_CHEST;
+  return "";
+}
+
+/** Vraie icône du client pour une monnaie, une clé ou un coffre ; pictogramme dessiné si elle ne charge pas (hors ligne). */
+function LootIcon({ id, small }: { id: string; small?: boolean }) {
+  const first = lootIcon(id, small);
+  const [state, setState] = useState({ first, url: first, failed: false });
+  const cur = state.first === first ? state : { first, url: first, failed: false };
+  const fake: LootItem = { lootId: id, count: 0 };
+  if (cur.failed) return <Glyph kind={glyphOf(fake)} tone={isCurrency(fake) ? essenceTone(id) : undefined} />;
+  return (
+    <img
+      className="loot-ic"
+      src={cur.url}
+      alt=""
+      draggable={false}
+      onError={() => {
+        const alt = fallbackUrl(fake, cur.url);
+        setState(alt ? { ...cur, url: alt } : { ...cur, failed: true });
+      }}
     />
   );
 }
@@ -502,12 +536,18 @@ function LootCard({ item, owned, selected, onOpen }: { item: LootItem; owned: Ma
     </button>
   );
 }
-/** Petite goutte à la couleur de l'essence, devant un montant. */
-const Drop = ({ id }: { id?: string }) => (
-  <svg className={cx("drop", `tone-${essenceTone(id)}`)} viewBox="0 0 12 14" aria-label={`essence ${ESSENCES.find((e) => e.id === id)?.short ?? "bleue"}`}>
-    <path d="M6 .5C8 3.2 11 5.6 11 8.6a5 5 0 0 1-10 0C1 5.6 4 3.2 6 .5Z" />
-  </svg>
-);
+/** Petite icône de l'essence du client devant un montant ; goutte dessinée à sa couleur si l'image ne charge pas. */
+function Drop({ id }: { id?: string }) {
+  const eid = id ?? "CURRENCY_champion";
+  const label = `essence ${ESSENCES.find((e) => e.id === eid)?.short ?? "bleue"}`;
+  const [failed, setFailed] = useState(false);
+  if (!failed) return <img className={cx("drop-ic", `tone-${essenceTone(eid)}`)} src={lootIcon(eid, true)} alt={label} draggable={false} onError={() => setFailed(true)} />;
+  return (
+    <svg className={cx("drop", `tone-${essenceTone(eid)}`)} viewBox="0 0 12 14" aria-label={label}>
+      <path d="M6 .5C8 3.2 11 5.6 11 8.6a5 5 0 0 1-10 0C1 5.6 4 3.2 6 .5Z" />
+    </svg>
+  );
+}
 
 /* ---------- Fiche d'un objet ---------- */
 

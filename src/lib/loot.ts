@@ -145,7 +145,26 @@ export const missingChampion = (l: LootItem) => kindOf(l) === "skin" && l.parent
 /* ---------- Images ---------- */
 
 const CDN = "https://cdn.communitydragon.org/latest";
-const LOOT_ICONS = "https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-loot/global/default/assets/loot_item_icons";
+const RAW = "https://raw.communitydragon.org/latest/plugins";
+const LOOT_ICONS = `${RAW}/rcp-fe-lol-loot/global/default/assets/loot_item_icons`;
+/** Petites icônes (26 px) du bandeau du butin du client : nettes même affichées en tout petit. */
+const TRAY_ICONS = `${RAW}/rcp-fe-lol-loot/global/default/assets/tray_icons`;
+/** Les rares icônes du client qui ne sont pas rangées sous leur identifiant dans loot_item_icons. */
+const ICON_EXCEPTIONS: Record<string, string> = {
+  CURRENCY_mythic: `${RAW}/rcp-fe-lol-static-assets/global/default/images/currency/tokens/mythic_essence.png`,
+};
+const TRAY = new Set(["CURRENCY_champion", "CURRENCY_cosmetic", "CURRENCY_mythic", "MATERIAL_key"]);
+/** Coffre Hextech du client : sert de visuel quand un coffre d'événement n'a pas d'image connue. */
+export const GENERIC_CHEST = `${LOOT_ICONS}/chest_generic.png`;
+
+/**
+ * Vraie icône du client pour une monnaie, une clé ou un coffre (essence bleue, orange, mythique,
+ * clé, fragment de clé, coffre Hextech…). `small` prend la version faite pour les petites tailles.
+ */
+export function lootIcon(id: string, small = false): string {
+  if (small && TRAY.has(id)) return `${TRAY_ICONS}/${id.toLowerCase()}.png`;
+  return ICON_EXCEPTIONS[id] ?? `${LOOT_ICONS}/${id.toLowerCase()}.png`;
+}
 
 /** Visuel vertical (écran de chargement) pour les champions et les skins, icône pour le reste. */
 export function lootArt(l: LootItem): string {
@@ -157,12 +176,14 @@ export function lootArt(l: LootItem): string {
     return id % 1000 ? `${CDN}/champion/${champ}/portrait/skin/${id % 1000}` : `${CDN}/champion/${champ}/portrait`;
   }
   if (/ICON/i.test(l.type ?? "") && id) return `${CDN}/profile-icon/${id}`;
+  // Monnaies et clés : icônes connues, plus sûres que le tilePath (parfois vide ou périmé).
+  if (isCurrency(l) || l.lootId === KEY || l.lootId === KEY_FRAGMENT) return lootIcon(l.lootId);
   if (l.tilePath) {
     if (/^\/fe\/lol-loot\//i.test(l.tilePath)) return l.tilePath.replace(/^\/fe\/lol-loot/i, "https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-loot/global/default").toLowerCase();
     if (/^\/lol-game-data\//i.test(l.tilePath)) return gameAsset(l.tilePath);
     if (/^https?:/i.test(l.tilePath)) return l.tilePath;
   }
-  if (k === "chest" || isCurrency(l)) return `${LOOT_ICONS}/${l.lootId.toLowerCase()}.png`;
+  if (k === "chest" || isCurrency(l)) return lootIcon(l.lootId);
   return "";
 }
 
