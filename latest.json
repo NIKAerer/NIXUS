@@ -1,11 +1,11 @@
 {
-  "version": "1.0.19",
-  "notes": "Corrections et améliorations.",
-  "pub_date": "2026-11-21T03:44:01Z",
+  "version": "1.0.20",
+  "notes": "Events : events du client seulement, boucle bonus à part ; Boutique : ramène le client devant",
+  "pub_date": "2026-11-21T03:54:22Z",
   "platforms": {
     "windows-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUU3M1c0VqSWpFM3NGMGpjMnpsSklLQjgrRnRtbHlmOWg3VWdVL0xVSm5YelFBUjBHMzQyci9uS0NXMC9LQUE4WHlUa25NUmhjZE9UYm1vZ0svMnhtU283N1FaMTNMMWdzPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk1MjMyNjQxCWZpbGU6TklYVVNfMS4wLjE5X3g2NC1zZXR1cC5leGUJdmVyc2lvbjoxLjAuMTkKSVlwQkdFQkpXbit4d0JORjdla0Y5dDAyN2ZhTmdDZ0x3b2UwSFczY3d1c0dqbWVCRTZabkRLc1ZCZlZHTlpyUVdQN3djUGcxdU9CTW5FZWVlK1dvREE9PQo=",
-      "url": "https://github.com/NIKAerer/NIXUS/releases/download/v1.0.19/NIXUS_1.0.19_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUU3M1c0VqSWpFM2g5b0pRZmhjOWV6ek8ydUpyLzhCY3pWWGZ4THB1MFZPbXczWGRJUExKeFpiSHpMT3NLcmhGcjd6QkU1SHlML016V3ZxdVpSaUxYWVN4ZUZYYm1HNFE4PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk1MjMzMjYyCWZpbGU6TklYVVNfMS4wLjIwX3g2NC1zZXR1cC5leGUJdmVyc2lvbjoxLjAuMjAKanZ6NkExQU9xUE1qT0FJRkhObkYvdUxkUERqaXl5SzI3cER3NHlSVHNEUzVwV0c3WU9ISXFGU3BsSEo4NWE0eTBvdnhVc0xQRUtLeXN5U0ovdUs3QWc9PQo=",
+      "url": "https://github.com/NIKAerer/NIXUS/releases/download/v1.0.20/NIXUS_1.0.20_x64-setup.exe"
     }
   }
 }
