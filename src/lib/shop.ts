@@ -32,18 +32,47 @@ function price(list: unknown, currency: string) {
   return num(p?.cost) ?? num(p?.price);
 }
 
-/** Une ligne de /lol-catalog/v1/items/… ou de /lol-store/v1/catalog, ramenée à une forme commune. */
+const live = (sale: Raw | undefined) => {
+  if (!sale) return false;
+  const now = Date.now();
+  const start = Date.parse(String(sale.startDate ?? ""));
+  const end = Date.parse(String(sale.endDate ?? ""));
+  return (Number.isNaN(start) || start <= now) && (Number.isNaN(end) || end > now);
+};
+
+/**
+ * Une ligne de /lol-catalog/v1/items/… ou de /lol-store/v1/catalog, ramenée à une forme commune.
+ * Vérifié sur le client (11/2026) :
+ * - lol-catalog : `sale` de l'objet est toujours null ; la solde est dans `prices[i].sale` = {cost, discount, startDate, endDate}.
+ * - lol-store : `sale` = {startDate, endDate, prices: [{cost, currency, discount}]}, nom dans `localizations`.
+ * - Les chromas (subInventoryType RECOLOR) sont mêlés aux skins.
+ */
 export function normalizeItem(r: Raw): ShopItem | null {
   const itemId = num(r.itemId);
   const kind = str(r.inventoryType);
   if (itemId === undefined || (kind !== "CHAMPION" && kind !== "CHAMPION_SKIN")) return null;
-  const prices = r.prices ?? (r as Raw).price;
-  const sale = (r.sale ?? (Array.isArray(r.sales) ? (r.sales as Raw[])[0] : undefined)) as Raw | undefined;
-  const salePrices = sale?.prices;
-  const saleRp = price(salePrices, "RP") ?? num(sale?.cost);
-  const rp = price(prices, "RP");
-  const discountRaw = num((Array.isArray(salePrices) ? (salePrices as Raw[]).find((x) => x.currency === "RP") : undefined)?.discount) ?? num(sale?.discount);
-  const discount = discountRaw ?? (saleRp !== undefined && rp ? 1 - saleRp / rp : undefined);
+  if (r.subInventoryType === "RECOLOR" || r.active === false) return null;
+  const prices = (Array.isArray(r.prices) ? r.prices : []) as Raw[];
+  const rpEntry = prices.find((p) => p.currency === "RP");
+  const rp = num(rpEntry?.cost);
+  // Solde : d'abord sur le prix RP (lol-catalog), sinon sur l'objet (lol-store).
+  let saleRp: number | undefined;
+  let discount: number | undefined;
+  let saleEnd: string | undefined;
+  const priceSale = rpEntry?.sale as Raw | undefined;
+  const itemSale = r.sale as Raw | undefined;
+  if (priceSale && live(priceSale)) {
+    saleRp = num(priceSale.cost);
+    discount = num(priceSale.discount);
+    saleEnd = str(priceSale.endDate);
+  } else if (itemSale && live(itemSale)) {
+    const p = (Array.isArray(itemSale.prices) ? (itemSale.prices as Raw[]) : []).find((x) => x.currency === "RP");
+    saleRp = num(p?.cost);
+    discount = num(p?.discount) || undefined;
+    saleEnd = str(itemSale.endDate);
+  }
+  const onSale = saleRp !== undefined && rp !== undefined && saleRp < rp;
+  if (onSale && !discount) discount = 1 - saleRp! / rp!;
   const loc = r.localizations as Record<string, Raw> | undefined;
   const name = str(r.name) ?? str(loc?.fr_FR?.name) ?? str(Object.values(loc ?? {})[0]?.name) ?? "";
   return {
@@ -51,12 +80,12 @@ export function normalizeItem(r: Raw): ShopItem | null {
     kind,
     name,
     championId: kind === "CHAMPION" ? itemId : Math.floor(itemId / 1000),
-    owned: r.owned === true || r.ownershipType === "OWNED" || (r.ownership as Raw | undefined)?.owned === true,
+    owned: r.owned === true || r.ownershipType === "OWNED",
     rp,
     be: price(prices, "IP") ?? price(prices, "lol_blue_essence"),
-    saleRp: saleRp !== undefined && rp !== undefined && saleRp < rp ? saleRp : undefined,
-    discount: saleRp !== undefined && rp !== undefined && saleRp < rp ? discount : undefined,
-    saleEnd: str(sale?.endDate),
+    saleRp: onSale ? saleRp : undefined,
+    discount: onSale ? discount : undefined,
+    saleEnd: onSale ? saleEnd : undefined,
   };
 }
 

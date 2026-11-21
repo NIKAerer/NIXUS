@@ -71,3 +71,4 @@
 .ev-mission-reward { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--gold); }
 .ev-mission.done { opacity: 0.7; }
 .ev-mission.done .ev-bar > i { background: var(--win); box-shadow: none; }
+.ev-hero .seg { align-self: flex-start; margin-top: 4px; }

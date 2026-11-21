@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { showLolWindow, useClient } from "../lib/client";
-import { championSquare, skinSplash } from "../lib/lcu";
+import { championSplash, championSquare, skinSplash } from "../lib/lcu";
 import { loadCatalog, type ShopItem } from "../lib/shop";
 import { Art, Empty, Icon, RefreshButton, Skeleton, cx, int, plural } from "../ui";
 
@@ -51,7 +51,7 @@ export function Shop() {
   }, [history, mastery]);
 
   const be = wallet?.lol_blue_essence ?? 0;
-  const sales = useMemo(() => (items ?? []).filter((i) => i.kind === "CHAMPION_SKIN" && i.saleRp !== undefined && !i.owned).sort((a, b) => Number(mine.has(b.championId)) - Number(mine.has(a.championId)) || (b.discount ?? 0) - (a.discount ?? 0)), [items, mine]);
+  const sales = useMemo(() => (items ?? []).filter((i) => i.saleRp !== undefined && !i.owned).sort((a, b) => Number(mine.has(b.championId)) - Number(mine.has(a.championId)) || (b.discount ?? 0) - (a.discount ?? 0)), [items, mine]);
   const toUnlock = useMemo(() => (items ?? []).filter((i) => i.kind === "CHAMPION" && !i.owned && i.be).sort((a, b) => (a.be ?? 0) - (b.be ?? 0)), [items]);
   const champName = (i: ShopItem) => i.name || champions.get(i.championId)?.name || "Champion";
 
@@ -85,7 +85,7 @@ export function Shop() {
         <>
           <section>
             <h2 className="sec-head">
-              En solde{sales.length > 0 && <span>{plural(sales.length, "skin")} · tes champions d'abord</span>}
+              En solde{sales.length > 0 && <span>{plural(sales.length, "offre")} · tes champions d'abord</span>}
             </h2>
             {!items ? (
               <div className="shop-grid">
@@ -97,11 +97,11 @@ export function Shop() {
               <div className="shop-grid">
                 {sales.map((i) => (
                   <article key={i.itemId} className={cx("shop-skin", mine.has(i.championId) && "mine")}>
-                    <Art src={skinSplash(i.championId, i.itemId)} className="shop-skin-art" />
+                    <Art src={i.kind === "CHAMPION" ? championSplash(i.championId) : skinSplash(i.championId, i.itemId)} className="shop-skin-art" />
                     {i.discount !== undefined && <span className="shop-off">-{Math.round(i.discount * 100)}%</span>}
                     {mine.has(i.championId) && <span className="tag accent shop-mine">Ton champion</span>}
                     <div className="shop-skin-txt">
-                      <b>{i.name || champions.get(i.championId)?.name}</b>
+                      <b>{champName(i)}</b>
                       <span>
                         {i.rp !== undefined && <s>{int(i.rp)}</s>} <strong>{int(i.saleRp ?? 0)} RP</strong>
                         {daysLeft(i.saleEnd) !== undefined && <small> · encore {plural(daysLeft(i.saleEnd)!, "jour")}</small>}

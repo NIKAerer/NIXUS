@@ -143,6 +143,18 @@ export function useDraft() {
     setConfirmBan(false);
   }, [myAction?.id]);
 
+  // Ton tour de pick arrive : le champion déclaré à l'avance (pré-choix) est survolé tout de suite, prêt à verrouiller.
+  const preHovered = useRef(0);
+  useEffect(() => {
+    if (myAction?.type !== "pick" || myAction.championId || preHovered.current === myAction.id) return;
+    const intent = me?.championPickIntent || 0;
+    if (!intent) return;
+    preHovered.current = myAction.id;
+    lcu("PATCH", `/lol-champ-select/v1/session/actions/${myAction.id}`, { championId: intent }).catch((e) =>
+      snapshot("cs-prehover-error", [], { action: myAction, championId: intent, error: String((e as Error)?.message ?? e) }),
+    );
+  }, [myAction?.id, myAction?.type, myAction?.championId, me?.championPickIntent]);
+
   useEffect(() => {
     const path = isBan ? "/lol-champ-select/v1/bannable-champion-ids" : "/lol-champ-select/v1/pickable-champion-ids";
     lcu<unknown>("GET", path).then(
@@ -271,8 +283,9 @@ export function useDraft() {
   const hover = async (id: number) => {
     setSelected(id);
     setConfirmBan(false);
-    // Pendant les intentions, on déclare son choix sur l'action de pick ; sinon on survole l'action en cours.
-    const target = stage === "planning" ? myPickAction : myAction;
+    // Pas encore ton tour (intentions, ou bans terminés en attendant ton pick) : on déclare le choix sur ton
+    // action de pick, comme le client officiel. Sinon on survole l'action en cours.
+    const target = myAction ?? myPickAction;
     if (!target) return;
     await lcu("PATCH", `/lol-champ-select/v1/session/actions/${target.id}`, { championId: id }).catch((e) => {
       fail(e);
