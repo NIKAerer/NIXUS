@@ -16,14 +16,18 @@ export function MatchTile({ match, champion, puuid, owner }: { match: Match; cha
   const splash = useMemo(() => (p ? freshSplash(p.championId) : ""), [match.gameId, p?.championId, pool]); // eslint-disable-line react-hooks/exhaustive-deps
   if (!p) return null;
   const { kills, deaths, assists, win } = p.stats;
+  // Pentakill du joueur : le client donne pentaKills, sinon largestMultiKill vaut 5.
+  const pentas = p.stats.pentaKills || (p.stats.largestMultiKill === 5 ? 1 : 0);
   return (
-    <button className={cx("tile", win ? "win" : "loss")} title={`${queueName(match.queueId)} · ${timeAgo(match.gameCreation)} · voir le détail`} onClick={() => nav.openMatch(match, owner)}>
+    <button className={cx("tile", win ? "win" : "loss", pentas > 0 && "penta")} title={`${queueName(match.queueId)} · ${timeAgo(match.gameCreation)}${pentas ? " · Pentakill !" : ""} · voir le détail`} onClick={() => nav.openMatch(match, owner)}>
       <span className="cover">
         <Breathing src={splash} champ={p.championId} />
       </span>
       <em className={cx("tile-mode", MODE_TONE[match.queueId])}>{queueName(match.queueId)}</em>
       <BadgeTag badge={badge} />
+      {pentas > 0 && <span className="tile-shine" aria-hidden />}
       <span className="tile-txt">
+        {pentas > 0 && <em className="tile-penta">Pentakill{pentas > 1 ? ` ×${pentas}` : ""}</em>}
         <small className={win ? "up" : "down"}>{win ? "Victoire" : "Défaite"}</small>
         <b>{champion}</b>
         <span className="mono">

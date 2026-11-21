@@ -541,7 +541,7 @@ async function runRiotImport({ gameName, tagLine, key, region, since, onProgress
         gameCreation: d.gameCreation,
         gameDuration: d.gameDuration,
         queueId: d.queueId,
-        participants: [{ championId: me.championId, stats: { kills: me.kills, deaths: me.deaths, assists: me.assists, win: !!me.win } }],
+        participants: [{ championId: me.championId, stats: { kills: me.kills, deaths: me.deaths, assists: me.assists, win: !!me.win, pentaKills: me.pentaKills, quadraKills: me.quadraKills, largestMultiKill: me.largestMultiKill } }],
       };
       await put("game", String(d.gameId), d);
       if (t) await put("timeline", String(d.gameId), t);

@@ -73,6 +73,15 @@ button.tile:hover { transform: translateY(-4px) scale(1.02); box-shadow: 0 16px 
 .tile-txt b { font: 400 23px/1 var(--display); letter-spacing: 0.04em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .tile-txt span { font-size: 12px; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
+/* Partie avec pentakill : cadre doré, reflet qui passe sur le splash, étiquette en or. */
+.tile.penta { box-shadow: 0 0 26px rgba(245, 197, 24, 0.35); }
+button.tile.penta:hover { box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6), 0 0 34px rgba(245, 197, 24, 0.55); }
+.tile.penta .cover::after { background: linear-gradient(0deg, rgba(14, 10, 0, 0.95) 0%, rgba(40, 28, 0, 0.35) 55%, rgba(245, 197, 24, 0.12) 100%); }
+.tile.penta::after { height: 4px; background: linear-gradient(90deg, #b8860b, var(--gold), #fff3b0, var(--gold), #b8860b); }
+.tile-shine { position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 2px var(--gold); pointer-events: none; background: linear-gradient(110deg, transparent 35%, rgba(255, 236, 160, 0.28) 48%, rgba(255, 255, 255, 0.4) 50%, rgba(255, 236, 160, 0.28) 52%, transparent 65%); background-size: 260% 100%; animation: penta-shine 4.5s var(--ease) infinite; mix-blend-mode: screen; }
+@keyframes penta-shine { 0% { background-position: 130% 0; } 45%, 100% { background-position: -130% 0; } }
+.tile-penta { align-self: flex-start; margin-bottom: 4px; font: 400 15px/1 var(--display); letter-spacing: 0.12em; text-transform: uppercase; font-style: normal; padding: 4px 8px 3px; border-radius: 5px; color: #1a1200; background: linear-gradient(135deg, #fff3b0, var(--gold) 45%, #c99a06); box-shadow: 0 0 16px rgba(245, 197, 24, 0.6); }
+
 @media (max-width: 1240px) {
   .hero { grid-template-columns: minmax(0, 1fr) 300px; }
 }
@@ -119,5 +128,6 @@ button.tile:hover { transform: translateY(-4px) scale(1.02); box-shadow: 0 16px 
   .heroplay-word { font-size: 78px; }
 }
 @media (prefers-reduced-motion: reduce) {
+  .tile-shine { animation: none; background: none; }
   .heroplay-btn { animation: none; }
 }

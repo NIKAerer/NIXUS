@@ -9,7 +9,7 @@ interface Summary {
   gameCreation: number;
   gameDuration: number;
   queueId: number;
-  participants: { championId: number; stats: { kills: number; deaths: number; assists: number; win: boolean } }[];
+  participants: { championId: number; stats: { kills: number; deaths: number; assists: number; win: boolean; pentaKills?: number } }[];
 }
 
 const ROLES = ["TOP", "JUNGLE", "MIDDLE", "BOTTOM", "UTILITY"] as const;
@@ -253,7 +253,7 @@ export function mockGameDetail(m: Summary): { detail: GameDetail; timeline: Time
         wardsPlaced: Math.round(duration / 60 * (p.role === "UTILITY" ? 1.2 : 0.4)),
         wardsKilled: Math.floor(r() * 8),
         visionWardsBoughtInGame: Math.floor(r() * 6),
-        largestMultiKill: id === meId && ks >= 6 ? 2 : 1,
+        largestMultiKill: id === meId && mine.stats.pentaKills ? 5 : id === meId && ks >= 6 ? 2 : 1,
         perk0: KEYSTONE[p.role][0],
         perkSubStyle: KEYSTONE[p.role][1],
         ...Object.fromEntries([0, 1, 2, 3, 4, 5].map((s) => [`item${s}`, items[s] ?? 0])),
