@@ -18,7 +18,7 @@ export interface PatchRef {
 }
 
 export interface Change {
-  /** « Dégâts » dans « Dégâts : 20 ⇒ 30 » */
+  /** « Dégâts » dans « Dégâts : 20 ⇒ 30 », ou le début en gras d'une ligne sans flèche. */
   label?: string;
   before?: string;
   after?: string;
@@ -29,10 +29,17 @@ export interface Change {
 }
 
 export type Block =
-  | { k: "sub"; text: string }
+  /** Sous-titre (h4) : compétence (avec son icône), « Stats de base », ou groupe (« Champions ») dans une section. */
+  | { k: "sub"; text: string; icon?: string }
+  /** Nom en gras seul sur sa ligne (champions ARAM, Arena, optimisations), avec le badge « Nouveau » éventuel. */
+  | { k: "head"; text: string; isNew?: boolean }
   | { k: "p"; text: string }
   | { k: "quote"; text: string }
   | { k: "img"; src: string }
+  /** Images légendées (skins et chromas à venir). */
+  | { k: "gallery"; items: { src: string; caption?: string }[] }
+  /** Auteurs du patch (avatar + nom). */
+  | { k: "authors"; items: { name: string; image?: string }[] }
   | { k: "list"; items: Change[] };
 
 export interface Entry {
@@ -64,8 +71,22 @@ async function fetchPage(path: string): Promise<string> {
   return invoke<string>("news_page", { path });
 }
 
-const parse = (html: string) => new DOMParser().parseFromString(html, "text/html");
-const clean = (s: string | null | undefined) => (s ?? "").replace(/\s+/g, " ").trim();
+/** Les <br> deviennent un marqueur invisible, pour garder les retours à la ligne des paragraphes de Riot. */
+const BR = "\u2063";
+const parse = (html: string) => {
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  doc.querySelectorAll("br").forEach((br) => br.replaceWith(BR));
+  return doc;
+};
+/** Espaces réduits ; une suite de <br> devient un seul saut de ligne (affiché par white-space: pre-line). */
+const clean = (s: string | null | undefined) =>
+  (s ?? "")
+    .replace(new RegExp(`\\s*${BR}[\\s${BR}]*`, "g"), BR)
+    .replace(/\s+/g, " ")
+    .replace(new RegExp(BR, "g"), "\n")
+    .trim();
+/** Texte sans espaces ni deux-points final, pour comparer « **Nom** : » et « Nom ». */
+const squash = (s: string) => s.replace(/\s+/g, "").replace(/:$/, "");
 
 /** Image d'un nœud : `src`, sinon le premier candidat de `srcset`, en adresse absolue. */
 function imgSrc(img: Element): string | undefined {
@@ -101,12 +122,16 @@ export function parsePatchList(html: string): PatchRef[] {
   return [...seen.values()].sort((a, b) => num(b.version) - num(a.version));
 }
 
-/** Ligne de liste : « Libellé : avant ⇒ après » quand il y a une flèche. */
-function change(text: string, depth: number): Change {
+/** Ligne de liste : « Libellé : avant ⇒ après » quand il y a une flèche, sinon « Libellé : texte » si elle commence en gras. */
+function change(text: string, depth: number, bold?: string): Change {
   const parts = text.split(/\s*[⇒→]\s*/);
   if (parts.length === 2) {
     const m = parts[0].match(/^(.{1,80}?)\s*:\s+(.*)$/);
     return { label: m?.[1], before: m ? m[2] : parts[0], after: parts[1], text, depth };
+  }
+  if (bold && bold.length < 90 && text.startsWith(bold)) {
+    const rest = text.slice(bold.length).replace(/^\s*:\s*/, "").trim();
+    if (rest) return { label: bold.replace(/\s*:$/, ""), text: rest, depth };
   }
   return { text, depth };
 }
@@ -117,13 +142,20 @@ function listItems(ul: Element, depth: number, out: Change[]) {
     const copy = li.cloneNode(true) as Element;
     copy.querySelectorAll("ul, ol").forEach((n) => n.remove());
     const text = clean(copy.textContent);
-    if (text) out.push(change(text, depth));
+    const first = copy.firstElementChild;
+    const bold = first && /^(STRONG|B)$/.test(first.tagName) && text.startsWith(clean(first.textContent)) ? clean(first.textContent) : undefined;
+    if (text) out.push(change(text, depth, bold));
     li.querySelectorAll(":scope > ul, :scope > ol").forEach((sub) => listItems(sub, Math.min(depth + 1, 2), out));
   }
 }
 
-/** Plus petit élément qui contient tous les titres de section : le corps de l'article. */
+/**
+ * Corps de l'article. Sur la vraie page c'est #patch-notes-container (ses h2 sont dans des <header>,
+ * et « Articles liés » est un h2 hors de l'article). Sinon : le plus petit élément qui contient tous les h2.
+ */
 function articleRoot(doc: Document): Element | null {
+  const known = doc.querySelector("#patch-notes-container");
+  if (known) return known;
   const heads = [...doc.body.querySelectorAll("h2")].filter((h) => !h.closest("nav, header, footer, aside"));
   if (!heads.length) return null;
   let root: Element | null = heads[0].parentElement;
@@ -153,8 +185,27 @@ export function parsePatchArticle(html: string, ref: Pick<PatchRef, "version" | 
     flushImg();
     target().push(b);
   };
+  const addToGallery = (src: string, caption?: string) => {
+    const blocks = target();
+    const last = blocks[blocks.length - 1];
+    if (last?.k === "gallery") last.items.push({ src, caption });
+    else blocks.push({ k: "gallery", items: [{ src, caption }] });
+  };
 
   const visit = (el: Element) => {
+    // Auteurs du patch : petit avatar + nom, regroupés sur une ligne.
+    if (el.classList.contains("context-designer")) {
+      const img = el.querySelector("img");
+      const name = clean(el.textContent);
+      if (!name) return;
+      flushImg();
+      const blocks = target();
+      const last = blocks[blocks.length - 1];
+      const who = { name, image: img ? imgSrc(img) : undefined };
+      if (last?.k === "authors") last.items.push(who);
+      else blocks.push({ k: "authors", items: [who] });
+      return;
+    }
     switch (el.tagName) {
       case "SCRIPT":
       case "STYLE":
@@ -188,7 +239,15 @@ export function parsePatchArticle(html: string, ref: Pick<PatchRef, "version" | 
       case "H4":
       case "H5": {
         const t = clean(el.textContent);
-        if (t) push({ k: "sub", text: t });
+        if (!t) return;
+        // Titre d'une vignette de skin : légende de l'image qui précède.
+        if (el.classList.contains("skin-title") && pendingImg) {
+          addToGallery(pendingImg, t);
+          pendingImg = undefined;
+          return;
+        }
+        const icon = el.querySelector("img");
+        push({ k: "sub", text: t, icon: icon ? imgSrc(icon) : undefined });
         return;
       }
       case "UL":
@@ -207,6 +266,23 @@ export function parsePatchArticle(html: string, ref: Pick<PatchRef, "version" | 
         // Un paragraphe qui ne contient qu'une image.
         const img = el.querySelector("img");
         const t = clean(el.textContent);
+        const blocks = target();
+        const last = blocks[blocks.length - 1];
+        // « / Frappe résonnante » sous « A - Onde sonore » : seconde forme de la même compétence.
+        if (t.startsWith("/") && last?.k === "sub" && !pendingImg) {
+          last.text = `${last.text} ${t}`;
+          return;
+        }
+        // Nom en gras seul sur sa ligne, avec ou sans badge « NOUVEAU ».
+        const bold = [...el.querySelectorAll("strong, b")].map((b) => clean(b.textContent)).filter(Boolean);
+        if (t && bold.length && squash(bold.join("")) === squash(t)) {
+          const isNew = /^nouveau$/i.test(bold[0]);
+          const name = (isNew ? bold.slice(1) : bold).join(" ").replace(/^[\s-]+/, "").replace(/\s*:$/, "").trim();
+          if (name) {
+            push({ k: "head", text: name, isNew: isNew || undefined });
+            return;
+          }
+        }
         if (t) push({ k: "p", text: t });
         else if (img) {
           flushImg();
@@ -221,6 +297,7 @@ export function parsePatchArticle(html: string, ref: Pick<PatchRef, "version" | 
       }
       case "VIDEO":
       case "IFRAME":
+      case "HR":
         return;
     }
     for (const child of el.children) visit(child);

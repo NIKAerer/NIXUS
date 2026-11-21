@@ -16,36 +16,81 @@ span.patch-card { display: block; }
 .patch-card:hover .patch-card-go { color: #fff; }
 
 /* Page */
-.patch-page { gap: 26px; }
-.patch-head { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 12px; isolation: isolate; margin: calc((var(--bar) + 26px) * -1) calc(var(--pad) * -1) 0; padding: calc(var(--bar) + 30px) var(--pad) 8px; }
-.patch-head-bg { position: absolute; inset: 0; z-index: -1; width: 100%; height: 100%; object-fit: cover; opacity: 0.38; mask-image: linear-gradient(180deg, #000 30%, transparent 100%); }
-.patch-head .display { text-transform: uppercase; font-size: clamp(56px, 6vw, 92px); }
-.patch-back { margin-bottom: 6px; }
-.patch-tools { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 6px; }
-.patch-jump { display: flex; gap: 6px; flex-wrap: wrap; }
+.patch-page { gap: 24px; padding-bottom: calc(var(--dock) + 56px); }
+.patch-head { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 10px; isolation: isolate; margin: calc((var(--bar) + 26px) * -1) calc(var(--pad) * -1) 0; padding: calc(var(--bar) + 28px) var(--pad) 6px; }
+.patch-head-bg { position: absolute; inset: 0; z-index: -1; width: 100%; height: 100%; object-fit: cover; opacity: 0.32; mask-image: linear-gradient(180deg, #000 20%, transparent 100%); }
+.patch-head .display { text-transform: uppercase; font-size: clamp(52px, 5.4vw, 84px); }
+.patch-back { margin-bottom: 4px; }
+.patch-tools { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
+
+/* Sommaire collant à gauche, contenu à droite */
+.patch-layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 32px; align-items: start; }
+.patch-toc { position: sticky; top: calc(var(--bar) + 16px); display: flex; flex-direction: column; gap: 2px; max-height: calc(100vh - var(--bar) - var(--dock) - 60px); overflow-y: auto; }
+.patch-toc small { font-size: 10.5px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim); padding: 0 12px 8px; }
+.patch-toc button { display: flex; align-items: center; gap: 8px; min-height: 32px; padding: 6px 12px; border-radius: var(--r-m); text-align: left; font-size: 13px; font-weight: 600; line-height: 1.25; color: var(--dim); transition: background 0.15s, color 0.15s; }
+.patch-toc button span { flex: 1; min-width: 0; }
+.patch-toc button em { font-style: normal; font-size: 11px; font-weight: 700; color: var(--dim); opacity: 0.8; }
+.patch-toc button:hover { color: #fff; background: rgba(255, 255, 255, 0.05); }
+.patch-toc button.on { color: #fff; background: rgba(var(--accent-rgb), 0.16); box-shadow: inset 2px 0 0 var(--accent); }
+.patch-main { display: flex; flex-direction: column; gap: 36px; min-width: 0; max-width: 1080px; }
+@media (max-width: 1100px) {
+  .patch-layout { grid-template-columns: minmax(0, 1fr); }
+  .patch-toc { position: static; flex-direction: row; flex-wrap: wrap; gap: 6px; max-height: none; }
+  .patch-toc small { display: none; }
+  .patch-toc button { min-height: 30px; padding: 0 12px; border-radius: 30px; background: rgba(255, 255, 255, 0.05); }
+}
+
+/* Introduction : texte de Riot puis auteurs */
+.patch-intro { display: flex; flex-direction: column; gap: 12px; }
 
 .patch-sec { display: flex; flex-direction: column; gap: 14px; scroll-margin-top: calc(var(--bar) + 16px); }
-.patch-sec > .sec-head { margin-bottom: 0; }
-.patch-intro { display: flex; flex-direction: column; gap: 12px; max-width: 980px; }
-.patch-grid { columns: 2 440px; column-gap: 14px; }
+.patch-sec-title { display: flex; align-items: baseline; gap: 12px; margin: 0; font: 400 30px/1 var(--display); letter-spacing: 0.03em; }
+.patch-sec-title span { font: 600 12.5px var(--body); letter-spacing: 0; color: var(--dim); }
+.patch-group { margin: 6px 0 0; font-size: 11.5px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim); }
+
+/* Fiches (champions, objets, et noms en gras des modes) en colonnes, sans trou entre elles */
+.patch-grid { columns: 2 400px; column-gap: 14px; }
 .patch-grid > * { break-inside: avoid; margin-bottom: 14px; }
+.patch-grid:last-child > :last-child { margin-bottom: 0; }
 
-.patch-entry { display: flex; flex-direction: column; gap: 10px; padding: 16px 18px 18px; border-radius: var(--r-l); background: var(--panel); border: 1px solid var(--line); }
+.patch-entry { display: flex; flex-direction: column; gap: 10px; padding: 16px; border-radius: var(--r-l); background: var(--panel); border: 1px solid var(--line); }
 .patch-entry.mine { border-color: rgba(var(--accent-rgb), 0.55); box-shadow: inset 0 0 0 1px rgba(var(--accent-rgb), 0.2), 0 0 28px rgba(var(--accent-rgb), 0.1); }
-.patch-entry header { display: flex; align-items: center; gap: 12px; }
-.patch-entry header img, .patch-entry header .art-missing { width: 44px; height: 44px; border-radius: 12px; flex: none; }
-.patch-entry h3 { margin: 0; font: 400 26px/1 var(--display); letter-spacing: 0.04em; flex: 1; min-width: 0; }
+.patch-entry header { display: flex; align-items: center; gap: 12px; min-height: 40px; }
+.patch-entry header img, .patch-entry header .art-missing { width: 40px; height: 40px; border-radius: 10px; flex: none; object-fit: cover; }
+.patch-entry h3 { margin: 0; font: 400 24px/1 var(--display); letter-spacing: 0.04em; flex: 1; min-width: 0; }
+.patch-entry.compact { padding: 14px; gap: 8px; }
+.patch-entry.compact header { min-height: 32px; gap: 10px; }
+.patch-entry.compact header img, .patch-entry.compact header .art-missing { width: 32px; height: 32px; border-radius: 8px; }
+.patch-entry.compact h3 { font-size: 21px; }
 
-.patch-sub { margin: 4px 0 0; font-size: 11.5px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent-hi); }
-.patch-quote { font-size: 13.5px; line-height: 1.55; color: #c9c9d0; font-style: italic; padding: 10px 14px; border-radius: var(--r-m); background: rgba(var(--accent-rgb), 0.07); border-left: 2px solid rgba(var(--accent-rgb), 0.7); }
-.patch-p { font-size: 14px; line-height: 1.6; color: #d6d6dc; }
-.patch-img { width: 100%; max-width: 980px; border-radius: var(--r-l); aspect-ratio: 16 / 9; object-fit: cover; }
+/* Sous-titres : compétence avec sa petite icône, ou « Stats de base » */
+.patch-sub { display: flex; align-items: center; gap: 8px; margin: 4px 0 0; font-size: 11.5px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent-hi); }
+.patch-sub > span:not(.tag) { min-width: 0; }
+img.patch-sub-icon, .patch-sub .art-missing { width: 22px; height: 22px; border-radius: 6px; flex: none; object-fit: cover; }
 
-.patch-list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; }
-.patch-list li { display: flex; flex-direction: column; gap: 2px; padding: 7px 10px; border-radius: var(--r-m); background: rgba(255, 255, 255, 0.035); font-size: 13.5px; line-height: 1.45; }
-.patch-list li.deep { margin-left: 18px; background: rgba(255, 255, 255, 0.02); }
-.patch-label { font-size: 12px; font-weight: 700; color: var(--dim); }
-.patch-change { display: inline; }
+.patch-quote { margin: 0; font-size: 13px; line-height: 1.55; color: #bdbdc6; font-style: italic; padding: 2px 0 2px 12px; border-left: 2px solid rgba(var(--accent-rgb), 0.7); }
+.patch-intro .patch-quote { font-size: 14px; color: #cfcfd6; padding: 12px 16px; border-radius: 0 var(--r-m) var(--r-m) 0; background: rgba(var(--accent-rgb), 0.07); }
+.patch-p { margin: 0; font-size: 14px; line-height: 1.6; color: #d6d6dc; }
+
+/* Images : jamais plus larges que la colonne de lecture */
+img.patch-img, .patch-img.art-missing { display: block; width: 100%; max-width: 720px; max-height: 380px; border-radius: var(--r-l); object-fit: cover; }
+.patch-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; max-width: 980px; }
+.patch-gallery figure { margin: 0; display: flex; flex-direction: column; gap: 8px; }
+.patch-gallery img, .patch-gallery .art-missing { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: var(--r-m); }
+.patch-gallery figcaption { font-size: 12.5px; font-weight: 600; color: var(--dim); }
+
+/* Auteurs du patch : petites puces avec avatar */
+.patch-authors { display: flex; flex-wrap: wrap; gap: 8px; }
+.patch-authors > span { display: inline-flex; align-items: center; gap: 8px; height: 30px; padding: 0 12px 0 3px; border-radius: 30px; font-size: 12.5px; font-weight: 600; color: var(--dim); background: rgba(255, 255, 255, 0.05); }
+.patch-authors img, .patch-authors .art-missing { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; flex: none; }
+
+/* Changements : libellé, puis avant ⇒ après */
+.patch-list { margin: 0; padding: 4px 0; list-style: none; display: flex; flex-direction: column; gap: 2px; border-radius: var(--r-m); background: rgba(255, 255, 255, 0.035); }
+.patch-list li { display: flex; flex-direction: column; gap: 2px; padding: 6px 12px; font-size: 13.5px; line-height: 1.45; color: #d6d6dc; }
+.patch-list li.deep { padding-left: 28px; color: var(--dim); }
+.patch-label { font-size: 12px; font-weight: 700; color: #fff; }
 .patch-change s { text-decoration: none; color: var(--dim); }
 .patch-arrow { display: inline-block; vertical-align: -1px; margin: 0 6px; transform: rotate(180deg); color: var(--accent-hi); }
 .patch-change b { color: #fff; font-weight: 700; }
+.patch-quote, .patch-p, .patch-list li { white-space: pre-line; }
+.patch-sub, .patch-entry h3, .patch-toc button, .patch-sec-title { white-space: normal; }
