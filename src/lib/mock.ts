@@ -58,6 +58,7 @@ const QUEUE_LIST = [
 const now = () => Date.now();
 const H = 3600_000;
 const STAGE_MS: Record<CsStage, number> = { planning: 8000, ban: 30000, pick: 30000, final: 20000 };
+const PICK_WAIT_MS = 8000; // en démo, le temps que les premiers joueurs choisissent avant ton tour
 
 const me = () => state.session!.myTeam.find((p) => p.cellId === state.session!.localPlayerCellId)!;
 const allActions = () => state.session!.actions.flat();
@@ -88,8 +89,8 @@ function setStage(stage: CsStage) {
     s.myTeam[0].championId = 86;
     s.theirTeam[0].championId = 122;
     s.theirTeam[1].championId = 121;
-    const mine = acts.find((a) => a.type === "pick" && a.actorCellId === s.localPlayerCellId)!;
-    mine.isInProgress = true;
+    // Comme en vrai : les premiers joueurs choisissent d'abord, ton tour arrive quelques secondes plus tard.
+    acts.filter((a) => a.type === "pick" && a.actorCellId === 0).forEach((a) => (a.isInProgress = true));
   }
   if (stage === "final") {
     s.myTeam.forEach((p, i) => (p.championId ||= [86, 0, 103, 81, 111][i]));
@@ -112,6 +113,12 @@ function tick() {
   if (state.phase === "ChampSelect" && state.session) {
     const left = STAGE_MS[state.stage] - (now() - state.stageStart);
     state.session.timer.adjustedTimeLeftInPhase = Math.max(left, 0);
+    const mine = allActions().find((a) => a.type === "pick" && a.actorCellId === state.session!.localPlayerCellId);
+    if (state.stage === "pick" && mine && !mine.isInProgress && !mine.completed && now() - state.stageStart > PICK_WAIT_MS) {
+      allActions().filter((a) => a.type === "pick" && a.actorCellId === 0).forEach((a) => ((a.isInProgress = false), (a.completed = true), (a.championId = 86)));
+      mine.isInProgress = true;
+      state.stageStart = now();
+    }
     if (left <= 0) {
       if (state.stage === "planning") setStage("ban");
       else if (state.stage === "ban") setStage("pick");
